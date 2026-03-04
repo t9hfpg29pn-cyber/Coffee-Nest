@@ -27,6 +27,7 @@ export default function RoasteriesScreen() {
 
   const [roasteries, setRoasteries] = useState<Roastery[]>([]);
   const [coffeeCounts, setCoffeeCounts] = useState<Record<string, number>>({});
+  const [avgRatings, setAvgRatings] = useState<Record<string, { hase: number; dodo: number } | null>>({});
   const [showModal, setShowModal] = useState(false);
   const [newName, setNewName] = useState("");
   const [newLocation, setNewLocation] = useState("");
@@ -36,11 +37,20 @@ export default function RoasteriesScreen() {
     const data = await getRoasteries();
     setRoasteries(data.reverse());
     const counts: Record<string, number> = {};
+    const avgs: Record<string, { hase: number; dodo: number } | null> = {};
     for (const r of data) {
       const coffees = await getCoffees(r.id);
       counts[r.id] = coffees.length;
+      if (coffees.length > 0) {
+        const hase = coffees.reduce((sum, c) => sum + c.haseRating, 0) / coffees.length;
+        const dodo = coffees.reduce((sum, c) => sum + c.dodoRating, 0) / coffees.length;
+        avgs[r.id] = { hase: Math.round(hase * 10) / 10, dodo: Math.round(dodo * 10) / 10 };
+      } else {
+        avgs[r.id] = null;
+      }
     }
     setCoffeeCounts(counts);
+    setAvgRatings(avgs);
     setLoading(false);
   }, []);
 
@@ -161,6 +171,27 @@ export default function RoasteriesScreen() {
                 <Text style={[styles.cardCount, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
                   {coffeeCounts[item.id] ?? 0} {coffeeCounts[item.id] === 1 ? "Kaffee" : "Kaffees"}
                 </Text>
+                {avgRatings[item.id] ? (
+                  <View style={styles.avgRow}>
+                    <View style={styles.avgChip}>
+                      <Text style={[styles.avgLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
+                        Hase
+                      </Text>
+                      <Text style={[styles.avgValue, { color: colors.tint, fontFamily: "Inter_700Bold" }]}>
+                        {avgRatings[item.id]!.hase}
+                      </Text>
+                    </View>
+                    <View style={[styles.avgDivider, { backgroundColor: colors.border }]} />
+                    <View style={styles.avgChip}>
+                      <Text style={[styles.avgLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
+                        Dodo
+                      </Text>
+                      <Text style={[styles.avgValue, { color: colors.tint, fontFamily: "Inter_700Bold" }]}>
+                        {avgRatings[item.id]!.dodo}
+                      </Text>
+                    </View>
+                  </View>
+                ) : null}
               </View>
               <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
             </Pressable>
@@ -307,6 +338,28 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 17 },
   cardLocation: { fontSize: 13 },
   cardCount: { fontSize: 13 },
+  avgRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 6,
+    gap: 10,
+  },
+  avgChip: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    gap: 4,
+  },
+  avgLabel: {
+    fontSize: 11,
+    letterSpacing: 0.3,
+  },
+  avgValue: {
+    fontSize: 15,
+  },
+  avgDivider: {
+    width: 1,
+    height: 12,
+  },
   modalOverlay: {
     flex: 1,
   },
