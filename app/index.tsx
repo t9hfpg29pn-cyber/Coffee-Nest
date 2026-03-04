@@ -11,6 +11,7 @@ import {
   useColorScheme,
   Platform,
 } from "react-native";
+import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useFocusEffect } from "expo-router";
 import { Ionicons, Feather } from "@expo/vector-icons";
@@ -168,7 +169,8 @@ export default function RoasteriesScreen() {
       )}
 
       <Modal visible={showModal} animationType="slide" transparent presentationStyle="overFullScreen">
-        <Pressable style={styles.modalOverlay} onPress={() => setShowModal(false)} />
+        <KeyboardAvoidingView behavior="padding" style={{ flex: 1, justifyContent: "flex-end" }}>
+          <Pressable style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)" }} onPress={() => setShowModal(false)} />
         <View style={[styles.modalSheet, { backgroundColor: colors.surfaceElevated, paddingBottom: bottomPad + 20 }]}>
           <View style={styles.modalHandle} />
           <Text style={[styles.modalTitle, { color: colors.text, fontFamily: "Inter_700Bold" }]}>
@@ -232,6 +234,7 @@ export default function RoasteriesScreen() {
             </Text>
           </Pressable>
         </View>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   );
@@ -306,7 +309,6 @@ const styles = StyleSheet.create({
   cardCount: { fontSize: 13 },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.4)",
   },
   modalSheet: {
     borderTopLeftRadius: 24,

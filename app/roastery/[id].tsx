@@ -11,6 +11,7 @@ import {
   useColorScheme,
   Platform,
 } from "react-native";
+import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useLocalSearchParams, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -224,49 +225,51 @@ export default function RoasteryScreen() {
       )}
 
       <Modal visible={showModal} animationType="slide" transparent presentationStyle="overFullScreen">
-        <Pressable style={styles.modalOverlay} onPress={() => setShowModal(false)} />
-        <View style={[styles.modalSheet, { backgroundColor: colors.surfaceElevated, paddingBottom: bottomPad + 20 }]}>
-          <View style={styles.modalHandle} />
-          <Text style={[styles.modalTitle, { color: colors.text, fontFamily: "Inter_700Bold" }]}>
-            Neuer Kaffee
-          </Text>
-          <Text style={[styles.inputLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
-            Name *
-          </Text>
-          <TextInput
-            style={[
-              styles.input,
-              {
-                backgroundColor: colors.surface,
-                borderColor: colors.border,
-                color: colors.text,
-                fontFamily: "Inter_400Regular",
-              },
-            ]}
-            placeholder="z.B. Ethiopia Yirgacheffe"
-            placeholderTextColor={colors.textSecondary}
-            value={newName}
-            onChangeText={setNewName}
-            autoFocus
-            returnKeyType="done"
-            onSubmitEditing={handleAdd}
-          />
-          <Pressable
-            onPress={handleAdd}
-            style={({ pressed }) => [
-              styles.saveButton,
-              {
-                backgroundColor: newName.trim() ? colors.tint : colors.border,
-                opacity: pressed ? 0.85 : 1,
-              },
-            ]}
-            disabled={!newName.trim()}
-          >
-            <Text style={[styles.saveButtonText, { fontFamily: "Inter_600SemiBold" }]}>
-              Hinzufügen
+        <KeyboardAvoidingView behavior="padding" style={{ flex: 1, justifyContent: "flex-end" }}>
+          <Pressable style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)" }} onPress={() => setShowModal(false)} />
+          <View style={[styles.modalSheet, { backgroundColor: colors.surfaceElevated, paddingBottom: bottomPad + 20 }]}>
+            <View style={styles.modalHandle} />
+            <Text style={[styles.modalTitle, { color: colors.text, fontFamily: "Inter_700Bold" }]}>
+              Neuer Kaffee
             </Text>
-          </Pressable>
-        </View>
+            <Text style={[styles.inputLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
+              Name *
+            </Text>
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  color: colors.text,
+                  fontFamily: "Inter_400Regular",
+                },
+              ]}
+              placeholder="z.B. Ethiopia Yirgacheffe"
+              placeholderTextColor={colors.textSecondary}
+              value={newName}
+              onChangeText={setNewName}
+              autoFocus
+              returnKeyType="done"
+              onSubmitEditing={handleAdd}
+            />
+            <Pressable
+              onPress={handleAdd}
+              style={({ pressed }) => [
+                styles.saveButton,
+                {
+                  backgroundColor: newName.trim() ? colors.tint : colors.border,
+                  opacity: pressed ? 0.85 : 1,
+                },
+              ]}
+              disabled={!newName.trim()}
+            >
+              <Text style={[styles.saveButtonText, { fontFamily: "Inter_600SemiBold" }]}>
+                Hinzufügen
+              </Text>
+            </Pressable>
+          </View>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   );
