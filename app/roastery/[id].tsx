@@ -77,7 +77,13 @@ export default function RoasteryScreen() {
       setRoasteryName(roastery.name);
       setRoasteryLocation(roastery.location ?? "");
     }
-    setCoffees(data.reverse());
+    setCoffees(
+      data.sort((a, b) => {
+        const avgA = (a.haseRating + a.dodoRating) / 2;
+        const avgB = (b.haseRating + b.dodoRating) / 2;
+        return avgB - avgA;
+      })
+    );
     setLoading(false);
   }, [id]);
 
