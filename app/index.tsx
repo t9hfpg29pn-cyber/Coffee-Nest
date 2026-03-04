@@ -1,10 +1,9 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useRef } from "react";
 import {
   View,
   Text,
   StyleSheet,
   FlatList,
-  ScrollView,
   Pressable,
   TextInput,
   Modal,
@@ -30,6 +29,9 @@ export default function RoasteriesScreen() {
   const [coffeeCounts, setCoffeeCounts] = useState<Record<string, number>>({});
   const [avgRatings, setAvgRatings] = useState<Record<string, { hase: number; dodo: number } | null>>({});
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0 });
+  const filterBtnRef = useRef<View>(null);
   const [showModal, setShowModal] = useState(false);
   const [newName, setNewName] = useState("");
   const [newLocation, setNewLocation] = useState("");
@@ -107,16 +109,59 @@ export default function RoasteriesScreen() {
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
 
+  const openDropdown = () => {
+    filterBtnRef.current?.measureInWindow((x, y, _w, h) => {
+      setDropdownPos({ top: y + h + 6, left: x });
+      setShowDropdown(true);
+    });
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { paddingTop: topPad + 16 }]}>
-        <View>
+        <View style={styles.headerLeft}>
           <Text style={[styles.headerLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
             KAFFEE JOURNAL
           </Text>
-          <Text style={[styles.headerTitle, { color: colors.text, fontFamily: "Inter_700Bold" }]}>
-            Röstereien
-          </Text>
+          <View style={styles.headerTitleRow}>
+            <Text style={[styles.headerTitle, { color: colors.text, fontFamily: "Inter_700Bold" }]}>
+              Röstereien
+            </Text>
+            {!loading && cities.length >= 2 && (
+              <Pressable
+                ref={filterBtnRef}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  openDropdown();
+                }}
+                style={({ pressed }) => [
+                  styles.filterButton,
+                  {
+                    backgroundColor: selectedCity ? colors.tint : colors.surface,
+                    borderColor: selectedCity ? colors.tint : colors.border,
+                    opacity: pressed ? 0.8 : 1,
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.filterButtonText,
+                    {
+                      color: selectedCity ? "#fff" : colors.textSecondary,
+                      fontFamily: "Inter_500Medium",
+                    },
+                  ]}
+                >
+                  {selectedCity ?? "Alle"}
+                </Text>
+                <Ionicons
+                  name="chevron-down"
+                  size={13}
+                  color={selectedCity ? "#fff" : colors.textSecondary}
+                />
+              </Pressable>
+            )}
+          </View>
         </View>
         <Pressable
           onPress={() => {
@@ -132,68 +177,93 @@ export default function RoasteriesScreen() {
         </Pressable>
       </View>
 
-      {!loading && cities.length >= 2 && (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.filterBar}
-          keyboardShouldPersistTaps="handled"
-        >
-          <Pressable
-            onPress={() => {
-              Haptics.selectionAsync();
-              setSelectedCity(null);
-            }}
+      {/* Dropdown Modal */}
+      <Modal visible={showDropdown} transparent animationType="fade">
+        <Pressable style={styles.dropdownOverlay} onPress={() => setShowDropdown(false)}>
+          <View
             style={[
-              styles.filterChip,
+              styles.dropdownMenu,
               {
-                backgroundColor: selectedCity === null ? colors.tint : colors.surface,
-                borderColor: selectedCity === null ? colors.tint : colors.border,
+                top: dropdownPos.top,
+                left: dropdownPos.left,
+                backgroundColor: colors.surfaceElevated,
+                borderColor: colors.border,
               },
             ]}
           >
-            <Text
-              style={[
-                styles.filterChipText,
-                {
-                  color: selectedCity === null ? "#fff" : colors.textSecondary,
-                  fontFamily: selectedCity === null ? "Inter_600SemiBold" : "Inter_500Medium",
-                },
-              ]}
-            >
-              Alle
-            </Text>
-          </Pressable>
-          {cities.map((city) => (
             <Pressable
-              key={city}
               onPress={() => {
                 Haptics.selectionAsync();
-                setSelectedCity(city === selectedCity ? null : city);
+                setSelectedCity(null);
+                setShowDropdown(false);
               }}
-              style={[
-                styles.filterChip,
+              style={({ pressed }) => [
+                styles.dropdownItem,
                 {
-                  backgroundColor: selectedCity === city ? colors.tint : colors.surface,
-                  borderColor: selectedCity === city ? colors.tint : colors.border,
+                  backgroundColor: !selectedCity
+                    ? colors.tint + "18"
+                    : pressed
+                    ? colors.surface
+                    : "transparent",
                 },
               ]}
             >
               <Text
                 style={[
-                  styles.filterChipText,
+                  styles.dropdownItemText,
                   {
-                    color: selectedCity === city ? "#fff" : colors.textSecondary,
-                    fontFamily: selectedCity === city ? "Inter_600SemiBold" : "Inter_500Medium",
+                    color: !selectedCity ? colors.tint : colors.text,
+                    fontFamily: !selectedCity ? "Inter_600SemiBold" : "Inter_400Regular",
                   },
                 ]}
               >
-                {city}
+                Alle
               </Text>
+              {!selectedCity && (
+                <Ionicons name="checkmark" size={15} color={colors.tint} />
+              )}
             </Pressable>
-          ))}
-        </ScrollView>
-      )}
+            {cities.map((city, idx) => (
+              <Pressable
+                key={city}
+                onPress={() => {
+                  Haptics.selectionAsync();
+                  setSelectedCity(city);
+                  setShowDropdown(false);
+                }}
+                style={({ pressed }) => [
+                  styles.dropdownItem,
+                  idx < cities.length - 1 && styles.dropdownItemBorder,
+                  {
+                    backgroundColor:
+                      selectedCity === city
+                        ? colors.tint + "18"
+                        : pressed
+                        ? colors.surface
+                        : "transparent",
+                    borderTopColor: colors.border,
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.dropdownItemText,
+                    {
+                      color: selectedCity === city ? colors.tint : colors.text,
+                      fontFamily: selectedCity === city ? "Inter_600SemiBold" : "Inter_400Regular",
+                    },
+                  ]}
+                >
+                  {city}
+                </Text>
+                {selectedCity === city && (
+                  <Ionicons name="checkmark" size={15} color={colors.tint} />
+                )}
+              </Pressable>
+            ))}
+          </View>
+        </Pressable>
+      </Modal>
 
       {loading ? (
         <View style={styles.centerState}>
@@ -365,6 +435,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 16,
   },
+  headerLeft: {
+    flex: 1,
+  },
+  headerTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    flexWrap: "wrap",
+  },
   headerLabel: {
     fontSize: 11,
     letterSpacing: 1.5,
@@ -373,6 +452,47 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 32,
     lineHeight: 38,
+  },
+  filterButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+    borderWidth: 1,
+    marginBottom: 2,
+  },
+  filterButtonText: {
+    fontSize: 13,
+  },
+  dropdownOverlay: {
+    flex: 1,
+  },
+  dropdownMenu: {
+    position: "absolute",
+    minWidth: 140,
+    borderRadius: 12,
+    borderWidth: 1,
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  dropdownItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 14,
+    paddingVertical: 11,
+  },
+  dropdownItemBorder: {
+    borderTopWidth: 1,
+  },
+  dropdownItemText: {
+    fontSize: 14,
   },
   addButton: {
     width: 40,
@@ -418,21 +538,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
-  },
-  filterBar: {
-    paddingHorizontal: 20,
-    paddingBottom: 12,
-    gap: 8,
-    flexDirection: "row",
-  },
-  filterChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 20,
-    borderWidth: 1,
-  },
-  filterChipText: {
-    fontSize: 13,
   },
   cardContent: { flex: 1, gap: 2 },
   cardTitle: { fontSize: 17 },
