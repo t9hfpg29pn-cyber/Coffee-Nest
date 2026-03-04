@@ -134,7 +134,7 @@ export default function SettingsScreen() {
         <Image
           source={require("../assets/images/icon.png")}
           style={styles.appIcon}
-          resizeMode="cover"
+          resizeMode="contain"
         />
       </View>
     </View>
@@ -224,6 +224,6 @@ const styles = StyleSheet.create({
   },
   appIcon: {
     width: "100%",
-    aspectRatio: 1,
+    height: "100%",
   },
 });
