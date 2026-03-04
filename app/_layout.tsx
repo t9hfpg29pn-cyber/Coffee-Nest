@@ -13,11 +13,23 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { queryClient } from "@/lib/query-client";
-import { useColorScheme } from "react-native";
+import { Image, StyleSheet, View, useColorScheme } from "react-native";
 import Colors from "@/constants/colors";
 import { UserNamesProvider } from "@/context/UserNamesContext";
 
 SplashScreen.preventAutoHideAsync();
+
+function AppSplash() {
+  return (
+    <View style={styles.splashContainer}>
+      <Image
+        source={require("../assets/images/icon.png")}
+        style={styles.splashImage}
+        resizeMode="contain"
+      />
+    </View>
+  );
+}
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
@@ -54,7 +66,7 @@ export default function RootLayout() {
     }
   }, [fontsLoaded, fontError]);
 
-  if (!fontsLoaded && !fontError) return null;
+  if (!fontsLoaded && !fontError) return <AppSplash />;
 
   return (
     <ErrorBoundary>
@@ -70,3 +82,16 @@ export default function RootLayout() {
     </ErrorBoundary>
   );
 }
+
+const styles = StyleSheet.create({
+  splashContainer: {
+    flex: 1,
+    backgroundColor: "#000000",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  splashImage: {
+    width: "70%",
+    height: "70%",
+  },
+});
