@@ -1,0 +1,17 @@
+{
+  "name": "Coffee Nest",
+  "short_name": "Coffee Nest",
+  "description": "Kaffee Röstereien und Bewertungen",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1A0F08",
+  "theme_color": "#1A0F08",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}
