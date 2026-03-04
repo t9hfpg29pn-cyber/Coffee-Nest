@@ -140,7 +140,7 @@ export default function RoasteriesScreen() {
                   styles.filterButton,
                   {
                     backgroundColor: selectedCity ? colors.tint : colors.surfaceElevated,
-                    borderColor: selectedCity ? colors.tint : colors.warmGray + "60",
+                    borderColor: selectedCity ? colors.tint : colors.border,
                     opacity: pressed ? 0.8 : 1,
                   },
                 ]}
