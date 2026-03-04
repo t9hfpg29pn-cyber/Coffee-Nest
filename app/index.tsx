@@ -137,8 +137,8 @@ export default function RoasteriesScreen() {
                 style={({ pressed }) => [
                   styles.filterButton,
                   {
-                    backgroundColor: selectedCity ? colors.tint : colors.surface,
-                    borderColor: selectedCity ? colors.tint : colors.border,
+                    backgroundColor: selectedCity ? colors.tint : colors.surfaceElevated,
+                    borderColor: selectedCity ? colors.tint : colors.warmGray + "60",
                     opacity: pressed ? 0.8 : 1,
                   },
                 ]}
@@ -460,8 +460,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 20,
-    borderWidth: 1,
+    borderWidth: 1.5,
     marginBottom: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 2,
   },
   filterButtonText: {
     fontSize: 13,
