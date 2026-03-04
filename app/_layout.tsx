@@ -17,7 +17,9 @@ import { Image, StyleSheet, View, useColorScheme } from "react-native";
 import Colors from "@/constants/colors";
 import { UserNamesProvider } from "@/context/UserNamesContext";
 
-SplashScreen.preventAutoHideAsync();
+try {
+  SplashScreen.preventAutoHideAsync();
+} catch {}
 
 function AppSplash() {
   return (
@@ -62,9 +64,16 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (fontsLoaded || fontError) {
-      SplashScreen.hideAsync();
+      SplashScreen.hideAsync().catch(() => {});
     }
   }, [fontsLoaded, fontError]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      SplashScreen.hideAsync().catch(() => {});
+    }, 4000);
+    return () => clearTimeout(timer);
+  }, []);
 
   if (!fontsLoaded && !fontError) return <AppSplash />;
 
