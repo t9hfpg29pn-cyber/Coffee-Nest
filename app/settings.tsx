@@ -5,6 +5,7 @@ import {
   TextInput,
   StyleSheet,
   Pressable,
+  Image,
   useColorScheme,
   Platform,
   Alert,
@@ -125,6 +126,14 @@ export default function SettingsScreen() {
         </View>
       </View>
 
+      <View style={styles.iconContainer}>
+        <Image
+          source={require("../assets/images/icon.png")}
+          style={styles.appIcon}
+          resizeMode="contain"
+        />
+      </View>
+
       <Text style={[styles.hint, { color: colors.textSecondary, fontFamily: "Inter_400Regular", marginBottom: bottomPad + 16 }]}>
         Die Namen werden überall in der App verwendet und lokal gespeichert.
       </Text>
@@ -201,6 +210,16 @@ const styles = StyleSheet.create({
   input: {
     fontSize: 17,
     paddingVertical: 0,
+  },
+  iconContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  appIcon: {
+    width: 120,
+    height: 120,
+    borderRadius: 24,
   },
   hint: {
     fontSize: 12,
