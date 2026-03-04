@@ -15,6 +15,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { queryClient } from "@/lib/query-client";
 import { useColorScheme } from "react-native";
 import Colors from "@/constants/colors";
+import { UserNamesProvider } from "@/context/UserNamesContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -34,6 +35,7 @@ function RootLayoutNav() {
       <Stack.Screen name="index" />
       <Stack.Screen name="roastery/[id]" />
       <Stack.Screen name="coffee/[id]" />
+      <Stack.Screen name="settings" />
     </Stack>
   );
 }
@@ -57,11 +59,13 @@ export default function RootLayout() {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <GestureHandlerRootView>
-          <KeyboardProvider>
-            <RootLayoutNav />
-          </KeyboardProvider>
-        </GestureHandlerRootView>
+        <UserNamesProvider>
+          <GestureHandlerRootView>
+            <KeyboardProvider>
+              <RootLayoutNav />
+            </KeyboardProvider>
+          </GestureHandlerRootView>
+        </UserNamesProvider>
       </QueryClientProvider>
     </ErrorBoundary>
   );

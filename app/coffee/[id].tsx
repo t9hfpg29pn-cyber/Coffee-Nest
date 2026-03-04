@@ -17,6 +17,7 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { getCoffeeById, updateCoffee, Coffee } from "@/lib/storage";
 import Colors from "@/constants/colors";
+import { useUserNames } from "@/context/UserNamesContext";
 
 function RatingSlider({
   label,
@@ -210,6 +211,7 @@ export default function CoffeeDetailScreen() {
   const isDark = colorScheme === "dark";
   const colors = isDark ? Colors.dark : Colors.light;
 
+  const { name1, name2 } = useUserNames();
   const [coffee, setCoffee] = useState<Coffee | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -340,7 +342,7 @@ export default function CoffeeDetailScreen() {
           <SectionHeader title="BEWERTUNGEN" color={colors.textSecondary} />
           <View style={{ gap: 20, marginTop: 8 }}>
             <RatingSlider
-              label="Hase Rating"
+              label={`${name1} Rating`}
               value={haseRating}
               min={0}
               max={10}
@@ -354,7 +356,7 @@ export default function CoffeeDetailScreen() {
             />
             <View style={{ height: 1, backgroundColor: colors.border }} />
             <RatingSlider
-              label="Dodo Rating"
+              label={`${name2} Rating`}
               value={dodoRating}
               min={0}
               max={10}

@@ -18,6 +18,7 @@ import { Ionicons, Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { getRoasteries, saveRoastery, deleteRoastery, getCoffees, Roastery } from "@/lib/storage";
 import Colors from "@/constants/colors";
+import { useUserNames } from "@/context/UserNamesContext";
 
 export default function RoasteriesScreen() {
   const insets = useSafeAreaInsets();
@@ -25,6 +26,7 @@ export default function RoasteriesScreen() {
   const isDark = colorScheme === "dark";
   const colors = isDark ? Colors.dark : Colors.light;
 
+  const { name1, name2 } = useUserNames();
   const [roasteries, setRoasteries] = useState<Roastery[]>([]);
   const [coffeeCounts, setCoffeeCounts] = useState<Record<string, number>>({});
   const [avgRatings, setAvgRatings] = useState<Record<string, { hase: number; dodo: number } | null>>({});
@@ -163,18 +165,33 @@ export default function RoasteriesScreen() {
             )}
           </View>
         </View>
-        <Pressable
-          onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            setShowModal(true);
-          }}
-          style={({ pressed }) => [
-            styles.addButton,
-            { backgroundColor: colors.tint, opacity: pressed ? 0.85 : 1 },
-          ]}
-        >
-          <Ionicons name="add" size={22} color="#fff" />
-        </Pressable>
+        <View style={styles.headerActions}>
+          <Pressable
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              router.push("/settings");
+            }}
+            style={({ pressed }) => [
+              styles.settingsBtn,
+              { backgroundColor: colors.surface, opacity: pressed ? 0.7 : 1 },
+            ]}
+            hitSlop={8}
+          >
+            <Ionicons name="settings-outline" size={18} color={colors.textSecondary} />
+          </Pressable>
+          <Pressable
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              setShowModal(true);
+            }}
+            style={({ pressed }) => [
+              styles.addButton,
+              { backgroundColor: colors.tint, opacity: pressed ? 0.85 : 1 },
+            ]}
+          >
+            <Ionicons name="add" size={22} color="#fff" />
+          </Pressable>
+        </View>
       </View>
 
       {/* Dropdown Modal */}
@@ -330,7 +347,7 @@ export default function RoasteriesScreen() {
                   <View style={styles.avgRow}>
                     <View style={styles.avgChip}>
                       <Text style={[styles.avgLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
-                        Hase
+                        {name1}
                       </Text>
                       <Text style={[styles.avgValue, { color: colors.tint, fontFamily: "Inter_700Bold" }]}>
                         {avgRatings[item.id]!.hase}
@@ -339,7 +356,7 @@ export default function RoasteriesScreen() {
                     <View style={[styles.avgDivider, { backgroundColor: colors.border }]} />
                     <View style={styles.avgChip}>
                       <Text style={[styles.avgLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
-                        Dodo
+                        {name2}
                       </Text>
                       <Text style={[styles.avgValue, { color: colors.tint, fontFamily: "Inter_700Bold" }]}>
                         {avgRatings[item.id]!.dodo}
@@ -434,6 +451,20 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
     paddingHorizontal: 20,
     paddingBottom: 16,
+  },
+  headerActions: {
+    flexDirection: "column",
+    alignItems: "flex-end",
+    justifyContent: "space-between",
+    gap: 8,
+    paddingBottom: 2,
+  },
+  settingsBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
   },
   headerLeft: {
     flex: 1,

@@ -18,6 +18,7 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { getCoffees, saveCoffee, deleteCoffee, Coffee } from "@/lib/storage";
 import Colors from "@/constants/colors";
+import { useUserNames } from "@/context/UserNamesContext";
 
 function RatingDots({ value, max }: { value: number; max: number }) {
   const colorScheme = useColorScheme();
@@ -47,6 +48,7 @@ export default function RoasteryScreen() {
   const isDark = colorScheme === "dark";
   const colors = isDark ? Colors.dark : Colors.light;
 
+  const { name1, name2 } = useUserNames();
   const [coffees, setCoffees] = useState<Coffee[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [newName, setNewName] = useState("");
@@ -193,7 +195,7 @@ export default function RoasteryScreen() {
               <View style={styles.cardRatings}>
                 <View style={styles.ratingRow}>
                   <Text style={[styles.ratingLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
-                    Hase
+                    {name1}
                   </Text>
                   <View style={styles.ratingValue}>
                     <Text style={[styles.ratingNum, { color: colors.tint, fontFamily: "Inter_700Bold" }]}>
@@ -207,7 +209,7 @@ export default function RoasteryScreen() {
                 <View style={[styles.ratingDivider, { backgroundColor: colors.border }]} />
                 <View style={styles.ratingRow}>
                   <Text style={[styles.ratingLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
-                    Dodo
+                    {name2}
                   </Text>
                   <View style={styles.ratingValue}>
                     <Text style={[styles.ratingNum, { color: colors.tint, fontFamily: "Inter_700Bold" }]}>
