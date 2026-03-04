@@ -165,33 +165,18 @@ export default function RoasteriesScreen() {
             )}
           </View>
         </View>
-        <View style={styles.headerActions}>
-          <Pressable
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              router.push("/settings");
-            }}
-            style={({ pressed }) => [
-              styles.settingsBtn,
-              { backgroundColor: colors.surface, opacity: pressed ? 0.7 : 1 },
-            ]}
-            hitSlop={8}
-          >
-            <Ionicons name="settings-outline" size={18} color={colors.textSecondary} />
-          </Pressable>
-          <Pressable
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              setShowModal(true);
-            }}
-            style={({ pressed }) => [
-              styles.addButton,
-              { backgroundColor: colors.tint, opacity: pressed ? 0.85 : 1 },
-            ]}
-          >
-            <Ionicons name="add" size={22} color="#fff" />
-          </Pressable>
-        </View>
+        <Pressable
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            setShowModal(true);
+          }}
+          style={({ pressed }) => [
+            styles.addButton,
+            { backgroundColor: colors.tint, opacity: pressed ? 0.85 : 1 },
+          ]}
+        >
+          <Ionicons name="add" size={22} color="#fff" />
+        </Pressable>
       </View>
 
       {/* Dropdown Modal */}
@@ -439,6 +424,26 @@ export default function RoasteriesScreen() {
         </View>
         </KeyboardAvoidingView>
       </Modal>
+
+      {/* Floating settings button */}
+      <Pressable
+        onPress={() => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          router.push("/settings");
+        }}
+        style={({ pressed }) => [
+          styles.fabSettings,
+          {
+            backgroundColor: colors.surface,
+            borderColor: colors.border,
+            bottom: bottomPad + 20,
+            opacity: pressed ? 0.7 : 1,
+          },
+        ]}
+        hitSlop={8}
+      >
+        <Ionicons name="settings-outline" size={18} color={colors.textSecondary} />
+      </Pressable>
     </View>
   );
 }
@@ -452,19 +457,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 16,
   },
-  headerActions: {
-    flexDirection: "column",
-    alignItems: "flex-end",
-    justifyContent: "space-between",
-    gap: 8,
-    paddingBottom: 2,
-  },
-  settingsBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+  fabSettings: {
+    position: "absolute",
+    right: 20,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     alignItems: "center",
     justifyContent: "center",
+    borderWidth: 1,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 4,
   },
   headerLeft: {
     flex: 1,
