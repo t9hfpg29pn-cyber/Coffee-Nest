@@ -126,17 +126,17 @@ export default function SettingsScreen() {
         </View>
       </View>
 
+      <Text style={[styles.hint, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+        Die Namen werden überall in der App verwendet und lokal gespeichert.
+      </Text>
+
       <View style={styles.iconContainer}>
         <Image
           source={require("../assets/images/icon.png")}
           style={styles.appIcon}
-          resizeMode="contain"
+          resizeMode="cover"
         />
       </View>
-
-      <Text style={[styles.hint, { color: colors.textSecondary, fontFamily: "Inter_400Regular", marginBottom: bottomPad + 16 }]}>
-        Die Namen werden überall in der App verwendet und lokal gespeichert.
-      </Text>
     </View>
   );
 }
@@ -211,19 +211,19 @@ const styles = StyleSheet.create({
     fontSize: 17,
     paddingVertical: 0,
   },
-  iconContainer: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  appIcon: {
-    width: 120,
-    height: 120,
-    borderRadius: 24,
-  },
   hint: {
     fontSize: 12,
     marginHorizontal: 20,
     lineHeight: 18,
+    marginBottom: 8,
+  },
+  iconContainer: {
+    flex: 1,
+    justifyContent: "flex-end",
+    overflow: "hidden",
+  },
+  appIcon: {
+    width: "100%",
+    aspectRatio: 1,
   },
 });
