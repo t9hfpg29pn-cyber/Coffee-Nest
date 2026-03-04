@@ -85,7 +85,7 @@ export default function SettingsScreen() {
           </View>
           <View style={styles.fieldContent}>
             <Text style={[styles.fieldHint, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
-              Person 1 (war: Hase)
+              Person 1
             </Text>
             <TextInput
               value={draft1}
@@ -108,7 +108,7 @@ export default function SettingsScreen() {
           </View>
           <View style={styles.fieldContent}>
             <Text style={[styles.fieldHint, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
-              Person 2 (war: Dodo)
+              Person 2
             </Text>
             <TextInput
               value={draft2}

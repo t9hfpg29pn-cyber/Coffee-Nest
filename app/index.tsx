@@ -129,7 +129,7 @@ export default function RoasteriesScreen() {
           />
           <View style={styles.headerTextBlock}>
           <Text style={[styles.headerLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
-            KAFFEE JOURNAL
+            COFFEE NEST
           </Text>
           <View style={styles.headerTitleRow}>
             <Text style={[styles.headerTitle, { color: colors.text, fontFamily: "Inter_700Bold" }]}>
