@@ -161,6 +161,10 @@ function serveLandingPage({
 }
 
 function configureExpoAndLanding(app: express.Application) {
+  const webDistPath = path.resolve(process.cwd(), "web-dist");
+  const webDistIndex = path.join(webDistPath, "index.html");
+  const hasWebDist = fs.existsSync(webDistIndex);
+
   const templatePath = path.resolve(
     process.cwd(),
     "server",
@@ -170,35 +174,53 @@ function configureExpoAndLanding(app: express.Application) {
   const landingPageTemplate = fs.readFileSync(templatePath, "utf-8");
   const appName = getAppName();
 
-  log("Serving static Expo files with dynamic manifest routing");
+  log(
+    hasWebDist
+      ? "Serving Expo web app (PWA) from web-dist"
+      : "Serving static Expo files with dynamic manifest routing",
+  );
 
   app.use((req: Request, res: Response, next: NextFunction) => {
     if (req.path.startsWith("/api")) {
       return next();
     }
 
-    if (req.path !== "/" && req.path !== "/manifest") {
-      return next();
-    }
-
+    // Native Expo Go manifest requests
     const platform = req.header("expo-platform");
-    if (platform && (platform === "ios" || platform === "android")) {
+    if (
+      platform &&
+      (platform === "ios" || platform === "android") &&
+      (req.path === "/" || req.path === "/manifest")
+    ) {
       return serveExpoManifest(platform, res);
     }
 
-    if (req.path === "/") {
-      return serveLandingPage({
-        req,
-        res,
-        landingPageTemplate,
-        appName,
-      });
+    // Serve the web app (PWA) for all browser requests
+    if (hasWebDist) {
+      const accept = req.header("accept") || "";
+      const isAsset = /\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|json|map)$/i.test(req.path);
+
+      // Let static middleware handle asset files; for all other HTML-accepting routes → SPA index
+      if (!isAsset && accept.includes("text/html")) {
+        return res.sendFile(webDistIndex);
+      }
+      return next();
+    }
+
+    // Fallback: landing page (when no web-dist is built)
+    if (req.path === "/" || req.path === "/manifest") {
+      if (req.path === "/") {
+        return serveLandingPage({ req, res, landingPageTemplate, appName });
+      }
     }
 
     next();
   });
 
   app.use("/assets", express.static(path.resolve(process.cwd(), "assets")));
+  if (hasWebDist) {
+    app.use(express.static(webDistPath));
+  }
   app.use(express.static(path.resolve(process.cwd(), "static-build")));
 
   log("Expo routing: Checking expo-platform header on / and /manifest");
