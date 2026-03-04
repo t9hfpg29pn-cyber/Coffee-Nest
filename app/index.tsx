@@ -1,9 +1,10 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import {
   View,
   Text,
   StyleSheet,
   FlatList,
+  ScrollView,
   Pressable,
   TextInput,
   Modal,
@@ -28,10 +29,24 @@ export default function RoasteriesScreen() {
   const [roasteries, setRoasteries] = useState<Roastery[]>([]);
   const [coffeeCounts, setCoffeeCounts] = useState<Record<string, number>>({});
   const [avgRatings, setAvgRatings] = useState<Record<string, { hase: number; dodo: number } | null>>({});
+  const [selectedCity, setSelectedCity] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [newName, setNewName] = useState("");
   const [newLocation, setNewLocation] = useState("");
   const [loading, setLoading] = useState(true);
+
+  const cities = useMemo(() => {
+    const seen = new Set<string>();
+    for (const r of roasteries) {
+      if (r.location?.trim()) seen.add(r.location.trim());
+    }
+    return Array.from(seen).sort();
+  }, [roasteries]);
+
+  const filteredRoasteries = useMemo(() => {
+    if (!selectedCity) return roasteries;
+    return roasteries.filter((r) => r.location?.trim() === selectedCity);
+  }, [roasteries, selectedCity]);
 
   const load = useCallback(async () => {
     const data = await getRoasteries();
@@ -117,6 +132,69 @@ export default function RoasteriesScreen() {
         </Pressable>
       </View>
 
+      {!loading && cities.length >= 2 && (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterBar}
+          keyboardShouldPersistTaps="handled"
+        >
+          <Pressable
+            onPress={() => {
+              Haptics.selectionAsync();
+              setSelectedCity(null);
+            }}
+            style={[
+              styles.filterChip,
+              {
+                backgroundColor: selectedCity === null ? colors.tint : colors.surface,
+                borderColor: selectedCity === null ? colors.tint : colors.border,
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.filterChipText,
+                {
+                  color: selectedCity === null ? "#fff" : colors.textSecondary,
+                  fontFamily: selectedCity === null ? "Inter_600SemiBold" : "Inter_500Medium",
+                },
+              ]}
+            >
+              Alle
+            </Text>
+          </Pressable>
+          {cities.map((city) => (
+            <Pressable
+              key={city}
+              onPress={() => {
+                Haptics.selectionAsync();
+                setSelectedCity(city === selectedCity ? null : city);
+              }}
+              style={[
+                styles.filterChip,
+                {
+                  backgroundColor: selectedCity === city ? colors.tint : colors.surface,
+                  borderColor: selectedCity === city ? colors.tint : colors.border,
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.filterChipText,
+                  {
+                    color: selectedCity === city ? "#fff" : colors.textSecondary,
+                    fontFamily: selectedCity === city ? "Inter_600SemiBold" : "Inter_500Medium",
+                  },
+                ]}
+              >
+                {city}
+              </Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+      )}
+
       {loading ? (
         <View style={styles.centerState}>
           <View style={[styles.skeletonCard, { backgroundColor: colors.surface }]} />
@@ -133,9 +211,16 @@ export default function RoasteriesScreen() {
             Tippe auf + um deine erste Rösterei hinzuzufügen
           </Text>
         </View>
+      ) : filteredRoasteries.length === 0 ? (
+        <View style={styles.centerState}>
+          <Ionicons name="location-outline" size={52} color={colors.textSecondary} />
+          <Text style={[styles.emptyTitle, { color: colors.text, fontFamily: "Inter_600SemiBold" }]}>
+            Keine Röstereien in {selectedCity}
+          </Text>
+        </View>
       ) : (
         <FlatList
-          data={roasteries}
+          data={filteredRoasteries}
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ padding: 20, paddingBottom: bottomPad + 20 }}
           ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
@@ -333,6 +418,21 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
+  },
+  filterBar: {
+    paddingHorizontal: 20,
+    paddingBottom: 12,
+    gap: 8,
+    flexDirection: "row",
+  },
+  filterChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  filterChipText: {
+    fontSize: 13,
   },
   cardContent: { flex: 1, gap: 2 },
   cardTitle: { fontSize: 17 },
