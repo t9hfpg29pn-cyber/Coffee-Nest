@@ -55,7 +55,6 @@ export default function RoasteriesScreen() {
 
   const load = useCallback(async () => {
     const data = await getRoasteries();
-    setRoasteries(data.reverse());
     const counts: Record<string, number> = {};
     const avgs: Record<string, { hase: number; dodo: number } | null> = {};
     for (const r of data) {
@@ -69,6 +68,8 @@ export default function RoasteriesScreen() {
         avgs[r.id] = null;
       }
     }
+    data.sort((a, b) => (counts[b.id] ?? 0) - (counts[a.id] ?? 0));
+    setRoasteries(data);
     setCoffeeCounts(counts);
     setAvgRatings(avgs);
     setLoading(false);
@@ -337,6 +338,10 @@ export default function RoasteriesScreen() {
                 </Text>
                 {avgRatings[item.id] ? (
                   <View style={styles.avgRow}>
+                    <Text style={[styles.avgScoreLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
+                      ⌀ Score
+                    </Text>
+                    <View style={[styles.avgDivider, { backgroundColor: colors.border }]} />
                     <View style={styles.avgChip}>
                       <Text style={[styles.avgLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
                         {name1}
@@ -614,6 +619,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "baseline",
     gap: 4,
+  },
+  avgScoreLabel: {
+    fontSize: 11,
+    letterSpacing: 0.3,
   },
   avgLabel: {
     fontSize: 11,
