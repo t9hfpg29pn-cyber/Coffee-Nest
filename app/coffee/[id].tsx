@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   Pressable,
   TextInput,
   Alert,
@@ -11,6 +10,7 @@ import {
   Platform,
   ActivityIndicator,
 } from "react-native";
+import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -348,10 +348,11 @@ export default function CoffeeDetailScreen() {
         </Pressable>
       </View>
 
-      <ScrollView
+      <KeyboardAwareScrollViewCompat
         contentContainerStyle={{ padding: 20, paddingBottom: bottomPad + 100, gap: 24 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        bottomOffset={24}
       >
         <View style={[styles.section, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
           <SectionHeader title="KAFFEE" color={colors.textSecondary} />
@@ -528,7 +529,7 @@ export default function CoffeeDetailScreen() {
             </>
           )}
         </Pressable>
-      </ScrollView>
+      </KeyboardAwareScrollViewCompat>
     </View>
   );
 }
