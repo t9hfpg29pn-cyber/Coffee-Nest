@@ -15,7 +15,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { getCoffeeById, updateCoffee, Coffee } from "@/lib/storage";
+import { getCoffeeById, updateCoffee, deleteCoffee, Coffee } from "@/lib/storage";
 import Colors from "@/constants/colors";
 import { useUserNames } from "@/context/UserNamesContext";
 
@@ -268,6 +268,25 @@ export default function CoffeeDetailScreen() {
     router.back();
   };
 
+  const handleDelete = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    Alert.alert(
+      "Kaffee löschen",
+      "Soll der Kaffee wirklich gelöscht werden?",
+      [
+        { text: "Abbrechen", style: "cancel" },
+        {
+          text: "Löschen",
+          style: "destructive",
+          onPress: async () => {
+            await deleteCoffee(id);
+            router.back();
+          },
+        },
+      ]
+    );
+  };
+
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
 
@@ -300,6 +319,16 @@ export default function CoffeeDetailScreen() {
         <Text style={[styles.headerTitle, { color: colors.text, fontFamily: "Inter_700Bold" }]} numberOfLines={1}>
           {name || "Kaffee"}
         </Text>
+        <Pressable
+          onPress={handleDelete}
+          disabled={saving}
+          style={({ pressed }) => [
+            styles.deleteHeaderButton,
+            { opacity: pressed ? 0.7 : saving ? 0.4 : 1 },
+          ]}
+        >
+          <Ionicons name="close" size={20} color="#E05252" />
+        </Pressable>
         <Pressable
           onPress={handleSave}
           disabled={saving}
@@ -523,6 +552,15 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 20,
     lineHeight: 26,
+  },
+  deleteHeaderButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1.5,
+    borderColor: "#E05252",
   },
   saveHeaderButton: {
     width: 36,

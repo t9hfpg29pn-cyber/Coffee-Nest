@@ -16,7 +16,14 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useLocalSearchParams, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { getCoffees, saveCoffee, deleteCoffee, Coffee } from "@/lib/storage";
+import {
+  getCoffees,
+  saveCoffee,
+  deleteCoffee,
+  getRoasteries,
+  updateRoastery,
+  Coffee,
+} from "@/lib/storage";
 import Colors from "@/constants/colors";
 import { useUserNames } from "@/context/UserNamesContext";
 
@@ -42,7 +49,7 @@ function RatingDots({ value, max }: { value: number; max: number }) {
 }
 
 export default function RoasteryScreen() {
-  const { id, name } = useLocalSearchParams<{ id: string; name: string }>();
+  const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
@@ -51,11 +58,25 @@ export default function RoasteryScreen() {
   const { name1, name2 } = useUserNames();
   const [coffees, setCoffees] = useState<Coffee[]>([]);
   const [showModal, setShowModal] = useState(false);
+  const [showEditRoastery, setShowEditRoastery] = useState(false);
   const [newName, setNewName] = useState("");
   const [loading, setLoading] = useState(true);
 
+  const [roasteryName, setRoasteryName] = useState("");
+  const [roasteryLocation, setRoasteryLocation] = useState("");
+  const [editName, setEditName] = useState("");
+  const [editLocation, setEditLocation] = useState("");
+
   const load = useCallback(async () => {
-    const data = await getCoffees(id);
+    const [data, roasteries] = await Promise.all([
+      getCoffees(id),
+      getRoasteries(),
+    ]);
+    const roastery = roasteries.find((r) => r.id === id);
+    if (roastery) {
+      setRoasteryName(roastery.name);
+      setRoasteryLocation(roastery.location ?? "");
+    }
     setCoffees(data.reverse());
     setLoading(false);
   }, [id]);
@@ -100,6 +121,22 @@ export default function RoasteryScreen() {
     ]);
   };
 
+  const openEditRoastery = () => {
+    setEditName(roasteryName);
+    setEditLocation(roasteryLocation);
+    setShowEditRoastery(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  };
+
+  const handleSaveRoastery = async () => {
+    if (!editName.trim()) return;
+    await updateRoastery(id, editName.trim(), editLocation.trim() || undefined);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    setRoasteryName(editName.trim());
+    setRoasteryLocation(editLocation.trim());
+    setShowEditRoastery(false);
+  };
+
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
 
@@ -112,14 +149,23 @@ export default function RoasteryScreen() {
         >
           <Ionicons name="chevron-back" size={26} color={colors.text} />
         </Pressable>
-        <View style={styles.headerCenter}>
+        <Pressable
+          onPress={openEditRoastery}
+          style={({ pressed }) => [styles.headerCenter, { opacity: pressed ? 0.7 : 1 }]}
+        >
           <Text style={[styles.headerLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
             RÖSTEREI
           </Text>
-          <Text style={[styles.headerTitle, { color: colors.text, fontFamily: "Inter_700Bold" }]} numberOfLines={1}>
-            {name}
-          </Text>
-        </View>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+            <Text
+              style={[styles.headerTitle, { color: colors.text, fontFamily: "Inter_700Bold" }]}
+              numberOfLines={1}
+            >
+              {roasteryName}
+            </Text>
+            <Ionicons name="pencil-outline" size={16} color={colors.textSecondary} style={{ marginBottom: 2 }} />
+          </View>
+        </Pressable>
         <Pressable
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -226,6 +272,7 @@ export default function RoasteryScreen() {
         />
       )}
 
+      {/* Modal: Neuer Kaffee */}
       <Modal visible={showModal} animationType="slide" transparent presentationStyle="overFullScreen">
         <KeyboardAvoidingView behavior="padding" style={{ flex: 1, justifyContent: "flex-end" }}>
           <Pressable style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)" }} onPress={() => setShowModal(false)} />
@@ -268,6 +315,77 @@ export default function RoasteryScreen() {
             >
               <Text style={[styles.saveButtonText, { fontFamily: "Inter_600SemiBold" }]}>
                 Hinzufügen
+              </Text>
+            </Pressable>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      {/* Modal: Rösterei bearbeiten */}
+      <Modal visible={showEditRoastery} animationType="slide" transparent presentationStyle="overFullScreen">
+        <KeyboardAvoidingView behavior="padding" style={{ flex: 1, justifyContent: "flex-end" }}>
+          <Pressable
+            style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)" }}
+            onPress={() => setShowEditRoastery(false)}
+          />
+          <View style={[styles.modalSheet, { backgroundColor: colors.surfaceElevated, paddingBottom: bottomPad + 20 }]}>
+            <View style={styles.modalHandle} />
+            <Text style={[styles.modalTitle, { color: colors.text, fontFamily: "Inter_700Bold" }]}>
+              Rösterei bearbeiten
+            </Text>
+            <Text style={[styles.inputLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
+              Name *
+            </Text>
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  color: colors.text,
+                  fontFamily: "Inter_400Regular",
+                },
+              ]}
+              placeholder="Name der Rösterei"
+              placeholderTextColor={colors.textSecondary}
+              value={editName}
+              onChangeText={setEditName}
+              autoFocus
+              returnKeyType="next"
+            />
+            <Text style={[styles.inputLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
+              Ort
+            </Text>
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  color: colors.text,
+                  fontFamily: "Inter_400Regular",
+                },
+              ]}
+              placeholder="z.B. Berlin"
+              placeholderTextColor={colors.textSecondary}
+              value={editLocation}
+              onChangeText={setEditLocation}
+              returnKeyType="done"
+              onSubmitEditing={handleSaveRoastery}
+            />
+            <Pressable
+              onPress={handleSaveRoastery}
+              style={({ pressed }) => [
+                styles.saveButton,
+                {
+                  backgroundColor: editName.trim() ? colors.tint : colors.border,
+                  opacity: pressed ? 0.85 : 1,
+                },
+              ]}
+              disabled={!editName.trim()}
+            >
+              <Text style={[styles.saveButtonText, { fontFamily: "Inter_600SemiBold" }]}>
+                Speichern
               </Text>
             </Pressable>
           </View>
@@ -385,10 +503,6 @@ const styles = StyleSheet.create({
   ratingDivider: {
     width: 1,
     marginVertical: 4,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.4)",
   },
   modalSheet: {
     borderTopLeftRadius: 24,
