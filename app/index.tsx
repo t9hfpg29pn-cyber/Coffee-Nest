@@ -8,6 +8,7 @@ import {
   TextInput,
   Modal,
   Alert,
+  Image,
   useColorScheme,
   Platform,
 } from "react-native";
@@ -122,6 +123,11 @@ export default function RoasteriesScreen() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { paddingTop: topPad + 16 }]}>
         <View style={styles.headerLeft}>
+          <Image
+            source={require("../assets/images/icon.png")}
+            style={styles.headerLogo}
+          />
+          <View style={styles.headerTextBlock}>
           <Text style={[styles.headerLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
             KAFFEE JOURNAL
           </Text>
@@ -163,6 +169,7 @@ export default function RoasteriesScreen() {
                 />
               </Pressable>
             )}
+          </View>
           </View>
         </View>
         <Pressable
@@ -473,6 +480,18 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   headerLeft: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "flex-end",
+    gap: 12,
+  },
+  headerLogo: {
+    width: 44,
+    height: 44,
+    borderRadius: 10,
+    marginBottom: 4,
+  },
+  headerTextBlock: {
     flex: 1,
   },
   headerTitleRow: {
