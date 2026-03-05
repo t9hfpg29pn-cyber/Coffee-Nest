@@ -270,6 +270,12 @@ export default function CoffeeDetailScreen() {
 
   const handleDelete = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    if (Platform.OS === "web") {
+      if ((window as any).confirm("Soll der Kaffee wirklich gelöscht werden?")) {
+        deleteCoffee(id).then(() => router.back());
+      }
+      return;
+    }
     Alert.alert(
       "Kaffee löschen",
       "Soll der Kaffee wirklich gelöscht werden?",
