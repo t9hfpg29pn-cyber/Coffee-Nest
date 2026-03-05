@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -15,7 +15,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { getCoffeeById, updateCoffee, deleteCoffee, Coffee } from "@/lib/storage";
+import { getCoffeeById, updateCoffee, deleteCoffee, getGrinders, Coffee } from "@/lib/storage";
 import Colors from "@/constants/colors";
 import { useUserNames } from "@/context/UserNamesContext";
 
@@ -128,7 +128,6 @@ function ScaleSlider({
   surfaceColor: string;
 }) {
   const steps = [1, 2, 3, 4, 5];
-  const labels = ["1", "2", "3", "4", "5"];
 
   return (
     <View style={{ gap: 10 }}>
@@ -168,7 +167,7 @@ function ScaleSlider({
                 fontSize: 16,
               }}
             >
-              {labels[step - 1]}
+              {step}
             </Text>
           </Pressable>
         ))}
@@ -204,6 +203,71 @@ function SectionHeader({ title, color }: { title: string; color: string }) {
   );
 }
 
+function GrinderPicker({
+  grinders,
+  selected,
+  onSelect,
+  color,
+  textColor,
+  borderColor,
+  surfaceColor,
+}: {
+  grinders: string[];
+  selected: string;
+  onSelect: (v: string) => void;
+  color: string;
+  textColor: string;
+  borderColor: string;
+  surfaceColor: string;
+}) {
+  return (
+    <View style={{ gap: 10 }}>
+      <Text style={{ color: textColor, fontFamily: "Inter_600SemiBold", fontSize: 15 }}>
+        Kaffeemühle
+      </Text>
+      <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
+        {grinders.map((g) => {
+          const active = g === selected;
+          return (
+            <Pressable
+              key={g}
+              onPress={() => {
+                Haptics.selectionAsync();
+                onSelect(g);
+              }}
+              style={({ pressed }) => ({
+                paddingHorizontal: 16,
+                paddingVertical: 10,
+                borderRadius: 12,
+                backgroundColor: active ? color : surfaceColor,
+                borderWidth: 1.5,
+                borderColor: active ? color : borderColor,
+                opacity: pressed ? 0.8 : 1,
+                transform: [{ scale: pressed ? 0.97 : 1 }],
+              })}
+            >
+              <Text
+                style={{
+                  color: active ? "#fff" : textColor,
+                  fontFamily: active ? "Inter_700Bold" : "Inter_500Medium",
+                  fontSize: 15,
+                }}
+              >
+                {g}
+              </Text>
+            </Pressable>
+          );
+        })}
+        {grinders.length === 0 && (
+          <Text style={{ color: textColor, fontFamily: "Inter_400Regular", fontSize: 14, opacity: 0.5 }}>
+            Keine Mühlen konfiguriert
+          </Text>
+        )}
+      </View>
+    </View>
+  );
+}
+
 export default function CoffeeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
@@ -217,10 +281,12 @@ export default function CoffeeDetailScreen() {
   const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
+  const [grinders, setGrinders] = useState<string[]>([]);
   const [name, setName] = useState("");
   const [haseRating, setHaseRating] = useState(5);
   const [dodoRating, setDodoRating] = useState(5);
-  const [grindLevel, setGrindLevel] = useState(3);
+  const [grinderName, setGrinderName] = useState("");
+  const [grindLevelText, setGrindLevelText] = useState("0");
   const [aroma, setAroma] = useState(3);
   const [aromaDescription, setAromaDescription] = useState("");
   const [notes, setNotes] = useState("");
@@ -228,23 +294,40 @@ export default function CoffeeDetailScreen() {
 
   useEffect(() => {
     (async () => {
-      const data = await getCoffeeById(id);
+      const [data, grindersData] = await Promise.all([
+        getCoffeeById(id),
+        getGrinders(),
+      ]);
+      setGrinders(grindersData);
       if (data) {
         setCoffee(data);
         setName(data.name);
         setHaseRating(data.haseRating);
         setDodoRating(data.dodoRating);
-        setGrindLevel(data.grindLevel);
+        setGrinderName(data.grinderName ?? (grindersData[0] ?? ""));
+        setGrindLevelText(
+          data.grindLevel != null && data.grindLevel > 0
+            ? String(data.grindLevel)
+            : "0"
+        );
         setAroma(data.aroma);
         setAromaDescription(data.aromaDescription);
         setNotes(data.notes);
         setPricePerKg(data.pricePerKg);
+      } else {
+        setGrinderName(grindersData[0] ?? "");
       }
       setLoading(false);
     })();
   }, [id]);
 
   const markChanged = () => setHasChanges(true);
+
+  const parseGrindLevel = (text: string): number => {
+    const val = parseFloat(text.replace(",", "."));
+    if (isNaN(val)) return 0;
+    return Math.round(Math.min(50, Math.max(0, val)) * 10) / 10;
+  };
 
   const handleSave = async () => {
     if (!name.trim()) {
@@ -257,7 +340,8 @@ export default function CoffeeDetailScreen() {
       name: name.trim(),
       haseRating,
       dodoRating,
-      grindLevel,
+      grinderName,
+      grindLevel: parseGrindLevel(grindLevelText),
       aroma,
       aromaDescription,
       notes,
@@ -410,18 +494,44 @@ export default function CoffeeDetailScreen() {
         <View style={[styles.section, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
           <SectionHeader title="EIGENSCHAFTEN" color={colors.textSecondary} />
           <View style={{ gap: 20, marginTop: 8 }}>
-            <ScaleSlider
-              label="Mahlgrad"
-              sublabel="(fein – grob)"
-              value={grindLevel}
-              onChange={(v) => { setGrindLevel(v); markChanged(); }}
-              minLabel="fein"
-              maxLabel="grob"
+            <GrinderPicker
+              grinders={grinders}
+              selected={grinderName}
+              onSelect={(v) => { setGrinderName(v); markChanged(); }}
               color={colors.tint}
               textColor={colors.text}
               borderColor={colors.border}
               surfaceColor={colors.surface}
             />
+            <View style={{ gap: 8 }}>
+              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                <Text style={{ color: colors.text, fontFamily: "Inter_600SemiBold", fontSize: 15 }}>
+                  Mahlgrad
+                </Text>
+                <Text style={{ color: colors.textSecondary, fontFamily: "Inter_400Regular", fontSize: 12, opacity: 0.7 }}>
+                  0 – 50
+                </Text>
+              </View>
+              <View style={[styles.grindInputRow, { borderColor: colors.border, backgroundColor: colors.surface }]}>
+                <TextInput
+                  style={[styles.grindInput, { color: colors.text, fontFamily: "Inter_600SemiBold" }]}
+                  value={grindLevelText}
+                  onChangeText={(v) => {
+                    const cleaned = v.replace(/[^0-9.,]/g, "");
+                    setGrindLevelText(cleaned);
+                    markChanged();
+                  }}
+                  onBlur={() => {
+                    const parsed = parseGrindLevel(grindLevelText);
+                    setGrindLevelText(String(parsed));
+                  }}
+                  keyboardType="decimal-pad"
+                  placeholder="0"
+                  placeholderTextColor={colors.textSecondary}
+                  selectTextOnFocus
+                />
+              </View>
+            </View>
             <View style={{ height: 1, backgroundColor: colors.border }} />
             <ScaleSlider
               label="Aroma"
@@ -496,10 +606,7 @@ export default function CoffeeDetailScreen() {
             </Text>
             <View style={[styles.priceInputRow, { borderColor: colors.border, backgroundColor: colors.surface }]}>
               <TextInput
-                style={[
-                  styles.priceInput,
-                  { color: colors.text, fontFamily: "Inter_400Regular" },
-                ]}
+                style={[styles.priceInput, { color: colors.text, fontFamily: "Inter_400Regular" }]}
                 placeholder="z.B. 24,90"
                 placeholderTextColor={colors.textSecondary}
                 keyboardType="decimal-pad"
@@ -598,6 +705,16 @@ const styles = StyleSheet.create({
     fontSize: 15,
     minHeight: 80,
     textAlignVertical: "top",
+  },
+  grindInputRow: {
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    height: 50,
+    justifyContent: "center",
+  },
+  grindInput: {
+    fontSize: 22,
   },
   priceInputRow: {
     flexDirection: "row",

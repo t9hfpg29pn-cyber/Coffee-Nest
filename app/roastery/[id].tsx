@@ -22,6 +22,7 @@ import {
   deleteCoffee,
   getRoasteries,
   updateRoastery,
+  getGrinders,
   Coffee,
 } from "@/lib/storage";
 import Colors from "@/constants/colors";
@@ -66,12 +67,15 @@ export default function RoasteryScreen() {
   const [roasteryLocation, setRoasteryLocation] = useState("");
   const [editName, setEditName] = useState("");
   const [editLocation, setEditLocation] = useState("");
+  const [defaultGrinder, setDefaultGrinder] = useState("");
 
   const load = useCallback(async () => {
-    const [data, roasteries] = await Promise.all([
+    const [data, roasteries, grinders] = await Promise.all([
       getCoffees(id),
       getRoasteries(),
+      getGrinders(),
     ]);
+    setDefaultGrinder(grinders[0] ?? "");
     const roastery = roasteries.find((r) => r.id === id);
     if (roastery) {
       setRoasteryName(roastery.name);
@@ -100,7 +104,8 @@ export default function RoasteryScreen() {
       name: newName.trim(),
       haseRating: 5,
       dodoRating: 5,
-      grindLevel: 3,
+      grinderName: defaultGrinder,
+      grindLevel: 0,
       aroma: 3,
       aromaDescription: "",
       notes: "",

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -20,7 +20,7 @@ import * as Sharing from "expo-sharing";
 import * as DocumentPicker from "expo-document-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useUserNames } from "@/context/UserNamesContext";
-import { getRoasteries, getAllCoffees } from "@/lib/storage";
+import { getRoasteries, getAllCoffees, getGrinders, saveGrinders } from "@/lib/storage";
 import Colors from "@/constants/colors";
 
 function showAlert(title: string, message: string, buttons?: { text: string; style?: string; onPress?: () => void }[]) {
@@ -51,12 +51,44 @@ export default function SettingsScreen() {
   const [draft2, setDraft2] = useState(name2);
   const [exporting, setExporting] = useState(false);
   const [importing, setImporting] = useState(false);
-  const fileInputRef = useRef<any>(null);
+
+  const [grinders, setGrinders] = useState<string[]>([]);
+  const [newGrinder, setNewGrinder] = useState("");
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
 
   const isDirty = draft1.trim() !== name1 || draft2.trim() !== name2;
+
+  useEffect(() => {
+    getGrinders().then(setGrinders);
+  }, []);
+
+  const persistGrinders = async (list: string[]) => {
+    setGrinders(list);
+    await saveGrinders(list);
+  };
+
+  const handleAddGrinder = async () => {
+    const trimmed = newGrinder.trim();
+    if (!trimmed) return;
+    if (grinders.length >= 3) {
+      showAlert("Hinweis", "Maximal 3 Mühlen können eingetragen werden.");
+      return;
+    }
+    if (grinders.includes(trimmed)) {
+      showAlert("Hinweis", "Diese Mühle ist bereits vorhanden.");
+      return;
+    }
+    Haptics.selectionAsync();
+    await persistGrinders([...grinders, trimmed]);
+    setNewGrinder("");
+  };
+
+  const handleRemoveGrinder = async (name: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    await persistGrinders(grinders.filter((g) => g !== name));
+  };
 
   const handleSave = async () => {
     if (!draft1.trim() || !draft2.trim()) {
@@ -73,9 +105,12 @@ export default function SettingsScreen() {
     try {
       setExporting(true);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      const roasteries = await getRoasteries();
-      const coffees = await getAllCoffees();
-      const data = JSON.stringify({ roasteries, coffees }, null, 2);
+      const [roasteries, coffees, grinderList] = await Promise.all([
+        getRoasteries(),
+        getAllCoffees(),
+        getGrinders(),
+      ]);
+      const data = JSON.stringify({ roasteries, coffees, grinders: grinderList }, null, 2);
       const date = new Date().toISOString().split("T")[0];
       const filename = `coffee-nest-backup-${date}.json`;
 
@@ -109,9 +144,10 @@ export default function SettingsScreen() {
       if (!Array.isArray(data.roasteries) || !Array.isArray(data.coffees)) {
         throw new Error("Ungültiges Format");
       }
+      const grindersInfo = Array.isArray(data.grinders) ? ` und ${data.grinders.length} Mühlen` : "";
       showAlert(
         "Daten importieren",
-        `${data.roasteries.length} Röstereien und ${data.coffees.length} Kaffees werden importiert. Alle vorhandenen Daten werden überschrieben.`,
+        `${data.roasteries.length} Röstereien, ${data.coffees.length} Kaffees${grindersInfo} werden importiert. Alle vorhandenen Daten werden überschrieben.`,
         [
           { text: "Abbrechen", style: "cancel" },
           {
@@ -120,6 +156,10 @@ export default function SettingsScreen() {
             onPress: async () => {
               await AsyncStorage.setItem("roasteries", JSON.stringify(data.roasteries));
               await AsyncStorage.setItem("coffees", JSON.stringify(data.coffees));
+              if (Array.isArray(data.grinders) && data.grinders.length > 0) {
+                await AsyncStorage.setItem("grinders", JSON.stringify(data.grinders));
+                setGrinders(data.grinders);
+              }
               Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
               showAlert("Erfolg", "Daten wurden erfolgreich importiert.");
             },
@@ -258,7 +298,77 @@ export default function SettingsScreen() {
           Die Namen werden überall in der App verwendet und lokal gespeichert.
         </Text>
 
-        <View style={[styles.section, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, marginTop: 24 }]}>
+        <View style={[styles.section, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, marginTop: 16 }]}>
+          <Text style={[styles.sectionLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
+            KAFFEEMÜHLEN
+          </Text>
+
+          {grinders.map((g, idx) => (
+            <View
+              key={g}
+              style={[
+                styles.grinderRow,
+                {
+                  borderBottomColor: colors.border,
+                  borderBottomWidth: idx < grinders.length - 1 ? 1 : 0,
+                },
+              ]}
+            >
+              <Ionicons name="settings-outline" size={18} color={colors.tint} style={{ marginRight: 2 }} />
+              <Text style={[styles.grinderName, { color: colors.text, fontFamily: "Inter_500Medium" }]}>
+                {g}
+              </Text>
+              <Pressable
+                onPress={() => handleRemoveGrinder(g)}
+                hitSlop={12}
+                style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
+              >
+                <Ionicons name="close-circle" size={20} color={colors.textSecondary} />
+              </Pressable>
+            </View>
+          ))}
+
+          {grinders.length < 3 && (
+            <View style={[styles.addGrinderRow, { borderTopColor: colors.border, borderTopWidth: grinders.length > 0 ? 1 : 0 }]}>
+              <TextInput
+                value={newGrinder}
+                onChangeText={setNewGrinder}
+                style={[styles.grinderInput, { color: colors.text, fontFamily: "Inter_400Regular" }]}
+                placeholder="Neue Mühle..."
+                placeholderTextColor={colors.textSecondary}
+                maxLength={30}
+                returnKeyType="done"
+                onSubmitEditing={handleAddGrinder}
+                autoCorrect={false}
+              />
+              <Pressable
+                onPress={handleAddGrinder}
+                disabled={!newGrinder.trim()}
+                style={({ pressed }) => [
+                  styles.addGrinderBtn,
+                  {
+                    backgroundColor: colors.tint,
+                    opacity: newGrinder.trim() ? (pressed ? 0.7 : 1) : 0.3,
+                  },
+                ]}
+              >
+                <Ionicons name="add" size={18} color="#fff" />
+              </Pressable>
+            </View>
+          )}
+
+          {grinders.length === 3 && (
+            <Text style={[styles.grinderLimit, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+              Maximal 3 Mühlen möglich
+            </Text>
+          )}
+        </View>
+
+        <Text style={[styles.hint, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+          Wähle beim Kaffee die verwendete Mühle aus.
+        </Text>
+
+        <View style={[styles.section, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, marginTop: 16 }]}>
           <Text style={[styles.sectionLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
             DATENSICHERUNG
           </Text>
@@ -279,7 +389,7 @@ export default function SettingsScreen() {
                 Daten exportieren
               </Text>
               <Text style={[styles.dataSubtitle, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
-                Alle Röstereien und Kaffees als JSON speichern
+                Röstereien, Kaffees und Mühlen als JSON speichern
               </Text>
             </View>
             <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
@@ -372,6 +482,42 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderBottomWidth: 1,
     gap: 12,
+  },
+  grinderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 13,
+    gap: 10,
+  },
+  grinderName: {
+    flex: 1,
+    fontSize: 16,
+  },
+  addGrinderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    gap: 10,
+  },
+  grinderInput: {
+    flex: 1,
+    fontSize: 15,
+    paddingVertical: 4,
+  },
+  addGrinderBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  grinderLimit: {
+    fontSize: 12,
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    paddingTop: 4,
   },
   dataRow: {
     flexDirection: "row",

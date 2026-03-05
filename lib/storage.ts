@@ -14,6 +14,7 @@ export interface Coffee {
   haseRating: number;
   dodoRating: number;
   grindLevel: number;
+  grinderName: string;
   aroma: number;
   aromaDescription: string;
   notes: string;
@@ -24,9 +25,24 @@ export interface Coffee {
 
 const ROASTERIES_KEY = "roasteries";
 const COFFEES_KEY = "coffees";
+const GRINDERS_KEY = "grinders";
+
+export const DEFAULT_GRINDERS = ["Niche", "Commandante"];
 
 function generateId(): string {
   return Date.now().toString() + Math.random().toString(36).substr(2, 9);
+}
+
+export async function getGrinders(): Promise<string[]> {
+  const data = await AsyncStorage.getItem(GRINDERS_KEY);
+  if (!data) return [...DEFAULT_GRINDERS];
+  const parsed = JSON.parse(data);
+  if (!Array.isArray(parsed) || parsed.length === 0) return [...DEFAULT_GRINDERS];
+  return parsed;
+}
+
+export async function saveGrinders(names: string[]): Promise<void> {
+  await AsyncStorage.setItem(GRINDERS_KEY, JSON.stringify(names));
 }
 
 export async function getRoasteries(): Promise<Roastery[]> {
@@ -61,7 +77,6 @@ export async function deleteRoastery(id: string): Promise<void> {
   const roasteries = await getRoasteries();
   const filtered = roasteries.filter((r) => r.id !== id);
   await AsyncStorage.setItem(ROASTERIES_KEY, JSON.stringify(filtered));
-  const coffees = await getCoffees(id);
   const allCoffees = await getAllCoffees();
   const remaining = allCoffees.filter((c) => c.roasteryId !== id);
   await AsyncStorage.setItem(COFFEES_KEY, JSON.stringify(remaining));
