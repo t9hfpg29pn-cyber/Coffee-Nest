@@ -196,7 +196,8 @@ export default function SettingsScreen() {
           copyToCacheDirectory: true,
         });
         if (result.canceled) { setImporting(false); return; }
-        const text = await FileSystem.readAsStringAsync(result.assets[0].uri);
+        const response = await fetch(result.assets[0].uri);
+        const text = await response.text();
         await processImport(text);
       }
     } catch {
