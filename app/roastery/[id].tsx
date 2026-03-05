@@ -83,9 +83,11 @@ export default function RoasteryScreen() {
     }
     setCoffees(
       data.sort((a, b) => {
-        const avgA = (a.haseRating + a.dodoRating) / 2;
-        const avgB = (b.haseRating + b.dodoRating) / 2;
-        return avgB - avgA;
+        const rated = (r: number | null, d: number | null) => {
+          const vals = [r, d].filter((v): v is number => v !== null);
+          return vals.length > 0 ? vals.reduce((s, v) => s + v, 0) / vals.length : -1;
+        };
+        return rated(b.haseRating, b.dodoRating) - rated(a.haseRating, a.dodoRating);
       })
     );
     setLoading(false);
@@ -102,8 +104,8 @@ export default function RoasteryScreen() {
     await saveCoffee({
       roasteryId: id,
       name: newName.trim(),
-      haseRating: 5,
-      dodoRating: 5,
+      haseRating: null,
+      dodoRating: null,
       grinderName: defaultGrinder,
       grindLevel: 0,
       aroma: 3,
@@ -255,12 +257,18 @@ export default function RoasteryScreen() {
                     {name1}
                   </Text>
                   <View style={styles.ratingValue}>
-                    <Text style={[styles.ratingNum, { color: colors.tint, fontFamily: "Inter_700Bold" }]}>
-                      {item.haseRating}
-                    </Text>
-                    <Text style={[styles.ratingMax, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
-                      /10
-                    </Text>
+                    {item.haseRating !== null ? (
+                      <>
+                        <Text style={[styles.ratingNum, { color: colors.tint, fontFamily: "Inter_700Bold" }]}>
+                          {item.haseRating}
+                        </Text>
+                        <Text style={[styles.ratingMax, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                          /10
+                        </Text>
+                      </>
+                    ) : (
+                      <Text style={[styles.ratingNum, { color: colors.textSecondary, fontFamily: "Inter_400Regular", opacity: 0.4 }]}>–</Text>
+                    )}
                   </View>
                 </View>
                 <View style={[styles.ratingDivider, { backgroundColor: colors.border }]} />
@@ -269,12 +277,18 @@ export default function RoasteryScreen() {
                     {name2}
                   </Text>
                   <View style={styles.ratingValue}>
-                    <Text style={[styles.ratingNum, { color: colors.tint, fontFamily: "Inter_700Bold" }]}>
-                      {item.dodoRating}
-                    </Text>
-                    <Text style={[styles.ratingMax, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
-                      /10
-                    </Text>
+                    {item.dodoRating !== null ? (
+                      <>
+                        <Text style={[styles.ratingNum, { color: colors.tint, fontFamily: "Inter_700Bold" }]}>
+                          {item.dodoRating}
+                        </Text>
+                        <Text style={[styles.ratingMax, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                          /10
+                        </Text>
+                      </>
+                    ) : (
+                      <Text style={[styles.ratingNum, { color: colors.textSecondary, fontFamily: "Inter_400Regular", opacity: 0.4 }]}>–</Text>
+                    )}
                   </View>
                 </View>
               </View>

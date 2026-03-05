@@ -11,8 +11,8 @@ export interface Coffee {
   id: string;
   roasteryId: string;
   name: string;
-  haseRating: number;
-  dodoRating: number;
+  haseRating: number | null;
+  dodoRating: number | null;
   grindLevel: number;
   grinderName: string;
   aroma: number;

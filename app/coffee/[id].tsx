@@ -33,10 +33,10 @@ function RatingSlider({
   surfaceColor,
 }: {
   label: string;
-  value: number;
+  value: number | null;
   min: number;
   max: number;
-  onChange: (v: number) => void;
+  onChange: (v: number | null) => void;
   minLabel?: string;
   maxLabel?: string;
   color: string;
@@ -51,44 +51,53 @@ function RatingSlider({
       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
         <Text style={{ color: textColor, fontFamily: "Inter_600SemiBold", fontSize: 15 }}>{label}</Text>
         <View style={{ flexDirection: "row", alignItems: "baseline", gap: 2 }}>
-          <Text style={{ color: color, fontFamily: "Inter_700Bold", fontSize: 26 }}>{value}</Text>
-          <Text style={{ color: textColor, fontFamily: "Inter_400Regular", fontSize: 13, opacity: 0.6 }}>
-            /{max}
-          </Text>
+          {value !== null ? (
+            <>
+              <Text style={{ color: color, fontFamily: "Inter_700Bold", fontSize: 26 }}>{value}</Text>
+              <Text style={{ color: textColor, fontFamily: "Inter_400Regular", fontSize: 13, opacity: 0.6 }}>
+                /{max}
+              </Text>
+            </>
+          ) : (
+            <Text style={{ color: textColor, fontFamily: "Inter_400Regular", fontSize: 20, opacity: 0.35 }}>–</Text>
+          )}
         </View>
       </View>
       <View style={{ flexDirection: "row", gap: 6 }}>
-        {steps.map((step) => (
-          <Pressable
-            key={step}
-            onPress={() => {
-              Haptics.selectionAsync();
-              onChange(step);
-            }}
-            style={({ pressed }) => ({
-              flex: 1,
-              height: 36,
-              borderRadius: 8,
-              backgroundColor: step <= value ? color : surfaceColor,
-              borderWidth: 1,
-              borderColor: step <= value ? color : borderColor,
-              justifyContent: "center",
-              alignItems: "center",
-              opacity: pressed ? 0.8 : 1,
-              transform: [{ scale: pressed ? 0.95 : 1 }],
-            })}
-          >
-            <Text
-              style={{
-                color: step <= value ? "#fff" : textColor,
-                fontFamily: "Inter_600SemiBold",
-                fontSize: max > 5 ? 11 : 13,
+        {steps.map((step) => {
+          const filled = value !== null && step <= value;
+          return (
+            <Pressable
+              key={step}
+              onPress={() => {
+                Haptics.selectionAsync();
+                onChange(step === value ? null : step);
               }}
+              style={({ pressed }) => ({
+                flex: 1,
+                height: 36,
+                borderRadius: 8,
+                backgroundColor: filled ? color : surfaceColor,
+                borderWidth: 1,
+                borderColor: filled ? color : borderColor,
+                justifyContent: "center",
+                alignItems: "center",
+                opacity: pressed ? 0.8 : 1,
+                transform: [{ scale: pressed ? 0.95 : 1 }],
+              })}
             >
-              {step}
-            </Text>
-          </Pressable>
-        ))}
+              <Text
+                style={{
+                  color: filled ? "#fff" : textColor,
+                  fontFamily: "Inter_600SemiBold",
+                  fontSize: max > 5 ? 11 : 13,
+                }}
+              >
+                {step}
+              </Text>
+            </Pressable>
+          );
+        })}
       </View>
       {(minLabel || maxLabel) && (
         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
@@ -283,8 +292,8 @@ export default function CoffeeDetailScreen() {
 
   const [grinders, setGrinders] = useState<string[]>([]);
   const [name, setName] = useState("");
-  const [haseRating, setHaseRating] = useState(5);
-  const [dodoRating, setDodoRating] = useState(5);
+  const [haseRating, setHaseRating] = useState<number | null>(null);
+  const [dodoRating, setDodoRating] = useState<number | null>(null);
   const [grinderName, setGrinderName] = useState("");
   const [grindLevelText, setGrindLevelText] = useState("0");
   const [aroma, setAroma] = useState(3);
@@ -302,8 +311,8 @@ export default function CoffeeDetailScreen() {
       if (data) {
         setCoffee(data);
         setName(data.name);
-        setHaseRating(data.haseRating);
-        setDodoRating(data.dodoRating);
+        setHaseRating(data.haseRating ?? null);
+        setDodoRating(data.dodoRating ?? null);
         setGrinderName(data.grinderName ?? (grindersData[0] ?? ""));
         setGrindLevelText(
           data.grindLevel != null && data.grindLevel > 0

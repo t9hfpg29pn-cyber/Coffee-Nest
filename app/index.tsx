@@ -30,7 +30,7 @@ export default function RoasteriesScreen() {
   const { name1, name2 } = useUserNames();
   const [roasteries, setRoasteries] = useState<Roastery[]>([]);
   const [coffeeCounts, setCoffeeCounts] = useState<Record<string, number>>({});
-  const [avgRatings, setAvgRatings] = useState<Record<string, { hase: number; dodo: number } | null>>({});
+  const [avgRatings, setAvgRatings] = useState<Record<string, { hase: number | null; dodo: number | null } | null>>({});
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0 });
@@ -56,14 +56,16 @@ export default function RoasteriesScreen() {
   const load = useCallback(async () => {
     const data = await getRoasteries();
     const counts: Record<string, number> = {};
-    const avgs: Record<string, { hase: number; dodo: number } | null> = {};
+    const avgs: Record<string, { hase: number | null; dodo: number | null } | null> = {};
     for (const r of data) {
       const coffees = await getCoffees(r.id);
       counts[r.id] = coffees.length;
       if (coffees.length > 0) {
-        const hase = coffees.reduce((sum, c) => sum + c.haseRating, 0) / coffees.length;
-        const dodo = coffees.reduce((sum, c) => sum + c.dodoRating, 0) / coffees.length;
-        avgs[r.id] = { hase: Math.round(hase * 10) / 10, dodo: Math.round(dodo * 10) / 10 };
+        const haseVals = coffees.map((c) => c.haseRating).filter((v): v is number => v !== null);
+        const dodoVals = coffees.map((c) => c.dodoRating).filter((v): v is number => v !== null);
+        const hase = haseVals.length > 0 ? Math.round((haseVals.reduce((s, v) => s + v, 0) / haseVals.length) * 10) / 10 : null;
+        const dodo = dodoVals.length > 0 ? Math.round((dodoVals.reduce((s, v) => s + v, 0) / dodoVals.length) * 10) / 10 : null;
+        avgs[r.id] = hase !== null || dodo !== null ? { hase, dodo } : null;
       } else {
         avgs[r.id] = null;
       }
@@ -342,23 +344,31 @@ export default function RoasteriesScreen() {
                       ⌀ Score
                     </Text>
                     <View style={[styles.avgDivider, { backgroundColor: colors.border }]} />
-                    <View style={styles.avgChip}>
-                      <Text style={[styles.avgLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
-                        {name1}
-                      </Text>
-                      <Text style={[styles.avgValue, { color: colors.tint, fontFamily: "Inter_700Bold" }]}>
-                        {avgRatings[item.id]!.hase}
-                      </Text>
-                    </View>
-                    <View style={[styles.avgDivider, { backgroundColor: colors.border }]} />
-                    <View style={styles.avgChip}>
-                      <Text style={[styles.avgLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
-                        {name2}
-                      </Text>
-                      <Text style={[styles.avgValue, { color: colors.tint, fontFamily: "Inter_700Bold" }]}>
-                        {avgRatings[item.id]!.dodo}
-                      </Text>
-                    </View>
+                    {avgRatings[item.id]!.hase !== null && (
+                      <>
+                        <View style={styles.avgChip}>
+                          <Text style={[styles.avgLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
+                            {name1}
+                          </Text>
+                          <Text style={[styles.avgValue, { color: colors.tint, fontFamily: "Inter_700Bold" }]}>
+                            {avgRatings[item.id]!.hase}
+                          </Text>
+                        </View>
+                        {avgRatings[item.id]!.dodo !== null && (
+                          <View style={[styles.avgDivider, { backgroundColor: colors.border }]} />
+                        )}
+                      </>
+                    )}
+                    {avgRatings[item.id]!.dodo !== null && (
+                      <View style={styles.avgChip}>
+                        <Text style={[styles.avgLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
+                          {name2}
+                        </Text>
+                        <Text style={[styles.avgValue, { color: colors.tint, fontFamily: "Inter_700Bold" }]}>
+                          {avgRatings[item.id]!.dodo}
+                        </Text>
+                      </View>
+                    )}
                   </View>
                 ) : null}
               </View>
