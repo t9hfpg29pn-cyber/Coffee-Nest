@@ -134,12 +134,14 @@ function AromaIcon({ step, size = 26, color }: { step: number; size?: number; co
     case 2:
       return (
         <Svg width={size} height={size} viewBox="0 0 28 28">
-          {/* Two aroma waves */}
-          <Path d="M11,8 Q9,5 11,3" {...p} />
-          <Path d="M17,8 Q19,5 17,3" {...p} />
-          {/* Single upright coffee bean */}
-          <Path d="M14,9 C19,9 19,25 14,25 C9,25 9,9 14,9 Z" {...p} />
-          <Path d="M14,11 C16,14 12,18 14,22" {...p} />
+          {/* Stem — small curved hook at top */}
+          <Path d="M14,4 C14,2 16,1 16,4" {...p} />
+          {/* Cap — dome arc */}
+          <Path d="M6,13 C6,5 22,5 22,13" {...p} />
+          {/* Divider line — slightly wider than cap (ledge effect) */}
+          <Line x1="4" y1="13" x2="24" y2="13" {...p} />
+          {/* Body — rounded lower part */}
+          <Path d="M6,13 L6,19 Q6,26 14,26 Q22,26 22,19 L22,13" {...p} />
         </Svg>
       );
     case 3:
