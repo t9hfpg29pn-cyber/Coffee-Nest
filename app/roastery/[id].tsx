@@ -14,12 +14,13 @@ import {
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useLocalSearchParams, useFocusEffect } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import {
   getCoffees,
   saveCoffee,
   deleteCoffee,
+  deleteRoastery,
   getRoasteries,
   updateRoastery,
   getGrinders,
@@ -27,6 +28,26 @@ import {
 } from "@/lib/storage";
 import Colors from "@/constants/colors";
 import { useUserNames } from "@/context/UserNamesContext";
+
+function showAlert(title: string, message: string, buttons?: { text: string; style?: string; onPress?: () => void }[]) {
+  if (Platform.OS === "web") {
+    if (buttons && buttons.length > 1) {
+      const confirmed = (window as any).confirm(`${title}\n\n${message}`);
+      if (confirmed) buttons.find((b) => b.style !== "cancel")?.onPress?.();
+    } else {
+      (window as any).alert(`${title}\n\n${message}`);
+      buttons?.[0]?.onPress?.();
+    }
+  } else {
+    Alert.alert(title, message, buttons as any);
+  }
+}
+
+function formatPrice(raw: string): string {
+  const num = parseFloat(raw.replace(",", "."));
+  if (isNaN(num)) return raw;
+  return num.toFixed(2).replace(".", ",");
+}
 
 function RatingDots({ value, max }: { value: number; max: number }) {
   const colorScheme = useColorScheme();
@@ -150,6 +171,26 @@ export default function RoasteryScreen() {
     setShowEditRoastery(false);
   };
 
+  const handleDeleteRoastery = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    showAlert(
+      "Rösterei löschen",
+      `Möchtest du "${roasteryName}" und alle zugehörigen Kaffees unwiderruflich löschen?`,
+      [
+        { text: "Abbrechen", style: "cancel" },
+        {
+          text: "Löschen",
+          style: "destructive",
+          onPress: async () => {
+            setShowEditRoastery(false);
+            await deleteRoastery(id);
+            router.back();
+          },
+        },
+      ]
+    );
+  };
+
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
 
@@ -236,7 +277,7 @@ export default function RoasteryScreen() {
             >
               <View style={styles.cardTop}>
                 <View style={[styles.cardIcon, { backgroundColor: colors.tint + "20" }]}>
-                  <Ionicons name="leaf" size={20} color={colors.tint} />
+                  <MaterialCommunityIcons name="coffee-bean" size={22} color={colors.tint} />
                 </View>
                 <View style={styles.cardMain}>
                   <Text style={[styles.cardTitle, { color: colors.text, fontFamily: "Inter_600SemiBold" }]}>
@@ -244,7 +285,7 @@ export default function RoasteryScreen() {
                   </Text>
                   {item.pricePerKg ? (
                     <Text style={[styles.cardPrice, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
-                      {item.pricePerKg} €/kg
+                      {formatPrice(item.pricePerKg)} €/kg
                     </Text>
                   ) : null}
                 </View>
@@ -413,6 +454,18 @@ export default function RoasteryScreen() {
                 Speichern
               </Text>
             </Pressable>
+            <Pressable
+              onPress={handleDeleteRoastery}
+              style={({ pressed }) => [
+                styles.deleteButton,
+                { borderColor: "#E05252", opacity: pressed ? 0.7 : 1 },
+              ]}
+            >
+              <Ionicons name="trash-outline" size={16} color="#E05252" />
+              <Text style={[styles.deleteButtonText, { fontFamily: "Inter_500Medium" }]}>
+                Rösterei löschen
+              </Text>
+            </Pressable>
           </View>
         </KeyboardAvoidingView>
       </Modal>
@@ -570,5 +623,19 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: "#fff",
     fontSize: 16,
+  },
+  deleteButton: {
+    marginTop: 10,
+    padding: 14,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 8,
+  },
+  deleteButtonText: {
+    color: "#E05252",
+    fontSize: 15,
   },
 });
