@@ -25,7 +25,7 @@ export default function RoasteriesScreen() {
   const colors = useThemeColors();
   const cardExtras = useCardExtras();
 
-  const { name1, name2 } = useUserNames();
+  const { name1, name2, user2active } = useUserNames();
   const [roasteries, setRoasteries] = useState<Roastery[]>([]);
   const [coffeeCounts, setCoffeeCounts] = useState<Record<string, number>>({});
   const [avgRatings, setAvgRatings] = useState<Record<string, { hase: number | null; dodo: number | null } | null>>({});
@@ -355,12 +355,12 @@ export default function RoasteriesScreen() {
                             {avgRatings[item.id]!.hase}
                           </Text>
                         </View>
-                        {avgRatings[item.id]!.dodo !== null && (
+                        {user2active && avgRatings[item.id]!.dodo !== null && (
                           <View style={[styles.avgDivider, { backgroundColor: colors.border }]} />
                         )}
                       </>
                     )}
-                    {avgRatings[item.id]!.dodo !== null && (
+                    {user2active && avgRatings[item.id]!.dodo !== null && (
                       <View style={styles.avgChip}>
                         <Text style={[styles.avgLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
                           {name2}
