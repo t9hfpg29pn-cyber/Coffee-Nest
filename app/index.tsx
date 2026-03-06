@@ -9,7 +9,6 @@ import {
   Modal,
   Alert,
   Image,
-  useColorScheme,
   Platform,
 } from "react-native";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
@@ -18,14 +17,12 @@ import { router, useFocusEffect } from "expo-router";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { getRoasteries, saveRoastery, deleteRoastery, getCoffees, Roastery } from "@/lib/storage";
-import Colors from "@/constants/colors";
 import { useUserNames } from "@/context/UserNamesContext";
+import { useThemeColors } from "@/context/ThemeContext";
 
 export default function RoasteriesScreen() {
   const insets = useSafeAreaInsets();
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === "dark";
-  const colors = isDark ? Colors.dark : Colors.light;
+  const colors = useThemeColors();
 
   const { name1, name2 } = useUserNames();
   const [roasteries, setRoasteries] = useState<Roastery[]>([]);

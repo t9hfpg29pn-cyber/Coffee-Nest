@@ -13,9 +13,9 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { queryClient } from "@/lib/query-client";
-import { Image, StyleSheet, View, useColorScheme } from "react-native";
-import Colors from "@/constants/colors";
+import { Image, StyleSheet, View } from "react-native";
 import { UserNamesProvider } from "@/context/UserNamesContext";
+import { ThemeProvider, useThemeColors } from "@/context/ThemeContext";
 
 try {
   SplashScreen.preventAutoHideAsync();
@@ -34,9 +34,7 @@ function AppSplash() {
 }
 
 function RootLayoutNav() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === "dark";
-  const colors = isDark ? Colors.dark : Colors.light;
+  const colors = useThemeColors();
 
   return (
     <Stack
@@ -80,13 +78,15 @@ export default function RootLayout() {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <UserNamesProvider>
-          <GestureHandlerRootView>
-            <KeyboardProvider>
-              <RootLayoutNav />
-            </KeyboardProvider>
-          </GestureHandlerRootView>
-        </UserNamesProvider>
+        <ThemeProvider>
+          <UserNamesProvider>
+            <GestureHandlerRootView>
+              <KeyboardProvider>
+                <RootLayoutNav />
+              </KeyboardProvider>
+            </GestureHandlerRootView>
+          </UserNamesProvider>
+        </ThemeProvider>
       </QueryClientProvider>
     </ErrorBoundary>
   );

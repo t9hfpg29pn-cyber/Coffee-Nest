@@ -8,7 +8,6 @@ import {
   TextInput,
   Modal,
   Alert,
-  useColorScheme,
   Platform,
 } from "react-native";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
@@ -26,8 +25,8 @@ import {
   getGrinders,
   Coffee,
 } from "@/lib/storage";
-import Colors from "@/constants/colors";
 import { useUserNames } from "@/context/UserNamesContext";
+import { useThemeColors } from "@/context/ThemeContext";
 
 function CoffeeBeanIcon({ size = 22, color }: { size?: number; color: string }) {
   return (
@@ -75,10 +74,7 @@ function formatPrice(raw: string): string {
   return num.toFixed(2).replace(".", ",");
 }
 
-function RatingDots({ value, max }: { value: number; max: number }) {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === "dark";
-  const colors = isDark ? Colors.dark : Colors.light;
+function RatingDots({ value, max, colors }: { value: number; max: number; colors: ReturnType<typeof useThemeColors> }) {
   return (
     <View style={{ flexDirection: "row", gap: 3 }}>
       {Array.from({ length: max }).map((_, i) => (
@@ -99,9 +95,7 @@ function RatingDots({ value, max }: { value: number; max: number }) {
 export default function RoasteryScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === "dark";
-  const colors = isDark ? Colors.dark : Colors.light;
+  const colors = useThemeColors();
 
   const { name1, name2 } = useUserNames();
   const [coffees, setCoffees] = useState<Coffee[]>([]);

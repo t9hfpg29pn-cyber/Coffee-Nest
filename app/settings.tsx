@@ -7,7 +7,6 @@ import {
   Pressable,
   Image,
   ScrollView,
-  useColorScheme,
   Platform,
   Alert,
 } from "react-native";
@@ -21,7 +20,7 @@ import * as DocumentPicker from "expo-document-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useUserNames } from "@/context/UserNamesContext";
 import { getRoasteries, getAllCoffees, getGrinders, saveGrinders } from "@/lib/storage";
-import Colors from "@/constants/colors";
+import { useTheme, useThemeColors, DesignMode } from "@/context/ThemeContext";
 
 function showAlert(title: string, message: string, buttons?: { text: string; style?: string; onPress?: () => void }[]) {
   if (Platform.OS === "web") {
@@ -42,9 +41,8 @@ function showAlert(title: string, message: string, buttons?: { text: string; sty
 
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === "dark";
-  const colors = isDark ? Colors.dark : Colors.light;
+  const colors = useThemeColors();
+  const { design, setDesign } = useTheme();
 
   const { name1, name2, setName1, setName2 } = useUserNames();
   const [draft1, setDraft1] = useState(name1);
@@ -243,6 +241,58 @@ export default function SettingsScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={[styles.section, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
+          <Text style={[styles.sectionLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
+            DESIGN
+          </Text>
+          <View style={styles.designRow}>
+            {(["classic", "lowpoly"] as DesignMode[]).map((mode) => {
+              const active = design === mode;
+              const label = mode === "classic" ? "Klassisch" : "Low-Poly";
+              const icon = mode === "classic" ? "☕" : "◆";
+              return (
+                <Pressable
+                  key={mode}
+                  onPress={() => {
+                    Haptics.selectionAsync();
+                    setDesign(mode);
+                  }}
+                  style={({ pressed }) => [
+                    styles.designOption,
+                    {
+                      backgroundColor: active ? colors.tint : colors.surface,
+                      borderColor: active ? colors.tint : colors.border,
+                      opacity: pressed ? 0.8 : 1,
+                    },
+                  ]}
+                >
+                  <Text style={{ fontSize: 16 }}>{icon}</Text>
+                  <Text
+                    style={[
+                      styles.designLabel,
+                      {
+                        color: active ? "#fff" : colors.text,
+                        fontFamily: active ? "Inter_700Bold" : "Inter_500Medium",
+                      },
+                    ]}
+                  >
+                    {label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+          <Text style={[styles.designHint, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+            {design === "lowpoly"
+              ? "Geometrisch · dunkel · modern"
+              : "Warm · klassisch · Kaffeefarben"}
+          </Text>
+        </View>
+
+        <Text style={[styles.hint, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+          Das Design wird sofort überall in der App angewendet.
+        </Text>
+
+        <View style={[styles.section, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, marginTop: 16 }]}>
           <Text style={[styles.sectionLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
             NAMEN DER BENUTZER
           </Text>
@@ -568,6 +618,31 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     lineHeight: 18,
     marginBottom: 8,
+  },
+  designRow: {
+    flexDirection: "row",
+    gap: 10,
+    paddingHorizontal: 16,
+    paddingBottom: 14,
+  },
+  designOption: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1.5,
+  },
+  designLabel: {
+    fontSize: 15,
+  },
+  designHint: {
+    fontSize: 11,
+    paddingHorizontal: 16,
+    paddingBottom: 14,
+    letterSpacing: 0.3,
   },
   iconContainer: {
     height: 200,

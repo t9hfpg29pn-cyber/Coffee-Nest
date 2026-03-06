@@ -30,9 +30,13 @@ A mobile app for rating and tracking coffee varieties from different roasteries.
 
 - `lib/storage.ts` — AsyncStorage utilities for Roastery and Coffee CRUD operations
 
-## Color Palette
+## Theme System
 
-Warm espresso-inspired: deep brown, caramel gold, cream white
+Two selectable designs (stored in AsyncStorage via `context/ThemeContext.tsx`):
+- **Klassisch**: Warm espresso-inspired — deep brown, caramel gold, cream white (light/dark follows system)
+- **Low-Poly**: Modern dark — near-black (#0D0D0D), electric gold (#FFB300), always dark
+
+Use `useThemeColors()` from `@/context/ThemeContext` in all screens (replaces direct `useColorScheme()` + `Colors.dark/light` pattern). The `ThemeProvider` wraps the app in `_layout.tsx`.
 
 ## Workflows
 

@@ -6,7 +6,6 @@ import {
   Pressable,
   TextInput,
   Alert,
-  useColorScheme,
   Platform,
   ActivityIndicator,
 } from "react-native";
@@ -16,8 +15,8 @@ import { router, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { getCoffeeById, updateCoffee, deleteCoffee, getGrinders, Coffee } from "@/lib/storage";
-import Colors from "@/constants/colors";
 import { useUserNames } from "@/context/UserNamesContext";
+import { useThemeColors } from "@/context/ThemeContext";
 
 function RatingSlider({
   label,
@@ -280,9 +279,7 @@ function GrinderPicker({
 export default function CoffeeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === "dark";
-  const colors = isDark ? Colors.dark : Colors.light;
+  const colors = useThemeColors();
 
   const { name1, name2 } = useUserNames();
   const [coffee, setCoffee] = useState<Coffee | null>(null);
