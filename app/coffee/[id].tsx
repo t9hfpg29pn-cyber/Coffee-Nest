@@ -120,39 +120,42 @@ function AromaIcon({ step, size = 26, color }: { step: number; size?: number; co
     case 1:
       return (
         <Svg width={size} height={size} viewBox="0 0 28 28">
-          {/* Chocolate bar: 3 cols × 2 rows */}
-          <Rect x="2" y="5" width="18" height="13" rx="2" ry="2" {...p} />
-          <Line x1="2"  y1="11.5" x2="20" y2="11.5" {...pt} />
-          <Line x1="8"  y1="5"    x2="8"  y2="18"   {...pt} />
-          <Line x1="14" y1="5"    x2="14" y2="18"   {...pt} />
-          {/* Hazelnut: round nut, overlapping bottom-right of bar */}
-          <Circle cx="22" cy="21" r="5" {...p} />
-          {/* Hazelnut top cap (flat shell rim) */}
-          <Path d="M18.5,18 C18.5,16.5 25.5,16.5 25.5,18" {...pt} />
+          {/* Tilted chocolate bar (~-22°) with 3×3 grid + wrapper */}
+          <G transform="rotate(-22, 14, 14)">
+            {/* Outer bar */}
+            <Rect x="4" y="2" width="20" height="24" rx="2.5" ry="2.5" {...p} />
+            {/* Separator: grid top / wrapper bottom */}
+            <Line x1="4" y1="14" x2="24" y2="14" {...p} />
+            {/* 3×3 grid in upper half */}
+            <Line x1="4"  y1="6.7"  x2="24" y2="6.7"  {...pt} />
+            <Line x1="4"  y1="10.3" x2="24" y2="10.3" {...pt} />
+            <Line x1="10.7" y1="2" x2="10.7" y2="14"  {...pt} />
+            <Line x1="17.3" y1="2" x2="17.3" y2="14"  {...pt} />
+            {/* Wrapper diagonal fold crease */}
+            <Path d="M4,14 L19,26" {...pt} />
+          </G>
         </Svg>
       );
     case 2:
       return (
         <Svg width={size} height={size} viewBox="0 0 28 28">
-          {/* Stem — small curved hook at top */}
+          {/* Stem — small curved hook */}
           <Path d="M14,4 C14,2 16,1 16,4" {...p} />
           {/* Cap — dome arc */}
           <Path d="M6,13 C6,5 22,5 22,13" {...p} />
-          {/* Divider line — slightly wider than cap (ledge effect) */}
+          {/* Divider — slightly wider for ledge effect */}
           <Line x1="4" y1="13" x2="24" y2="13" {...p} />
-          {/* Body — rounded lower part */}
-          <Path d="M6,13 L6,19 Q6,26 14,26 Q22,26 22,19 L22,13" {...p} />
+          {/* Body — tapers to a point at bottom (hazelnut shape) */}
+          <Path d="M6,13 Q5,22 14,27 Q23,22 22,13" {...p} />
         </Svg>
       );
     case 3:
       return (
         <Svg width={size} height={size} viewBox="0 0 28 28">
-          {/* Coffee bean (left) */}
-          <Path d="M9,5 C13,5 14,9 14,14 C14,19 13,23 9,23 C5,23 4,19 4,14 C4,9 5,5 9,5 Z" {...p} />
-          <Path d="M9,8 C11,11 7,14 9,17 C10,19 9,21 9,22" {...p} />
-          {/* Leaf (right) */}
-          <Path d="M19,6 C25,8 25,20 19,22 C14,20 14,8 19,6 Z" {...p} />
-          <Path d="M19,6 L19,22" {...p} />
+          {/* Simple centered coffee bean */}
+          <Path d="M14,4 C19,4 20,9 20,14 C20,19 19,24 14,24 C9,24 8,19 8,14 C8,9 9,4 14,4 Z" {...p} />
+          {/* Bean crease — S-curve */}
+          <Path d="M14,7 C16,10 12,14 14,18 C15,21 14,23 14,23" {...p} />
         </Svg>
       );
     case 4:
