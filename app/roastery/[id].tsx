@@ -14,7 +14,7 @@ import {
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useLocalSearchParams, useFocusEffect } from "expo-router";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import {
   getCoffees,
@@ -28,6 +28,32 @@ import {
 } from "@/lib/storage";
 import Colors from "@/constants/colors";
 import { useUserNames } from "@/context/UserNamesContext";
+
+function CoffeeBeanIcon({ size = 22, color }: { size?: number; color: string }) {
+  return (
+    <View style={{ width: size, height: Math.round(size * 1.3), alignItems: "center", justifyContent: "center" }}>
+      <View
+        style={{
+          width: size,
+          height: Math.round(size * 1.3),
+          borderRadius: size * 0.5,
+          backgroundColor: color,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <View
+          style={{
+            width: Math.round(size * 0.22),
+            height: Math.round(size * 1.0),
+            borderRadius: Math.round(size * 0.11),
+            backgroundColor: "rgba(255,255,255,0.28)",
+          }}
+        />
+      </View>
+    </View>
+  );
+}
 
 function showAlert(title: string, message: string, buttons?: { text: string; style?: string; onPress?: () => void }[]) {
   if (Platform.OS === "web") {
@@ -277,7 +303,7 @@ export default function RoasteryScreen() {
             >
               <View style={styles.cardTop}>
                 <View style={[styles.cardIcon, { backgroundColor: colors.tint + "20" }]}>
-                  <MaterialCommunityIcons name="coffee-bean" size={22} color={colors.tint} />
+                  <CoffeeBeanIcon size={20} color={colors.tint} />
                 </View>
                 <View style={styles.cardMain}>
                   <Text style={[styles.cardTitle, { color: colors.text, fontFamily: "Inter_600SemiBold" }]}>
