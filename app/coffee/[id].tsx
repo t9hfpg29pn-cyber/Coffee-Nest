@@ -9,6 +9,7 @@ import {
   Platform,
   ActivityIndicator,
 } from "react-native";
+import Svg, { Path, Circle, Line, Rect } from "react-native-svg";
 import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
@@ -112,6 +113,59 @@ function RatingSlider({
   );
 }
 
+function AromaIcon({ step, size = 26, color }: { step: number; size?: number; color: string }) {
+  const p = { stroke: color, strokeWidth: 2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, fill: "none" };
+  switch (step) {
+    case 1:
+      return (
+        <Svg width={size} height={size} viewBox="0 0 28 28">
+          <Rect x="3" y="7" width="22" height="14" rx="2" ry="2" {...p} />
+          <Line x1="3" y1="14" x2="25" y2="14" {...p} />
+          <Line x1="14" y1="7" x2="14" y2="21" {...p} />
+        </Svg>
+      );
+    case 2:
+      return (
+        <Svg width={size} height={size} viewBox="0 0 28 28">
+          <Path d="M10,4 C15,4 16,8 16,14 C16,20 15,24 10,24 C5,24 4,20 4,14 C4,8 5,4 10,4 Z" {...p} />
+          <Path d="M10,7 C12,10 8,14 10,18 C11,20 10,22 10,23" {...p} />
+          <Path d="M19,21 Q21,17 19,13 Q17,9 19,6" {...p} />
+          <Path d="M23,21 Q25,17 23,13 Q21,9 23,6" {...p} />
+        </Svg>
+      );
+    case 3:
+      return (
+        <Svg width={size} height={size} viewBox="0 0 28 28">
+          <Path d="M9,5 C13,5 14,9 14,14 C14,19 13,23 9,23 C5,23 4,19 4,14 C4,9 5,5 9,5 Z" {...p} />
+          <Path d="M9,8 C11,11 7,14 9,17 C10,19 9,21 9,22" {...p} />
+          <Path d="M19,6 C25,8 25,20 19,22 C14,20 14,8 19,6 Z" {...p} />
+          <Path d="M19,6 L19,22" {...p} />
+        </Svg>
+      );
+    case 4:
+      return (
+        <Svg width={size} height={size} viewBox="0 0 28 28">
+          <Path d="M14,7 C13,5 11,4 10,5" {...p} />
+          <Circle cx="14" cy="11" r="4.5" {...p} />
+          <Circle cx="9" cy="19" r="4.5" {...p} />
+          <Circle cx="19" cy="19" r="4.5" {...p} />
+        </Svg>
+      );
+    case 5:
+      return (
+        <Svg width={size} height={size} viewBox="0 0 28 28">
+          <Circle cx="14" cy="14" r="11" {...p} />
+          <Path d="M14,14 L14,3 M14,14 L23.5,8.5 M14,14 L23.5,19.5 M14,14 L14,25 M14,14 L4.5,19.5 M14,14 L4.5,8.5" strokeWidth={1.6} stroke={color} strokeLinecap="round" fill="none" />
+          <Circle cx="14" cy="14" r="2.5" {...p} />
+        </Svg>
+      );
+    default:
+      return null;
+  }
+}
+
+const AROMA_LABELS = ["sehr kräftig", "kräftig", "ausgewogen", "fruchtig", "sehr fruchtig"];
+
 function ScaleSlider({
   label,
   sublabel,
@@ -123,6 +177,7 @@ function ScaleSlider({
   textColor,
   borderColor,
   surfaceColor,
+  aromaIcons,
 }: {
   label: string;
   sublabel?: string;
@@ -134,19 +189,27 @@ function ScaleSlider({
   textColor: string;
   borderColor: string;
   surfaceColor: string;
+  aromaIcons?: boolean;
 }) {
   const steps = [1, 2, 3, 4, 5];
 
   return (
     <View style={{ gap: 10 }}>
-      <Text style={{ color: textColor, fontFamily: "Inter_600SemiBold", fontSize: 15 }}>
-        {label}
-        {sublabel ? (
-          <Text style={{ color: textColor, fontFamily: "Inter_400Regular", fontSize: 13, opacity: 0.55 }}>
-            {" " + sublabel}
+      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+        <Text style={{ color: textColor, fontFamily: "Inter_600SemiBold", fontSize: 15 }}>
+          {label}
+          {sublabel ? (
+            <Text style={{ color: textColor, fontFamily: "Inter_400Regular", fontSize: 13, opacity: 0.55 }}>
+              {" " + sublabel}
+            </Text>
+          ) : null}
+        </Text>
+        {aromaIcons && value >= 1 && value <= 5 ? (
+          <Text style={{ color: textColor, fontFamily: "Inter_400Regular", fontSize: 12, opacity: 0.55 }}>
+            {AROMA_LABELS[value - 1]}
           </Text>
         ) : null}
-      </Text>
+      </View>
       <View style={{ flexDirection: "row", gap: 8 }}>
         {steps.map((step) => (
           <Pressable
@@ -157,7 +220,7 @@ function ScaleSlider({
             }}
             style={({ pressed }) => ({
               flex: 1,
-              height: 52,
+              height: 56,
               borderRadius: 12,
               backgroundColor: step === value ? color : surfaceColor,
               borderWidth: 1.5,
@@ -168,15 +231,19 @@ function ScaleSlider({
               transform: [{ scale: pressed ? 0.95 : 1 }],
             })}
           >
-            <Text
-              style={{
-                color: step === value ? "#fff" : textColor,
-                fontFamily: step === value ? "Inter_700Bold" : "Inter_500Medium",
-                fontSize: 16,
-              }}
-            >
-              {step}
-            </Text>
+            {aromaIcons ? (
+              <AromaIcon step={step} size={26} color={step === value ? "#fff" : textColor} />
+            ) : (
+              <Text
+                style={{
+                  color: step === value ? "#fff" : textColor,
+                  fontFamily: step === value ? "Inter_700Bold" : "Inter_500Medium",
+                  fontSize: 16,
+                }}
+              >
+                {step}
+              </Text>
+            )}
           </Pressable>
         ))}
       </View>
@@ -601,15 +668,13 @@ export default function CoffeeDetailScreen() {
             <View style={{ height: 1, backgroundColor: colors.border }} />
             <ScaleSlider
               label="Aroma"
-              sublabel="(kräftig – fruchtig)"
               value={aroma}
               onChange={(v) => { setAroma(v); markChanged(); }}
-              minLabel="kräftig"
-              maxLabel="fruchtig"
               color={colors.tint}
               textColor={colors.text}
               borderColor={colors.border}
               surfaceColor={colors.surface}
+              aromaIcons
             />
           </View>
         </View>
