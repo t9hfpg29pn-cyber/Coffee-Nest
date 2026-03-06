@@ -9,7 +9,7 @@ import {
   Platform,
   ActivityIndicator,
 } from "react-native";
-import Svg, { Path, Circle, Line, Rect } from "react-native-svg";
+import Svg, { Path, Circle, Line, Rect, G } from "react-native-svg";
 import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
@@ -115,35 +115,42 @@ function RatingSlider({
 
 function AromaIcon({ step, size = 26, color }: { step: number; size?: number; color: string }) {
   const p = { stroke: color, strokeWidth: 2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, fill: "none" };
-  const pt = { ...p, strokeWidth: 1.7 };
+  const pt = { ...p, strokeWidth: 1.6 };
   switch (step) {
     case 1:
       return (
         <Svg width={size} height={size} viewBox="0 0 28 28">
-          {/* Chocolate bar: tall 2-col × 4-row grid */}
-          <Rect x="2" y="2" width="16" height="22" rx="2" ry="2" {...p} />
-          <Line x1="2" y1="7.5" x2="18" y2="7.5" {...pt} />
-          <Line x1="2" y1="13" x2="18" y2="13" {...pt} />
-          <Line x1="2" y1="18.5" x2="18" y2="18.5" {...pt} />
-          <Line x1="10" y1="2" x2="10" y2="24" {...pt} />
-          {/* Walnut: circle overlapping bottom-right of bar */}
-          <Circle cx="22" cy="22" r="5.5" {...p} />
-          {/* Walnut interior squiggle — brain-like texture */}
-          <Path d="M17.5,22 Q19,20 20.5,22 Q22,24 23.5,22 Q25,20 26.5,22" {...pt} />
-          <Path d="M18.5,24 Q20,22.5 21.5,24 Q23,25.5 24.5,24" {...pt} />
+          {/* Chocolate bar: 3 cols × 2 rows */}
+          <Rect x="2" y="5" width="18" height="13" rx="2" ry="2" {...p} />
+          <Line x1="2"  y1="11.5" x2="20" y2="11.5" {...pt} />
+          <Line x1="8"  y1="5"    x2="8"  y2="18"   {...pt} />
+          <Line x1="14" y1="5"    x2="14" y2="18"   {...pt} />
+          {/* Hazelnut: round nut, overlapping bottom-right of bar */}
+          <Circle cx="22" cy="21" r="5" {...p} />
+          {/* Hazelnut top cap (flat shell rim) */}
+          <Path d="M18.5,18 C18.5,16.5 25.5,16.5 25.5,18" {...pt} />
         </Svg>
       );
     case 2:
       return (
         <Svg width={size} height={size} viewBox="0 0 28 28">
-          {/* Horizontal (lying) coffee bean */}
-          <Path d="M4,20 C4,15 24,15 24,20 C24,25 4,25 4,20 Z" {...p} />
-          {/* Bean crease — horizontal S-curve */}
-          <Path d="M4,20 C9,18 15,22 24,20" {...p} />
-          {/* Aroma waves rising above */}
-          <Path d="M10,14 Q8,11 10,8" {...p} />
-          <Path d="M14,13 Q12,10 14,7" {...p} />
-          <Path d="M18,14 Q20,11 18,8" {...p} />
+          {/* Aroma waves — rise from the top of the beans */}
+          <Path d="M10,8 Q8,5.5 10,3" {...p} />
+          <Path d="M14,7 Q12,4.5 14,2" {...p} />
+          <Path d="M18,8 Q20,5.5 18,3" {...p} />
+          {/* Left bean — tilted left ~25° */}
+          <G transform="rotate(-25, 9, 18)">
+            <Path d="M9,11 C13,11 13,25 9,25 C5,25 5,11 9,11 Z" {...p} />
+            <Path d="M9,13 C11,16 7,20 9,23" {...p} />
+          </G>
+          {/* Right bean — tilted right ~25° */}
+          <G transform="rotate(25, 19, 18)">
+            <Path d="M19,11 C23,11 23,25 19,25 C15,25 15,11 19,11 Z" {...p} />
+            <Path d="M19,13 C21,16 17,20 19,23" {...p} />
+          </G>
+          {/* Center bean — upright, in front */}
+          <Path d="M14,10 C18,10 18,24 14,24 C10,24 10,10 14,10 Z" {...p} />
+          <Path d="M14,12 C16,15 12,19 14,22" {...p} />
         </Svg>
       );
     case 3:
@@ -161,39 +168,55 @@ function AromaIcon({ step, size = 26, color }: { step: number; size?: number; co
       return (
         <Svg width={size} height={size} viewBox="0 0 28 28">
           {/* Stem */}
-          <Path d="M14,5.5 C13,3.5 11,3 10,4" {...p} />
-          {/* Blackberry: hexagonal packing of drupelets, 3-4-3 arrangement */}
-          <Circle cx="10" cy="8"  r="2.5" {...p} />
-          <Circle cx="14" cy="8"  r="2.5" {...p} />
-          <Circle cx="18" cy="8"  r="2.5" {...p} />
-          <Circle cx="8"  cy="13" r="2.5" {...p} />
-          <Circle cx="12" cy="13" r="2.5" {...p} />
-          <Circle cx="16" cy="13" r="2.5" {...p} />
-          <Circle cx="20" cy="13" r="2.5" {...p} />
-          <Circle cx="10" cy="18" r="2.5" {...p} />
-          <Circle cx="14" cy="18" r="2.5" {...p} />
-          <Circle cx="18" cy="18" r="2.5" {...p} />
+          <Path d="M14,7 L14,3.5" {...p} />
+          {/* Leaves */}
+          <Path d="M12.5,6 C10,4 11,2 14,3.5" {...pt} />
+          <Path d="M14,3.5 C17,2 18,4 15.5,6" {...pt} />
+          {/* Blackberry drupelets: 3-5-5-3-2 arrangement */}
+          <Circle cx="11"   cy="9"  r="2"  {...p} />
+          <Circle cx="14"   cy="9"  r="2"  {...p} />
+          <Circle cx="17"   cy="9"  r="2"  {...p} />
+          <Circle cx="8.5"  cy="13" r="2"  {...p} />
+          <Circle cx="11.5" cy="13" r="2"  {...p} />
+          <Circle cx="14.5" cy="13" r="2"  {...p} />
+          <Circle cx="17.5" cy="13" r="2"  {...p} />
+          <Circle cx="20.5" cy="13" r="2"  {...p} />
+          <Circle cx="8.5"  cy="17" r="2"  {...p} />
+          <Circle cx="11.5" cy="17" r="2"  {...p} />
+          <Circle cx="14.5" cy="17" r="2"  {...p} />
+          <Circle cx="17.5" cy="17" r="2"  {...p} />
+          <Circle cx="20.5" cy="17" r="2"  {...p} />
+          <Circle cx="10"   cy="21" r="2"  {...p} />
+          <Circle cx="13.5" cy="21" r="2"  {...p} />
+          <Circle cx="17"   cy="21" r="2"  {...p} />
+          <Circle cx="20"   cy="21" r="2"  {...p} />
+          <Circle cx="11.5" cy="25" r="2"  {...p} />
+          <Circle cx="15.5" cy="25" r="2"  {...p} />
         </Svg>
       );
     case 5:
       return (
         <Svg width={size} height={size} viewBox="0 0 28 28">
-          {/* Outer circle (peel) */}
-          <Circle cx="14" cy="14" r="11" {...p} />
-          {/* Inner circle (flesh/pith boundary) */}
+          {/* Outer circle — thick peel */}
+          <Circle cx="14" cy="14" r="11.5" stroke={color} strokeWidth={2.5} fill="none" />
+          {/* Peel inner boundary */}
           <Circle cx="14" cy="14" r="8.5" {...pt} />
-          {/* 6 segment dividers from center to flesh edge */}
+          {/* 10 segment lines from center to inner circle (every 36°) */}
           <Path
-            d="M14,5.5 L14,14 M21.4,9.5 L14,14 M21.4,18.5 L14,14 M14,22.5 L14,14 M6.6,18.5 L14,14 M6.6,9.5 L14,14"
-            strokeWidth={1.6} stroke={color} strokeLinecap="round" fill="none"
+            d="M14,14 L14,5.5
+               M14,14 L19,7.1
+               M14,14 L22.1,11.4
+               M14,14 L22.1,16.6
+               M14,14 L19,20.9
+               M14,14 L14,22.5
+               M14,14 L9,20.9
+               M14,14 L5.9,16.6
+               M14,14 L5.9,11.4
+               M14,14 L9,7.1"
+            strokeWidth={1.5} stroke={color} strokeLinecap="round" fill="none"
           />
-          {/* 6 seeds (one per segment, at ~r=5.5) */}
-          <Circle cx="14"   cy="8.5"  r="1.3" stroke={color} strokeWidth={1.4} fill="none" />
-          <Circle cx="19.8" cy="11.8" r="1.3" stroke={color} strokeWidth={1.4} fill="none" />
-          <Circle cx="19.8" cy="16.2" r="1.3" stroke={color} strokeWidth={1.4} fill="none" />
-          <Circle cx="14"   cy="19.5" r="1.3" stroke={color} strokeWidth={1.4} fill="none" />
-          <Circle cx="8.2"  cy="16.2" r="1.3" stroke={color} strokeWidth={1.4} fill="none" />
-          <Circle cx="8.2"  cy="11.8" r="1.3" stroke={color} strokeWidth={1.4} fill="none" />
+          {/* Center pip */}
+          <Circle cx="14" cy="14" r="1.5" stroke={color} strokeWidth={1.5} fill="none" />
         </Svg>
       );
     default:
