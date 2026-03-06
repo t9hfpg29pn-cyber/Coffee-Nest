@@ -6,15 +6,19 @@ const NAMES_KEY = "kj_userNames";
 interface UserNamesContextType {
   name1: string;
   name2: string;
+  user2active: boolean;
   setName1: (n: string) => Promise<void>;
   setName2: (n: string) => Promise<void>;
+  removeUser2: () => Promise<void>;
 }
 
 const UserNamesContext = createContext<UserNamesContextType>({
   name1: "Hase",
   name2: "Dodo",
+  user2active: true,
   setName1: async () => {},
   setName2: async () => {},
+  removeUser2: async () => {},
 });
 
 export function UserNamesProvider({ children }: { children: ReactNode }) {
@@ -26,7 +30,7 @@ export function UserNamesProvider({ children }: { children: ReactNode }) {
       if (!raw) return;
       const parsed = JSON.parse(raw);
       if (parsed.name1) setName1State(parsed.name1);
-      if (parsed.name2) setName2State(parsed.name2);
+      if (typeof parsed.name2 === "string") setName2State(parsed.name2);
     });
   }, []);
 
@@ -41,13 +45,20 @@ export function UserNamesProvider({ children }: { children: ReactNode }) {
   };
 
   const setName2 = async (n: string) => {
-    const val = n.trim() || "Dodo";
+    const val = n.trim();
     setName2State(val);
     await persist(name1, val);
   };
 
+  const removeUser2 = async () => {
+    setName2State("");
+    await persist(name1, "");
+  };
+
+  const user2active = name2.trim().length > 0;
+
   return (
-    <UserNamesContext.Provider value={{ name1, name2, setName1, setName2 }}>
+    <UserNamesContext.Provider value={{ name1, name2, user2active, setName1, setName2, removeUser2 }}>
       {children}
     </UserNamesContext.Provider>
   );

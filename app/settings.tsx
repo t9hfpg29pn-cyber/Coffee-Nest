@@ -45,9 +45,11 @@ export default function SettingsScreen() {
   const { design, setDesign } = useTheme();
   const cardExtras = useCardExtras();
 
-  const { name1, name2, setName1, setName2 } = useUserNames();
+  const { name1, name2, user2active, setName1, setName2, removeUser2 } = useUserNames();
   const [draft1, setDraft1] = useState(name1);
   const [draft2, setDraft2] = useState(name2);
+  const [showAddUser2, setShowAddUser2] = useState(false);
+  const [newUser2Draft, setNewUser2Draft] = useState("");
   const [exporting, setExporting] = useState(false);
   const [importing, setImporting] = useState(false);
 
@@ -57,7 +59,7 @@ export default function SettingsScreen() {
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
 
-  const isDirty = draft1.trim() !== name1 || draft2.trim() !== name2;
+  const isDirty = draft1.trim() !== name1 || (user2active && draft2.trim() !== name2);
 
   useEffect(() => {
     getGrinders().then(setGrinders);
@@ -90,14 +92,49 @@ export default function SettingsScreen() {
   };
 
   const handleSave = async () => {
-    if (!draft1.trim() || !draft2.trim()) {
-      showAlert("Hinweis", "Namen dürfen nicht leer sein.");
+    if (!draft1.trim()) {
+      showAlert("Hinweis", "Person 1 muss einen Namen haben.");
+      return;
+    }
+    if (user2active && !draft2.trim()) {
+      showAlert("Hinweis", "Person 2 muss einen Namen haben oder entfernt werden.");
       return;
     }
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     await setName1(draft1.trim());
-    await setName2(draft2.trim());
+    if (user2active) await setName2(draft2.trim());
     router.back();
+  };
+
+  const handleRemoveUser2 = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    showAlert(
+      "Person 2 entfernen",
+      `Möchtest du "${name2}" entfernen? Die Bewertungen bleiben gespeichert.`,
+      [
+        { text: "Abbrechen", style: "cancel" },
+        {
+          text: "Entfernen",
+          style: "destructive",
+          onPress: async () => {
+            await removeUser2();
+          },
+        },
+      ]
+    );
+  };
+
+  const handleAddUser2 = async () => {
+    const trimmed = newUser2Draft.trim();
+    if (!trimmed) {
+      showAlert("Hinweis", "Bitte einen Namen eingeben.");
+      return;
+    }
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    await setName2(trimmed);
+    setDraft2(trimmed);
+    setNewUser2Draft("");
+    setShowAddUser2(false);
   };
 
   const handleExport = async () => {
@@ -295,10 +332,10 @@ export default function SettingsScreen() {
 
         <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight, marginTop: 16 }]}>
           <Text style={[styles.sectionLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
-            NAMEN DER BENUTZER
+            BENUTZER
           </Text>
 
-          <View style={[styles.fieldRow, { borderBottomColor: colors.border }]}>
+          <View style={[styles.fieldRow, { borderBottomColor: user2active || showAddUser2 ? colors.border : "transparent" }]}>
             <View style={[styles.avatar, { backgroundColor: colors.tint + "22" }]}>
               <Text style={[styles.avatarText, { color: colors.tint, fontFamily: "Inter_700Bold" }]}>
                 {(draft1.trim()[0] ?? "?").toUpperCase()}
@@ -321,29 +358,81 @@ export default function SettingsScreen() {
             </View>
           </View>
 
-          <View style={[styles.fieldRow, { borderBottomColor: "transparent" }]}>
-            <View style={[styles.avatar, { backgroundColor: colors.tint + "22" }]}>
-              <Text style={[styles.avatarText, { color: colors.tint, fontFamily: "Inter_700Bold" }]}>
-                {(draft2.trim()[0] ?? "?").toUpperCase()}
-              </Text>
+          {user2active ? (
+            <View style={[styles.fieldRow, { borderBottomColor: "transparent" }]}>
+              <View style={[styles.avatar, { backgroundColor: colors.tint + "22" }]}>
+                <Text style={[styles.avatarText, { color: colors.tint, fontFamily: "Inter_700Bold" }]}>
+                  {(draft2.trim()[0] ?? "?").toUpperCase()}
+                </Text>
+              </View>
+              <View style={styles.fieldContent}>
+                <Text style={[styles.fieldHint, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                  Person 2
+                </Text>
+                <TextInput
+                  value={draft2}
+                  onChangeText={setDraft2}
+                  style={[styles.input, { color: colors.text, fontFamily: "Inter_500Medium" }]}
+                  placeholder="Dodo"
+                  placeholderTextColor={colors.textSecondary}
+                  maxLength={20}
+                  returnKeyType="done"
+                  onSubmitEditing={isDirty ? handleSave : undefined}
+                  autoCorrect={false}
+                />
+              </View>
+              <Pressable
+                onPress={handleRemoveUser2}
+                hitSlop={8}
+                style={{ padding: 6, marginLeft: 4 }}
+              >
+                <Ionicons name="trash-outline" size={18} color="#E05252" />
+              </Pressable>
             </View>
-            <View style={styles.fieldContent}>
-              <Text style={[styles.fieldHint, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
-                Person 2
-              </Text>
-              <TextInput
-                value={draft2}
-                onChangeText={setDraft2}
-                style={[styles.input, { color: colors.text, fontFamily: "Inter_500Medium" }]}
-                placeholder="Dodo"
-                placeholderTextColor={colors.textSecondary}
-                maxLength={20}
-                returnKeyType="done"
-                onSubmitEditing={isDirty ? handleSave : undefined}
-                autoCorrect={false}
-              />
+          ) : showAddUser2 ? (
+            <View style={[styles.fieldRow, { borderBottomColor: "transparent" }]}>
+              <View style={[styles.avatar, { backgroundColor: colors.border }]}>
+                <Text style={[styles.avatarText, { color: colors.textSecondary, fontFamily: "Inter_700Bold" }]}>
+                  {(newUser2Draft.trim()[0] ?? "+").toUpperCase()}
+                </Text>
+              </View>
+              <View style={styles.fieldContent}>
+                <Text style={[styles.fieldHint, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                  Person 2
+                </Text>
+                <TextInput
+                  value={newUser2Draft}
+                  onChangeText={setNewUser2Draft}
+                  style={[styles.input, { color: colors.text, fontFamily: "Inter_500Medium" }]}
+                  placeholder="Name eingeben"
+                  placeholderTextColor={colors.textSecondary}
+                  maxLength={20}
+                  returnKeyType="done"
+                  onSubmitEditing={handleAddUser2}
+                  autoFocus
+                  autoCorrect={false}
+                />
+              </View>
+              <Pressable onPress={handleAddUser2} hitSlop={8} style={{ padding: 6, marginLeft: 4 }}>
+                <Ionicons name="checkmark" size={20} color={colors.tint} />
+              </Pressable>
+              <Pressable onPress={() => { setShowAddUser2(false); setNewUser2Draft(""); }} hitSlop={8} style={{ padding: 6 }}>
+                <Ionicons name="close" size={18} color={colors.textSecondary} />
+              </Pressable>
             </View>
-          </View>
+          ) : (
+            <Pressable
+              onPress={() => setShowAddUser2(true)}
+              style={({ pressed }) => [styles.addUserRow, { opacity: pressed ? 0.6 : 1 }]}
+            >
+              <View style={[styles.avatar, { backgroundColor: colors.border }]}>
+                <Ionicons name="add" size={18} color={colors.textSecondary} />
+              </View>
+              <Text style={[styles.addUserText, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                Person 2 hinzufügen
+              </Text>
+            </Pressable>
+          )}
         </View>
 
         <Text style={[styles.hint, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
@@ -545,6 +634,18 @@ const styles = StyleSheet.create({
   grinderName: {
     flex: 1,
     fontSize: 16,
+  },
+  addUserRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 12,
+  },
+  addUserText: {
+    flex: 1,
+    fontSize: 15,
+    opacity: 0.6,
   },
   addGrinderRow: {
     flexDirection: "row",

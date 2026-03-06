@@ -162,7 +162,7 @@ export default function RoasteryScreen() {
   const cardExtras = useCardExtras();
   const [showConfetti, setShowConfetti] = useState(false);
 
-  const { name1, name2 } = useUserNames();
+  const { name1, name2, user2active } = useUserNames();
   const [coffees, setCoffees] = useState<Coffee[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [showEditRoastery, setShowEditRoastery] = useState(false);
@@ -372,7 +372,15 @@ export default function RoasteryScreen() {
                   <Text style={[styles.cardTitle, { color: colors.text, fontFamily: "Inter_600SemiBold" }]}>
                     {item.name}
                   </Text>
-                  {item.pricePerKg ? (
+                  {item.aromaDescription ? (
+                    <Text
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
+                      style={[styles.cardAroma, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}
+                    >
+                      {item.aromaDescription}
+                    </Text>
+                  ) : item.pricePerKg ? (
                     <Text style={[styles.cardPrice, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
                       {formatPrice(item.pricePerKg)} €/kg
                     </Text>
@@ -401,26 +409,30 @@ export default function RoasteryScreen() {
                     )}
                   </View>
                 </View>
-                <View style={[styles.ratingDivider, { backgroundColor: colors.border }]} />
-                <View style={styles.ratingRow}>
-                  <Text style={[styles.ratingLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
-                    {name2}
-                  </Text>
-                  <View style={styles.ratingValue}>
-                    {item.dodoRating !== null ? (
-                      <>
-                        <Text style={[styles.ratingNum, { color: colors.tint, fontFamily: "Inter_700Bold" }]}>
-                          {item.dodoRating}
-                        </Text>
-                        <Text style={[styles.ratingMax, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
-                          /10
-                        </Text>
-                      </>
-                    ) : (
-                      <Text style={[styles.ratingNum, { color: colors.textSecondary, fontFamily: "Inter_400Regular", opacity: 0.4 }]}>–</Text>
-                    )}
-                  </View>
-                </View>
+                {user2active && (
+                  <>
+                    <View style={[styles.ratingDivider, { backgroundColor: colors.border }]} />
+                    <View style={styles.ratingRow}>
+                      <Text style={[styles.ratingLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
+                        {name2}
+                      </Text>
+                      <View style={styles.ratingValue}>
+                        {item.dodoRating !== null ? (
+                          <>
+                            <Text style={[styles.ratingNum, { color: colors.tint, fontFamily: "Inter_700Bold" }]}>
+                              {item.dodoRating}
+                            </Text>
+                            <Text style={[styles.ratingMax, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                              /10
+                            </Text>
+                          </>
+                        ) : (
+                          <Text style={[styles.ratingNum, { color: colors.textSecondary, fontFamily: "Inter_400Regular", opacity: 0.4 }]}>–</Text>
+                        )}
+                      </View>
+                    </View>
+                  </>
+                )}
               </View>
             </Pressable>
           )}
@@ -642,6 +654,7 @@ const styles = StyleSheet.create({
   },
   cardMain: { flex: 1, gap: 2 },
   cardTitle: { fontSize: 16 },
+  cardAroma: { fontSize: 12, opacity: 0.75 },
   cardPrice: { fontSize: 13 },
   cardDivider: { height: 1, marginHorizontal: 16 },
   cardRatings: {

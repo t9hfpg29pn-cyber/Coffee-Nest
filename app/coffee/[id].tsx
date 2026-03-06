@@ -282,7 +282,7 @@ export default function CoffeeDetailScreen() {
   const colors = useThemeColors();
   const cardExtras = useCardExtras();
 
-  const { name1, name2 } = useUserNames();
+  const { name1, name2, user2active } = useUserNames();
   const [coffee, setCoffee] = useState<Coffee | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -481,20 +481,24 @@ export default function CoffeeDetailScreen() {
               borderColor={colors.border}
               surfaceColor={colors.surface}
             />
-            <View style={{ height: 1, backgroundColor: colors.border }} />
-            <RatingSlider
-              label={`${name2} Rating`}
-              value={dodoRating}
-              min={0}
-              max={10}
-              onChange={(v) => { setDodoRating(v); markChanged(); }}
-              minLabel="schlecht"
-              maxLabel="grossartig"
-              color={colors.tint}
-              textColor={colors.text}
-              borderColor={colors.border}
-              surfaceColor={colors.surface}
-            />
+            {user2active && (
+              <>
+                <View style={{ height: 1, backgroundColor: colors.border }} />
+                <RatingSlider
+                  label={`${name2} Rating`}
+                  value={dodoRating}
+                  min={0}
+                  max={10}
+                  onChange={(v) => { setDodoRating(v); markChanged(); }}
+                  minLabel="schlecht"
+                  maxLabel="grossartig"
+                  color={colors.tint}
+                  textColor={colors.text}
+                  borderColor={colors.border}
+                  surfaceColor={colors.surface}
+                />
+              </>
+            )}
           </View>
         </View>
 
