@@ -134,23 +134,12 @@ function AromaIcon({ step, size = 26, color }: { step: number; size?: number; co
     case 2:
       return (
         <Svg width={size} height={size} viewBox="0 0 28 28">
-          {/* Aroma waves — rise from the top of the beans */}
-          <Path d="M10,8 Q8,5.5 10,3" {...p} />
-          <Path d="M14,7 Q12,4.5 14,2" {...p} />
-          <Path d="M18,8 Q20,5.5 18,3" {...p} />
-          {/* Left bean — tilted left ~25° */}
-          <G transform="rotate(-25, 9, 18)">
-            <Path d="M9,11 C13,11 13,25 9,25 C5,25 5,11 9,11 Z" {...p} />
-            <Path d="M9,13 C11,16 7,20 9,23" {...p} />
-          </G>
-          {/* Right bean — tilted right ~25° */}
-          <G transform="rotate(25, 19, 18)">
-            <Path d="M19,11 C23,11 23,25 19,25 C15,25 15,11 19,11 Z" {...p} />
-            <Path d="M19,13 C21,16 17,20 19,23" {...p} />
-          </G>
-          {/* Center bean — upright, in front */}
-          <Path d="M14,10 C18,10 18,24 14,24 C10,24 10,10 14,10 Z" {...p} />
-          <Path d="M14,12 C16,15 12,19 14,22" {...p} />
+          {/* Two aroma waves */}
+          <Path d="M11,8 Q9,5 11,3" {...p} />
+          <Path d="M17,8 Q19,5 17,3" {...p} />
+          {/* Single upright coffee bean */}
+          <Path d="M14,9 C19,9 19,25 14,25 C9,25 9,9 14,9 Z" {...p} />
+          <Path d="M14,11 C16,14 12,18 14,22" {...p} />
         </Svg>
       );
     case 3:
@@ -168,30 +157,17 @@ function AromaIcon({ step, size = 26, color }: { step: number; size?: number; co
       return (
         <Svg width={size} height={size} viewBox="0 0 28 28">
           {/* Stem */}
-          <Path d="M14,7 L14,3.5" {...p} />
-          {/* Leaves */}
-          <Path d="M12.5,6 C10,4 11,2 14,3.5" {...pt} />
-          <Path d="M14,3.5 C17,2 18,4 15.5,6" {...pt} />
-          {/* Blackberry drupelets: 3-5-5-3-2 arrangement */}
-          <Circle cx="11"   cy="9"  r="2"  {...p} />
-          <Circle cx="14"   cy="9"  r="2"  {...p} />
-          <Circle cx="17"   cy="9"  r="2"  {...p} />
-          <Circle cx="8.5"  cy="13" r="2"  {...p} />
-          <Circle cx="11.5" cy="13" r="2"  {...p} />
-          <Circle cx="14.5" cy="13" r="2"  {...p} />
-          <Circle cx="17.5" cy="13" r="2"  {...p} />
-          <Circle cx="20.5" cy="13" r="2"  {...p} />
-          <Circle cx="8.5"  cy="17" r="2"  {...p} />
-          <Circle cx="11.5" cy="17" r="2"  {...p} />
-          <Circle cx="14.5" cy="17" r="2"  {...p} />
-          <Circle cx="17.5" cy="17" r="2"  {...p} />
-          <Circle cx="20.5" cy="17" r="2"  {...p} />
-          <Circle cx="10"   cy="21" r="2"  {...p} />
-          <Circle cx="13.5" cy="21" r="2"  {...p} />
-          <Circle cx="17"   cy="21" r="2"  {...p} />
-          <Circle cx="20"   cy="21" r="2"  {...p} />
-          <Circle cx="11.5" cy="25" r="2"  {...p} />
-          <Circle cx="15.5" cy="25" r="2"  {...p} />
+          <Path d="M14,6 L14,3" {...p} />
+          {/* Small leaf */}
+          <Path d="M10,4.5 C10,1.5 14,1 14,3" {...pt} />
+          {/* Grape cluster: 2-3-3 arrangement, r=3.5 */}
+          <Circle cx="11" cy="10" r="3.5" {...p} />
+          <Circle cx="17" cy="10" r="3.5" {...p} />
+          <Circle cx="8"  cy="17" r="3.5" {...p} />
+          <Circle cx="14" cy="17" r="3.5" {...p} />
+          <Circle cx="20" cy="17" r="3.5" {...p} />
+          <Circle cx="11" cy="24" r="3.5" {...p} />
+          <Circle cx="17" cy="24" r="3.5" {...p} />
         </Svg>
       );
     case 5:
