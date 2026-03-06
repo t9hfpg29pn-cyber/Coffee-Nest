@@ -14,7 +14,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { getCoffeeById, updateCoffee, deleteCoffee, getGrinders, Coffee } from "@/lib/storage";
+import { getCoffeeById, updateCoffee, deleteCoffee, getGrinders, Coffee, GrindSetting } from "@/lib/storage";
 import { useUserNames } from "@/context/UserNamesContext";
 import { useThemeColors, useCardExtras } from "@/context/ThemeContext";
 
@@ -211,18 +211,24 @@ function SectionHeader({ title, color }: { title: string; color: string }) {
   );
 }
 
+type GrindSettingDraft = { grinder: string; levelText: string };
+
 function GrinderPicker({
   grinders,
-  selected,
-  onSelect,
+  grindSettings,
+  onToggle,
+  onLevelChange,
+  onBlurLevel,
   color,
   textColor,
   borderColor,
   surfaceColor,
 }: {
   grinders: string[];
-  selected: string;
-  onSelect: (v: string) => void;
+  grindSettings: GrindSettingDraft[];
+  onToggle: (grinder: string) => void;
+  onLevelChange: (grinder: string, v: string) => void;
+  onBlurLevel: (grinder: string) => void;
   color: string;
   textColor: string;
   borderColor: string;
@@ -235,13 +241,13 @@ function GrinderPicker({
       </Text>
       <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
         {grinders.map((g) => {
-          const active = g === selected;
+          const active = grindSettings.some((s) => s.grinder === g);
           return (
             <Pressable
               key={g}
               onPress={() => {
                 Haptics.selectionAsync();
-                onSelect(g);
+                onToggle(g);
               }}
               style={({ pressed }) => ({
                 paddingHorizontal: 16,
@@ -272,6 +278,52 @@ function GrinderPicker({
           </Text>
         )}
       </View>
+
+      {grindSettings.length > 0 && (
+        <View style={{ gap: 8 }}>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+            <Text style={{ color: textColor, fontFamily: "Inter_600SemiBold", fontSize: 15 }}>
+              Mahlgrad
+            </Text>
+            <Text style={{ color: textColor, fontFamily: "Inter_400Regular", fontSize: 12, opacity: 0.55 }}>
+              0 – 50
+            </Text>
+          </View>
+          <View style={{ flexDirection: "row", gap: 10, flexWrap: "wrap" }}>
+            {grindSettings.map(({ grinder, levelText }) => (
+              <View key={grinder} style={{ gap: 4, minWidth: 72, flex: 1, maxWidth: 140 }}>
+                <Text
+                  numberOfLines={1}
+                  style={{ color: textColor, fontFamily: "Inter_500Medium", fontSize: 11, opacity: 0.6 }}
+                >
+                  {grinder}
+                </Text>
+                <View
+                  style={{
+                    borderWidth: 1.5,
+                    borderColor,
+                    borderRadius: 10,
+                    backgroundColor: surfaceColor,
+                    paddingHorizontal: 12,
+                    paddingVertical: 8,
+                  }}
+                >
+                  <TextInput
+                    style={{ color: textColor, fontFamily: "Inter_600SemiBold", fontSize: 18, textAlign: "center" }}
+                    value={levelText}
+                    onChangeText={(v) => onLevelChange(grinder, v.replace(/[^0-9.,]/g, ""))}
+                    onBlur={() => onBlurLevel(grinder)}
+                    keyboardType="decimal-pad"
+                    placeholder="0"
+                    placeholderTextColor={textColor + "44"}
+                    selectTextOnFocus
+                  />
+                </View>
+              </View>
+            ))}
+          </View>
+        </View>
+      )}
     </View>
   );
 }
@@ -292,8 +344,7 @@ export default function CoffeeDetailScreen() {
   const [name, setName] = useState("");
   const [haseRating, setHaseRating] = useState<number | null>(null);
   const [dodoRating, setDodoRating] = useState<number | null>(null);
-  const [grinderName, setGrinderName] = useState("");
-  const [grindLevelText, setGrindLevelText] = useState("0");
+  const [grindSettings, setGrindSettings] = useState<GrindSettingDraft[]>([]);
   const [aroma, setAroma] = useState(3);
   const [aromaDescription, setAromaDescription] = useState("");
   const [notes, setNotes] = useState("");
@@ -311,24 +362,54 @@ export default function CoffeeDetailScreen() {
         setName(data.name);
         setHaseRating(data.haseRating ?? null);
         setDodoRating(data.dodoRating ?? null);
-        setGrinderName(data.grinderName ?? (grindersData[0] ?? ""));
-        setGrindLevelText(
-          data.grindLevel != null && data.grindLevel > 0
-            ? String(data.grindLevel)
-            : "0"
-        );
+        if (data.grindSettings && data.grindSettings.length > 0) {
+          setGrindSettings(data.grindSettings.map((s) => ({
+            grinder: s.grinder,
+            levelText: s.level > 0 ? String(s.level) : "0",
+          })));
+        } else if (data.grinderName) {
+          setGrindSettings([{
+            grinder: data.grinderName,
+            levelText: data.grindLevel > 0 ? String(data.grindLevel) : "0",
+          }]);
+        } else if (grindersData[0]) {
+          setGrindSettings([{ grinder: grindersData[0], levelText: "0" }]);
+        }
         setAroma(data.aroma);
         setAromaDescription(data.aromaDescription);
         setNotes(data.notes);
         setPricePerKg(data.pricePerKg);
-      } else {
-        setGrinderName(grindersData[0] ?? "");
+      } else if (grindersData[0]) {
+        setGrindSettings([{ grinder: grindersData[0], levelText: "0" }]);
       }
       setLoading(false);
     })();
   }, [id]);
 
   const markChanged = () => setHasChanges(true);
+
+  const toggleGrinder = (grinder: string) => {
+    setGrindSettings((prev) => {
+      const exists = prev.find((s) => s.grinder === grinder);
+      if (exists) return prev.filter((s) => s.grinder !== grinder);
+      return [...prev, { grinder, levelText: "0" }];
+    });
+    markChanged();
+  };
+
+  const updateGrindLevel = (grinder: string, v: string) => {
+    setGrindSettings((prev) => prev.map((s) => s.grinder === grinder ? { ...s, levelText: v } : s));
+    markChanged();
+  };
+
+  const normalizeGrindLevel = (grinder: string) => {
+    setGrindSettings((prev) => prev.map((s) => {
+      if (s.grinder !== grinder) return s;
+      const parsed = parseFloat(s.levelText.replace(",", "."));
+      const val = isNaN(parsed) ? 0 : Math.round(Math.min(50, Math.max(0, parsed)) * 10) / 10;
+      return { ...s, levelText: String(val) };
+    }));
+  };
 
   const parseGrindLevel = (text: string): number => {
     const val = parseFloat(text.replace(",", "."));
@@ -347,8 +428,9 @@ export default function CoffeeDetailScreen() {
       name: name.trim(),
       haseRating,
       dodoRating,
-      grinderName,
-      grindLevel: parseGrindLevel(grindLevelText),
+      grindSettings: grindSettings.map((s) => ({ grinder: s.grinder, level: parseGrindLevel(s.levelText) })),
+      grinderName: grindSettings[0]?.grinder ?? "",
+      grindLevel: grindSettings[0] ? parseGrindLevel(grindSettings[0].levelText) : 0,
       aroma,
       aromaDescription,
       notes,
@@ -507,42 +589,15 @@ export default function CoffeeDetailScreen() {
           <View style={{ gap: 20, marginTop: 8 }}>
             <GrinderPicker
               grinders={grinders}
-              selected={grinderName}
-              onSelect={(v) => { setGrinderName(v); markChanged(); }}
+              grindSettings={grindSettings}
+              onToggle={toggleGrinder}
+              onLevelChange={updateGrindLevel}
+              onBlurLevel={normalizeGrindLevel}
               color={colors.tint}
               textColor={colors.text}
               borderColor={colors.border}
               surfaceColor={colors.surface}
             />
-            <View style={{ gap: 8 }}>
-              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                <Text style={{ color: colors.text, fontFamily: "Inter_600SemiBold", fontSize: 15 }}>
-                  Mahlgrad
-                </Text>
-                <Text style={{ color: colors.textSecondary, fontFamily: "Inter_400Regular", fontSize: 12, opacity: 0.7 }}>
-                  0 – 50
-                </Text>
-              </View>
-              <View style={[styles.grindInputRow, { borderColor: colors.border, backgroundColor: colors.surface }]}>
-                <TextInput
-                  style={[styles.grindInput, { color: colors.text, fontFamily: "Inter_600SemiBold" }]}
-                  value={grindLevelText}
-                  onChangeText={(v) => {
-                    const cleaned = v.replace(/[^0-9.,]/g, "");
-                    setGrindLevelText(cleaned);
-                    markChanged();
-                  }}
-                  onBlur={() => {
-                    const parsed = parseGrindLevel(grindLevelText);
-                    setGrindLevelText(String(parsed));
-                  }}
-                  keyboardType="decimal-pad"
-                  placeholder="0"
-                  placeholderTextColor={colors.textSecondary}
-                  selectTextOnFocus
-                />
-              </View>
-            </View>
             <View style={{ height: 1, backgroundColor: colors.border }} />
             <ScaleSlider
               label="Aroma"

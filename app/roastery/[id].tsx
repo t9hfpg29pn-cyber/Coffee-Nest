@@ -214,6 +214,7 @@ export default function RoasteryScreen() {
       dodoRating: null,
       grinderName: defaultGrinder,
       grindLevel: 0,
+      grindSettings: defaultGrinder ? [{ grinder: defaultGrinder, level: 0 }] : [],
       aroma: 3,
       aromaDescription: "",
       notes: "",

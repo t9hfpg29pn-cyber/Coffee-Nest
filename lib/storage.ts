@@ -7,6 +7,11 @@ export interface Roastery {
   createdAt: string;
 }
 
+export interface GrindSetting {
+  grinder: string;
+  level: number;
+}
+
 export interface Coffee {
   id: string;
   roasteryId: string;
@@ -15,6 +20,7 @@ export interface Coffee {
   dodoRating: number | null;
   grindLevel: number;
   grinderName: string;
+  grindSettings?: GrindSetting[];
   aroma: number;
   aromaDescription: string;
   notes: string;
