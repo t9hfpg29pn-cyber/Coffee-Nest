@@ -14,6 +14,7 @@ import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useLocalSearchParams, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import Svg, { Path } from "react-native-svg";
 import * as Haptics from "expo-haptics";
 import {
   getCoffees,
@@ -29,28 +30,21 @@ import { useUserNames } from "@/context/UserNamesContext";
 import { useThemeColors } from "@/context/ThemeContext";
 
 function CoffeeBeanIcon({ size = 22, color }: { size?: number; color: string }) {
+  const h = Math.round(size * 1.2);
   return (
-    <View style={{ width: size, height: Math.round(size * 1.3), alignItems: "center", justifyContent: "center" }}>
-      <View
-        style={{
-          width: size,
-          height: Math.round(size * 1.3),
-          borderRadius: size * 0.5,
-          backgroundColor: color,
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <View
-          style={{
-            width: Math.round(size * 0.22),
-            height: Math.round(size * 1.0),
-            borderRadius: Math.round(size * 0.11),
-            backgroundColor: "rgba(255,255,255,0.28)",
-          }}
-        />
-      </View>
-    </View>
+    <Svg width={size} height={h} viewBox="0 0 60 72">
+      <Path
+        d="M30 2 C46 2 58 14 58 36 C58 58 46 70 30 70 C14 70 2 58 2 36 C2 14 14 2 30 2 Z"
+        fill={color}
+      />
+      <Path
+        d="M31 8 C41 17 41 28 31 36 C21 44 21 55 31 64"
+        fill="none"
+        stroke="rgba(255,255,255,0.40)"
+        strokeWidth="6.5"
+        strokeLinecap="round"
+      />
+    </Svg>
   );
 }
 
@@ -297,7 +291,7 @@ export default function RoasteryScreen() {
             >
               <View style={styles.cardTop}>
                 <View style={[styles.cardIcon, { backgroundColor: colors.tint + "20" }]}>
-                  <CoffeeBeanIcon size={20} color={colors.tint} />
+                  <CoffeeBeanIcon size={22} color={colors.tint} />
                 </View>
                 <View style={styles.cardMain}>
                   <Text style={[styles.cardTitle, { color: colors.text, fontFamily: "Inter_600SemiBold" }]}>
