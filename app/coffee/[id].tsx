@@ -115,29 +115,44 @@ function RatingSlider({
 
 function AromaIcon({ step, size = 26, color }: { step: number; size?: number; color: string }) {
   const p = { stroke: color, strokeWidth: 2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, fill: "none" };
+  const pt = { ...p, strokeWidth: 1.7 };
   switch (step) {
     case 1:
       return (
         <Svg width={size} height={size} viewBox="0 0 28 28">
-          <Rect x="3" y="7" width="22" height="14" rx="2" ry="2" {...p} />
-          <Line x1="3" y1="14" x2="25" y2="14" {...p} />
-          <Line x1="14" y1="7" x2="14" y2="21" {...p} />
+          {/* Chocolate bar: tall 2-col × 4-row grid */}
+          <Rect x="2" y="2" width="16" height="22" rx="2" ry="2" {...p} />
+          <Line x1="2" y1="7.5" x2="18" y2="7.5" {...pt} />
+          <Line x1="2" y1="13" x2="18" y2="13" {...pt} />
+          <Line x1="2" y1="18.5" x2="18" y2="18.5" {...pt} />
+          <Line x1="10" y1="2" x2="10" y2="24" {...pt} />
+          {/* Walnut: circle overlapping bottom-right of bar */}
+          <Circle cx="22" cy="22" r="5.5" {...p} />
+          {/* Walnut interior squiggle — brain-like texture */}
+          <Path d="M17.5,22 Q19,20 20.5,22 Q22,24 23.5,22 Q25,20 26.5,22" {...pt} />
+          <Path d="M18.5,24 Q20,22.5 21.5,24 Q23,25.5 24.5,24" {...pt} />
         </Svg>
       );
     case 2:
       return (
         <Svg width={size} height={size} viewBox="0 0 28 28">
-          <Path d="M10,4 C15,4 16,8 16,14 C16,20 15,24 10,24 C5,24 4,20 4,14 C4,8 5,4 10,4 Z" {...p} />
-          <Path d="M10,7 C12,10 8,14 10,18 C11,20 10,22 10,23" {...p} />
-          <Path d="M19,21 Q21,17 19,13 Q17,9 19,6" {...p} />
-          <Path d="M23,21 Q25,17 23,13 Q21,9 23,6" {...p} />
+          {/* Horizontal (lying) coffee bean */}
+          <Path d="M4,20 C4,15 24,15 24,20 C24,25 4,25 4,20 Z" {...p} />
+          {/* Bean crease — horizontal S-curve */}
+          <Path d="M4,20 C9,18 15,22 24,20" {...p} />
+          {/* Aroma waves rising above */}
+          <Path d="M10,14 Q8,11 10,8" {...p} />
+          <Path d="M14,13 Q12,10 14,7" {...p} />
+          <Path d="M18,14 Q20,11 18,8" {...p} />
         </Svg>
       );
     case 3:
       return (
         <Svg width={size} height={size} viewBox="0 0 28 28">
+          {/* Coffee bean (left) */}
           <Path d="M9,5 C13,5 14,9 14,14 C14,19 13,23 9,23 C5,23 4,19 4,14 C4,9 5,5 9,5 Z" {...p} />
           <Path d="M9,8 C11,11 7,14 9,17 C10,19 9,21 9,22" {...p} />
+          {/* Leaf (right) */}
           <Path d="M19,6 C25,8 25,20 19,22 C14,20 14,8 19,6 Z" {...p} />
           <Path d="M19,6 L19,22" {...p} />
         </Svg>
@@ -145,18 +160,40 @@ function AromaIcon({ step, size = 26, color }: { step: number; size?: number; co
     case 4:
       return (
         <Svg width={size} height={size} viewBox="0 0 28 28">
-          <Path d="M14,7 C13,5 11,4 10,5" {...p} />
-          <Circle cx="14" cy="11" r="4.5" {...p} />
-          <Circle cx="9" cy="19" r="4.5" {...p} />
-          <Circle cx="19" cy="19" r="4.5" {...p} />
+          {/* Stem */}
+          <Path d="M14,5.5 C13,3.5 11,3 10,4" {...p} />
+          {/* Blackberry: hexagonal packing of drupelets, 3-4-3 arrangement */}
+          <Circle cx="10" cy="8"  r="2.5" {...p} />
+          <Circle cx="14" cy="8"  r="2.5" {...p} />
+          <Circle cx="18" cy="8"  r="2.5" {...p} />
+          <Circle cx="8"  cy="13" r="2.5" {...p} />
+          <Circle cx="12" cy="13" r="2.5" {...p} />
+          <Circle cx="16" cy="13" r="2.5" {...p} />
+          <Circle cx="20" cy="13" r="2.5" {...p} />
+          <Circle cx="10" cy="18" r="2.5" {...p} />
+          <Circle cx="14" cy="18" r="2.5" {...p} />
+          <Circle cx="18" cy="18" r="2.5" {...p} />
         </Svg>
       );
     case 5:
       return (
         <Svg width={size} height={size} viewBox="0 0 28 28">
+          {/* Outer circle (peel) */}
           <Circle cx="14" cy="14" r="11" {...p} />
-          <Path d="M14,14 L14,3 M14,14 L23.5,8.5 M14,14 L23.5,19.5 M14,14 L14,25 M14,14 L4.5,19.5 M14,14 L4.5,8.5" strokeWidth={1.6} stroke={color} strokeLinecap="round" fill="none" />
-          <Circle cx="14" cy="14" r="2.5" {...p} />
+          {/* Inner circle (flesh/pith boundary) */}
+          <Circle cx="14" cy="14" r="8.5" {...pt} />
+          {/* 6 segment dividers from center to flesh edge */}
+          <Path
+            d="M14,5.5 L14,14 M21.4,9.5 L14,14 M21.4,18.5 L14,14 M14,22.5 L14,14 M6.6,18.5 L14,14 M6.6,9.5 L14,14"
+            strokeWidth={1.6} stroke={color} strokeLinecap="round" fill="none"
+          />
+          {/* 6 seeds (one per segment, at ~r=5.5) */}
+          <Circle cx="14"   cy="8.5"  r="1.3" stroke={color} strokeWidth={1.4} fill="none" />
+          <Circle cx="19.8" cy="11.8" r="1.3" stroke={color} strokeWidth={1.4} fill="none" />
+          <Circle cx="19.8" cy="16.2" r="1.3" stroke={color} strokeWidth={1.4} fill="none" />
+          <Circle cx="14"   cy="19.5" r="1.3" stroke={color} strokeWidth={1.4} fill="none" />
+          <Circle cx="8.2"  cy="16.2" r="1.3" stroke={color} strokeWidth={1.4} fill="none" />
+          <Circle cx="8.2"  cy="11.8" r="1.3" stroke={color} strokeWidth={1.4} fill="none" />
         </Svg>
       );
     default:
@@ -361,7 +398,7 @@ function GrinderPicker({
               <View key={grinder} style={{ gap: 4, minWidth: 72, flex: 1, maxWidth: 140 }}>
                 <Text
                   numberOfLines={1}
-                  style={{ color: textColor, fontFamily: "Inter_500Medium", fontSize: 11, opacity: 0.6 }}
+                  style={{ color: textColor, fontFamily: "Inter_500Medium", fontSize: 11, opacity: 0.6, textAlign: "center" }}
                 >
                   {grinder}
                 </Text>
