@@ -16,7 +16,7 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { getCoffeeById, updateCoffee, deleteCoffee, getGrinders, Coffee } from "@/lib/storage";
 import { useUserNames } from "@/context/UserNamesContext";
-import { useThemeColors } from "@/context/ThemeContext";
+import { useThemeColors, useCardExtras } from "@/context/ThemeContext";
 
 function RatingSlider({
   label,
@@ -280,6 +280,7 @@ export default function CoffeeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
   const colors = useThemeColors();
+  const cardExtras = useCardExtras();
 
   const { name1, name2 } = useUserNames();
   const [coffee, setCoffee] = useState<Coffee | null>(null);
@@ -450,7 +451,7 @@ export default function CoffeeDetailScreen() {
         keyboardShouldPersistTaps="handled"
         bottomOffset={24}
       >
-        <View style={[styles.section, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
+        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight }]}>
           <SectionHeader title="KAFFEE" color={colors.textSecondary} />
           <TextInput
             style={[
@@ -464,7 +465,7 @@ export default function CoffeeDetailScreen() {
           />
         </View>
 
-        <View style={[styles.section, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
+        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight }]}>
           <SectionHeader title="BEWERTUNGEN" color={colors.textSecondary} />
           <View style={{ gap: 20, marginTop: 8 }}>
             <RatingSlider
@@ -497,7 +498,7 @@ export default function CoffeeDetailScreen() {
           </View>
         </View>
 
-        <View style={[styles.section, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
+        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight }]}>
           <SectionHeader title="EIGENSCHAFTEN" color={colors.textSecondary} />
           <View style={{ gap: 20, marginTop: 8 }}>
             <GrinderPicker
@@ -554,7 +555,7 @@ export default function CoffeeDetailScreen() {
           </View>
         </View>
 
-        <View style={[styles.section, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
+        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight }]}>
           <SectionHeader title="NOTIZEN" color={colors.textSecondary} />
           <View style={{ gap: 16, marginTop: 8 }}>
             <View style={{ gap: 6 }}>
@@ -604,7 +605,7 @@ export default function CoffeeDetailScreen() {
           </View>
         </View>
 
-        <View style={[styles.section, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
+        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight }]}>
           <SectionHeader title="PREIS" color={colors.textSecondary} />
           <View style={{ gap: 6, marginTop: 8 }}>
             <Text style={[styles.fieldLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>

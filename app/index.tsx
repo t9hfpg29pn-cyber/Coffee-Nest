@@ -18,11 +18,12 @@ import { Ionicons, Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { getRoasteries, saveRoastery, deleteRoastery, getCoffees, Roastery } from "@/lib/storage";
 import { useUserNames } from "@/context/UserNamesContext";
-import { useThemeColors } from "@/context/ThemeContext";
+import { useThemeColors, useCardExtras } from "@/context/ThemeContext";
 
 export default function RoasteriesScreen() {
   const insets = useSafeAreaInsets();
   const colors = useThemeColors();
+  const cardExtras = useCardExtras();
 
   const { name1, name2 } = useUserNames();
   const [roasteries, setRoasteries] = useState<Roastery[]>([]);
@@ -173,6 +174,7 @@ export default function RoasteriesScreen() {
           </View>
         </View>
         <Pressable
+          testID="add-roastery-btn"
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             setShowModal(true);
@@ -312,9 +314,11 @@ export default function RoasteriesScreen() {
               onLongPress={() => handleDelete(item)}
               style={({ pressed }) => [
                 styles.card,
+                cardExtras.shadow,
                 {
                   backgroundColor: colors.surfaceElevated,
                   borderColor: colors.border,
+                  borderTopColor: cardExtras.topHighlight,
                   opacity: pressed ? 0.92 : 1,
                   transform: [{ scale: pressed ? 0.985 : 1 }],
                 },

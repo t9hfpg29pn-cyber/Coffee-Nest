@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,6 +9,8 @@ import {
   Modal,
   Alert,
   Platform,
+  Animated,
+  Dimensions,
 } from "react-native";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -27,9 +29,9 @@ import {
   Coffee,
 } from "@/lib/storage";
 import { useUserNames } from "@/context/UserNamesContext";
-import { useThemeColors } from "@/context/ThemeContext";
+import { useThemeColors, useCardExtras } from "@/context/ThemeContext";
 
-function CoffeeBeanIcon({ size = 22, color }: { size?: number; color: string }) {
+function CoffeeBeanIcon({ size = 18, color }: { size?: number; color: string }) {
   const h = Math.round(size * 1.2);
   return (
     <Svg width={size} height={h} viewBox="0 0 60 72">
@@ -45,6 +47,73 @@ function CoffeeBeanIcon({ size = 22, color }: { size?: number; color: string }) 
         strokeLinecap="round"
       />
     </Svg>
+  );
+}
+
+const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
+
+type ConfettiParticle = {
+  x: number;
+  size: number;
+  delay: number;
+  duration: number;
+  endRotation: number;
+  anim: Animated.Value;
+};
+
+function CoffeeBeanConfetti({ active, color }: { active: boolean; color: string }) {
+  const particles = useRef<ConfettiParticle[]>(
+    Array.from({ length: 14 }, (_, i) => ({
+      x: (SCREEN_W / 14) * i + Math.random() * (SCREEN_W / 14) * 0.8,
+      size: 10 + Math.floor(Math.random() * 8),
+      delay: Math.floor(Math.random() * 600),
+      duration: 1300 + Math.floor(Math.random() * 900),
+      endRotation: (Math.random() > 0.5 ? 1 : -1) * (150 + Math.floor(Math.random() * 360)),
+      anim: new Animated.Value(0),
+    }))
+  ).current;
+
+  useEffect(() => {
+    if (!active) return;
+    particles.forEach((p) => p.anim.setValue(0));
+    const anims = particles.map((p) =>
+      Animated.sequence([
+        Animated.delay(p.delay),
+        Animated.timing(p.anim, {
+          toValue: 1,
+          duration: p.duration,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    Animated.parallel(anims).start();
+  }, [active]);
+
+  return (
+    <View style={[StyleSheet.absoluteFillObject, { pointerEvents: "none" }]}>
+      {particles.map((p, i) => {
+        const translateY = p.anim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [-40, SCREEN_H + 40],
+        });
+        const rotate = p.anim.interpolate({
+          inputRange: [0, 1],
+          outputRange: ["0deg", `${p.endRotation}deg`],
+        });
+        const opacity = p.anim.interpolate({
+          inputRange: [0, 0.08, 0.75, 1],
+          outputRange: [0, 1, 0.9, 0],
+        });
+        return (
+          <Animated.View
+            key={i}
+            style={{ position: "absolute", left: p.x, top: 0, transform: [{ translateY }, { rotate }], opacity }}
+          >
+            <CoffeeBeanIcon size={p.size} color={color} />
+          </Animated.View>
+        );
+      })}
+    </View>
   );
 }
 
@@ -90,6 +159,8 @@ export default function RoasteryScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
   const colors = useThemeColors();
+  const cardExtras = useCardExtras();
+  const [showConfetti, setShowConfetti] = useState(false);
 
   const { name1, name2 } = useUserNames();
   const [coffees, setCoffees] = useState<Coffee[]>([]);
@@ -151,6 +222,8 @@ export default function RoasteryScreen() {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setNewName("");
     setShowModal(false);
+    setShowConfetti(true);
+    setTimeout(() => setShowConfetti(false), 2800);
     load();
   };
 
@@ -281,9 +354,11 @@ export default function RoasteryScreen() {
               onLongPress={() => handleDelete(item)}
               style={({ pressed }) => [
                 styles.card,
+                cardExtras.shadow,
                 {
                   backgroundColor: colors.surfaceElevated,
                   borderColor: colors.border,
+                  borderTopColor: cardExtras.topHighlight,
                   opacity: pressed ? 0.92 : 1,
                   transform: [{ scale: pressed ? 0.985 : 1 }],
                 },
@@ -291,7 +366,7 @@ export default function RoasteryScreen() {
             >
               <View style={styles.cardTop}>
                 <View style={[styles.cardIcon, { backgroundColor: colors.tint + "20" }]}>
-                  <CoffeeBeanIcon size={22} color={colors.tint} />
+                  <CoffeeBeanIcon size={18} color={colors.tint} />
                 </View>
                 <View style={styles.cardMain}>
                   <Text style={[styles.cardTitle, { color: colors.text, fontFamily: "Inter_600SemiBold" }]}>
@@ -483,6 +558,8 @@ export default function RoasteryScreen() {
           </View>
         </KeyboardAvoidingView>
       </Modal>
+
+      <CoffeeBeanConfetti active={showConfetti} color={colors.tint} />
     </View>
   );
 }

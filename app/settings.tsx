@@ -20,7 +20,7 @@ import * as DocumentPicker from "expo-document-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useUserNames } from "@/context/UserNamesContext";
 import { getRoasteries, getAllCoffees, getGrinders, saveGrinders } from "@/lib/storage";
-import { useTheme, useThemeColors, DesignMode } from "@/context/ThemeContext";
+import { useTheme, useThemeColors, useCardExtras, DesignMode } from "@/context/ThemeContext";
 
 function showAlert(title: string, message: string, buttons?: { text: string; style?: string; onPress?: () => void }[]) {
   if (Platform.OS === "web") {
@@ -43,6 +43,7 @@ export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const colors = useThemeColors();
   const { design, setDesign } = useTheme();
+  const cardExtras = useCardExtras();
 
   const { name1, name2, setName1, setName2 } = useUserNames();
   const [draft1, setDraft1] = useState(name1);
@@ -240,7 +241,7 @@ export default function SettingsScreen() {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={[styles.section, { backgroundColor: colors.surfaceElevated, borderColor: colors.border }]}>
+        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight }]}>
           <Text style={[styles.sectionLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
             DESIGN
           </Text>
@@ -292,7 +293,7 @@ export default function SettingsScreen() {
           Das Design wird sofort überall in der App angewendet.
         </Text>
 
-        <View style={[styles.section, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, marginTop: 16 }]}>
+        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight, marginTop: 16 }]}>
           <Text style={[styles.sectionLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
             NAMEN DER BENUTZER
           </Text>
@@ -349,7 +350,7 @@ export default function SettingsScreen() {
           Die Namen werden überall in der App verwendet und lokal gespeichert.
         </Text>
 
-        <View style={[styles.section, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, marginTop: 16 }]}>
+        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight, marginTop: 16 }]}>
           <Text style={[styles.sectionLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
             KAFFEEMÜHLEN
           </Text>
@@ -419,7 +420,7 @@ export default function SettingsScreen() {
           Wähle beim Kaffee die verwendete Mühle aus.
         </Text>
 
-        <View style={[styles.section, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, marginTop: 16 }]}>
+        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight, marginTop: 16 }]}>
           <Text style={[styles.sectionLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
             DATENSICHERUNG
           </Text>
