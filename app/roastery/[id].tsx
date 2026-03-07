@@ -207,7 +207,7 @@ export default function RoasteryScreen() {
 
   const handleAdd = async () => {
     if (!newName.trim()) return;
-    await saveCoffee({
+    const newCoffee = await saveCoffee({
       roasteryId: id,
       name: newName.trim(),
       haseRating: null,
@@ -226,6 +226,7 @@ export default function RoasteryScreen() {
     setShowConfetti(true);
     setTimeout(() => setShowConfetti(false), 2800);
     load();
+    router.push(`/coffee/${newCoffee.id}`);
   };
 
   const handleDelete = (item: Coffee) => {

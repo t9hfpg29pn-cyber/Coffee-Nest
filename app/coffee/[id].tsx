@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,8 @@ import {
   Alert,
   Platform,
   ActivityIndicator,
+  Animated,
+  Image,
 } from "react-native";
 import Svg, { Path, Circle, Line, Rect, G } from "react-native-svg";
 import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
@@ -458,6 +460,18 @@ export default function CoffeeDetailScreen() {
   const [notes, setNotes] = useState("");
   const [pricePerKg, setPricePerKg] = useState("");
 
+  const toastyAnim = useRef(new Animated.Value(0)).current;
+  const toastyTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const triggerToasty = () => {
+    if (toastyTimeout.current) clearTimeout(toastyTimeout.current);
+    toastyAnim.setValue(0);
+    Animated.spring(toastyAnim, { toValue: 1, useNativeDriver: true, friction: 5, tension: 120 }).start();
+    toastyTimeout.current = setTimeout(() => {
+      Animated.timing(toastyAnim, { toValue: 0, duration: 200, useNativeDriver: true }).start();
+    }, 1000);
+  };
+
   useEffect(() => {
     (async () => {
       const [data, grindersData] = await Promise.all([
@@ -710,7 +724,7 @@ export default function CoffeeDetailScreen() {
             <ScaleSlider
               label="Aroma"
               value={aroma}
-              onChange={(v) => { setAroma(v); markChanged(); }}
+              onChange={(v) => { setAroma(v); markChanged(); if (v === 1) triggerToasty(); }}
               color={colors.tint}
               textColor={colors.text}
               borderColor={colors.border}
@@ -815,6 +829,29 @@ export default function CoffeeDetailScreen() {
           )}
         </Pressable>
       </KeyboardAwareScrollViewCompat>
+
+      {/* Easter egg: Toasty! popup on sehr kräftig aroma */}
+      <Animated.View
+        pointerEvents="none"
+        style={{
+          position: "absolute",
+          bottom: bottomPad + 16,
+          right: 12,
+          width: 140,
+          height: 140,
+          opacity: toastyAnim,
+          transform: [
+            { scale: toastyAnim.interpolate({ inputRange: [0, 1], outputRange: [0.4, 1] }) },
+            { translateY: toastyAnim.interpolate({ inputRange: [0, 1], outputRange: [40, 0] }) },
+          ],
+        }}
+      >
+        <Image
+          source={require("../../assets/images/toasty.png")}
+          style={{ width: 140, height: 140 }}
+          resizeMode="contain"
+        />
+      </Animated.View>
     </View>
   );
 }
