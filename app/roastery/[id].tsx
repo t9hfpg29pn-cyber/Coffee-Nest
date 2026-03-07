@@ -29,7 +29,7 @@ import {
   Coffee,
 } from "@/lib/storage";
 import { useUserNames } from "@/context/UserNamesContext";
-import { PolyBackground, PolyCornerCut } from "@/components/PolyBackground";
+import { PolyBackground, PolyCornerCut, PolyActionButton } from "@/components/PolyBackground";
 import { useThemeColors, useCardExtras } from "@/context/ThemeContext";
 
 function CoffeeBeanIcon({ size = 18, color }: { size?: number; color: string }) {
@@ -466,6 +466,7 @@ export default function RoasteryScreen() {
                   borderColor: colors.border,
                   color: colors.text,
                   fontFamily: "Inter_400Regular",
+                  borderRadius: cardExtras.cardRadius,
                 },
               ]}
               placeholder="z.B. Ethiopia Yirgacheffe"
@@ -476,21 +477,16 @@ export default function RoasteryScreen() {
               returnKeyType="done"
               onSubmitEditing={handleAdd}
             />
-            <Pressable
+            <PolyActionButton
               onPress={handleAdd}
-              style={({ pressed }) => [
-                styles.saveButton,
-                {
-                  backgroundColor: newName.trim() ? colors.tint : colors.border,
-                  opacity: pressed ? 0.85 : 1,
-                },
-              ]}
               disabled={!newName.trim()}
+              color={newName.trim() ? colors.tint : colors.border}
+              style={styles.saveButton}
             >
               <Text style={[styles.saveButtonText, { fontFamily: "Inter_600SemiBold" }]}>
                 Hinzufügen
               </Text>
-            </Pressable>
+            </PolyActionButton>
           </View>
         </KeyboardAvoidingView>
       </Modal>
@@ -518,6 +514,7 @@ export default function RoasteryScreen() {
                   borderColor: colors.border,
                   color: colors.text,
                   fontFamily: "Inter_400Regular",
+                  borderRadius: cardExtras.cardRadius,
                 },
               ]}
               placeholder="Name der Rösterei"
@@ -538,6 +535,7 @@ export default function RoasteryScreen() {
                   borderColor: colors.border,
                   color: colors.text,
                   fontFamily: "Inter_400Regular",
+                  borderRadius: cardExtras.cardRadius,
                 },
               ]}
               placeholder="z.B. Berlin"
@@ -547,33 +545,26 @@ export default function RoasteryScreen() {
               returnKeyType="done"
               onSubmitEditing={handleSaveRoastery}
             />
-            <Pressable
+            <PolyActionButton
               onPress={handleSaveRoastery}
-              style={({ pressed }) => [
-                styles.saveButton,
-                {
-                  backgroundColor: editName.trim() ? colors.tint : colors.border,
-                  opacity: pressed ? 0.85 : 1,
-                },
-              ]}
               disabled={!editName.trim()}
+              color={editName.trim() ? colors.tint : colors.border}
+              style={styles.saveButton}
             >
               <Text style={[styles.saveButtonText, { fontFamily: "Inter_600SemiBold" }]}>
                 Speichern
               </Text>
-            </Pressable>
-            <Pressable
+            </PolyActionButton>
+            <PolyActionButton
               onPress={handleDeleteRoastery}
-              style={({ pressed }) => [
-                styles.deleteButton,
-                { borderColor: "#E05252", opacity: pressed ? 0.7 : 1 },
-              ]}
+              color="transparent"
+              style={{ ...styles.deleteButton, borderColor: "#E05252" } as any}
             >
               <Ionicons name="trash-outline" size={16} color="#E05252" />
               <Text style={[styles.deleteButtonText, { fontFamily: "Inter_500Medium" }]}>
                 Rösterei löschen
               </Text>
-            </Pressable>
+            </PolyActionButton>
           </View>
         </KeyboardAvoidingView>
       </Modal>

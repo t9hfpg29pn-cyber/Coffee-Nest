@@ -20,7 +20,7 @@ import * as Haptics from "expo-haptics";
 import { getCoffeeById, updateCoffee, deleteCoffee, getGrinders, Coffee, GrindSetting } from "@/lib/storage";
 import { useUserNames } from "@/context/UserNamesContext";
 import { useThemeColors, useCardExtras, useTheme } from "@/context/ThemeContext";
-import { PolyBackground, PolyCornerCut } from "@/components/PolyBackground";
+import { PolyBackground, PolyCornerCut, PolyActionButton } from "@/components/PolyBackground";
 
 function RatingSlider({
   label,
@@ -430,6 +430,8 @@ function GrinderPicker({
   borderColor: string;
   surfaceColor: string;
 }) {
+  const { design } = useTheme();
+  const isLowpoly = design === "lowpoly";
   return (
     <View style={{ gap: 10 }}>
       <Text style={{ color: textColor, fontFamily: "Inter_600SemiBold", fontSize: 15 }}>
@@ -498,7 +500,7 @@ function GrinderPicker({
                   style={{
                     borderWidth: 1.5,
                     borderColor,
-                    borderRadius: 10,
+                    borderRadius: isLowpoly ? 4 : 10,
                     backgroundColor: surfaceColor,
                     paddingHorizontal: 12,
                     paddingVertical: 8,
@@ -529,6 +531,7 @@ export default function CoffeeDetailScreen() {
   const insets = useSafeAreaInsets();
   const colors = useThemeColors();
   const cardExtras = useCardExtras();
+  const { design } = useTheme();
 
   const { name1, name2, user2active } = useUserNames();
   const [coffee, setCoffee] = useState<Coffee | null>(null);
@@ -712,7 +715,7 @@ export default function CoffeeDetailScreen() {
           disabled={saving}
           style={({ pressed }) => [
             styles.deleteHeaderButton,
-            { opacity: pressed ? 0.7 : saving ? 0.4 : 1 },
+            { borderRadius: design === "lowpoly" ? 6 : 18, opacity: pressed ? 0.7 : saving ? 0.4 : 1 },
           ]}
         >
           <Ionicons name="close" size={20} color="#E05252" />
@@ -723,6 +726,7 @@ export default function CoffeeDetailScreen() {
           style={({ pressed }) => [
             styles.saveHeaderButton,
             {
+              borderRadius: design === "lowpoly" ? 6 : 18,
               backgroundColor: colors.tint,
               opacity: pressed ? 0.85 : saving ? 0.6 : 1,
             },
@@ -836,6 +840,7 @@ export default function CoffeeDetailScreen() {
                     borderColor: colors.border,
                     color: colors.text,
                     fontFamily: "Inter_400Regular",
+                    borderRadius: cardExtras.cardRadius,
                   },
                 ]}
                 placeholder="z.B. Karamell, dunkle Schokolade, Nüsse..."
@@ -858,6 +863,7 @@ export default function CoffeeDetailScreen() {
                     borderColor: colors.border,
                     color: colors.text,
                     fontFamily: "Inter_400Regular",
+                    borderRadius: cardExtras.cardRadius,
                   },
                 ]}
                 placeholder="Weitere Notizen, Zubereitungshinweise..."
@@ -877,7 +883,7 @@ export default function CoffeeDetailScreen() {
             <Text style={[styles.fieldLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
               Preis je Kilogramm
             </Text>
-            <View style={[styles.priceInputRow, { borderColor: colors.border, backgroundColor: colors.surface }]}>
+            <View style={[styles.priceInputRow, { borderColor: colors.border, backgroundColor: colors.surface, borderRadius: cardExtras.cardRadius }]}>
               <TextInput
                 style={[styles.priceInput, { color: colors.text, fontFamily: "Inter_400Regular" }]}
                 placeholder="z.B. 24,90"
@@ -893,16 +899,11 @@ export default function CoffeeDetailScreen() {
           </View>
         </View>
 
-        <Pressable
+        <PolyActionButton
           onPress={handleSave}
           disabled={saving}
-          style={({ pressed }) => [
-            styles.saveButton,
-            {
-              backgroundColor: colors.tint,
-              opacity: pressed ? 0.85 : saving ? 0.6 : 1,
-            },
-          ]}
+          color={colors.tint}
+          style={styles.saveButton}
         >
           {saving ? (
             <ActivityIndicator color="#fff" />
@@ -914,7 +915,7 @@ export default function CoffeeDetailScreen() {
               </Text>
             </>
           )}
-        </Pressable>
+        </PolyActionButton>
       </KeyboardAwareScrollViewCompat>
 
       {/* Easter egg: Toasty! popup on sehr kräftig aroma */}

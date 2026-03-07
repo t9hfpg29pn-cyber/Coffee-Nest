@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View, Pressable, ViewStyle } from "react-native";
 import Svg, { Polygon } from "react-native-svg";
 import { useTheme } from "@/context/ThemeContext";
 
@@ -47,5 +47,72 @@ export function PolyCornerCut() {
         <Polygon points="28,0 28,28 0,0" fill="#e1a24a" fillOpacity="0.30" />
       </Svg>
     </View>
+  );
+}
+
+export function PolyActionButton({
+  onPress,
+  disabled = false,
+  color,
+  children,
+  style,
+}: {
+  onPress: () => void;
+  disabled?: boolean;
+  color: string;
+  children: React.ReactNode;
+  style?: ViewStyle;
+}) {
+  const { design } = useTheme();
+  const isLowpoly = design === "lowpoly";
+
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={disabled}
+      style={({ pressed }) => [
+        style,
+        isLowpoly
+          ? {
+              height: 54,
+              justifyContent: "center" as const,
+              alignItems: "center" as const,
+              flexDirection: "row" as const,
+              gap: 8,
+              opacity: pressed ? 0.85 : disabled ? 0.5 : 1,
+              transform: [{ scale: pressed ? 0.97 : 1 }],
+            }
+          : {
+              height: 54,
+              borderRadius: 16,
+              backgroundColor: color,
+              justifyContent: "center" as const,
+              alignItems: "center" as const,
+              flexDirection: "row" as const,
+              gap: 8,
+              opacity: pressed ? 0.85 : disabled ? 0.5 : 1,
+            },
+      ]}
+    >
+      {isLowpoly && (
+        <Svg
+          width="100%"
+          height="54"
+          viewBox="0 0 300 54"
+          preserveAspectRatio="none"
+          style={StyleSheet.absoluteFill}
+        >
+          <Polygon
+            points="12,0 288,0 300,12 300,42 288,54 12,54 0,42 0,12"
+            fill={color}
+          />
+          <Polygon
+            points="12,0 288,0 300,12 150,30 0,12"
+            fill="rgba(255,255,255,0.10)"
+          />
+        </Svg>
+      )}
+      {children}
+    </Pressable>
   );
 }

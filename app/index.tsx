@@ -19,7 +19,7 @@ import * as Haptics from "expo-haptics";
 import { getRoasteries, saveRoastery, deleteRoastery, getCoffees, Roastery } from "@/lib/storage";
 import { useUserNames } from "@/context/UserNamesContext";
 import { useThemeColors, useCardExtras } from "@/context/ThemeContext";
-import { PolyBackground, PolyCornerCut } from "@/components/PolyBackground";
+import { PolyBackground, PolyCornerCut, PolyActionButton } from "@/components/PolyBackground";
 
 export default function RoasteriesScreen() {
   const insets = useSafeAreaInsets();
@@ -404,6 +404,7 @@ export default function RoasteriesScreen() {
                 borderColor: colors.border,
                 color: colors.text,
                 fontFamily: "Inter_400Regular",
+                borderRadius: cardExtras.cardRadius,
               },
             ]}
             placeholder="z.B. Bonanza Coffee"
@@ -424,6 +425,7 @@ export default function RoasteriesScreen() {
                 borderColor: colors.border,
                 color: colors.text,
                 fontFamily: "Inter_400Regular",
+                borderRadius: cardExtras.cardRadius,
               },
             ]}
             placeholder="z.B. Berlin"
@@ -434,21 +436,16 @@ export default function RoasteriesScreen() {
             onSubmitEditing={handleAdd}
           />
 
-          <Pressable
+          <PolyActionButton
             onPress={handleAdd}
-            style={({ pressed }) => [
-              styles.saveButton,
-              {
-                backgroundColor: newName.trim() ? colors.tint : colors.border,
-                opacity: pressed ? 0.85 : 1,
-              },
-            ]}
             disabled={!newName.trim()}
+            color={newName.trim() ? colors.tint : colors.border}
+            style={styles.saveButton}
           >
             <Text style={[styles.saveButtonText, { fontFamily: "Inter_600SemiBold" }]}>
               Hinzufügen
             </Text>
-          </Pressable>
+          </PolyActionButton>
         </View>
         </KeyboardAvoidingView>
       </Modal>

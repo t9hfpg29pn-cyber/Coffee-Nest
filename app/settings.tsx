@@ -19,7 +19,7 @@ import * as Sharing from "expo-sharing";
 import * as DocumentPicker from "expo-document-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useUserNames } from "@/context/UserNamesContext";
-import { PolyBackground } from "@/components/PolyBackground";
+import { PolyBackground, PolyActionButton } from "@/components/PolyBackground";
 import { getRoasteries, getAllCoffees, getGrinders, saveGrinders } from "@/lib/storage";
 import { useTheme, useThemeColors, useCardExtras, DesignMode } from "@/context/ThemeContext";
 
@@ -262,6 +262,7 @@ export default function SettingsScreen() {
           style={({ pressed }) => [
             styles.saveBtn,
             {
+              borderRadius: design === "lowpoly" ? 5 : 20,
               opacity: isDirty ? (pressed ? 0.7 : 1) : 0.3,
               backgroundColor: colors.tint,
             },
@@ -350,7 +351,7 @@ export default function SettingsScreen() {
               <TextInput
                 value={draft1}
                 onChangeText={setDraft1}
-                style={[styles.input, { color: colors.text, fontFamily: "Inter_500Medium" }]}
+                style={[styles.input, { color: colors.text, fontFamily: "Inter_500Medium", borderRadius: cardExtras.cardRadius }]}
                 placeholder="Hase"
                 placeholderTextColor={colors.textSecondary}
                 maxLength={20}
@@ -374,7 +375,7 @@ export default function SettingsScreen() {
                 <TextInput
                   value={draft2}
                   onChangeText={setDraft2}
-                  style={[styles.input, { color: colors.text, fontFamily: "Inter_500Medium" }]}
+                  style={[styles.input, { color: colors.text, fontFamily: "Inter_500Medium", borderRadius: cardExtras.cardRadius }]}
                   placeholder="Dodo"
                   placeholderTextColor={colors.textSecondary}
                   maxLength={20}
@@ -405,7 +406,7 @@ export default function SettingsScreen() {
                 <TextInput
                   value={newUser2Draft}
                   onChangeText={setNewUser2Draft}
-                  style={[styles.input, { color: colors.text, fontFamily: "Inter_500Medium" }]}
+                  style={[styles.input, { color: colors.text, fontFamily: "Inter_500Medium", borderRadius: cardExtras.cardRadius }]}
                   placeholder="Name eingeben"
                   placeholderTextColor={colors.textSecondary}
                   maxLength={20}

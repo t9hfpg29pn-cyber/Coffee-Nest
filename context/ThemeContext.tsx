@@ -18,7 +18,7 @@ const ThemeContext = createContext<ThemeContextType>({
 });
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [design, setDesignState] = useState<DesignMode>("classic");
+  const [design, setDesignState] = useState<DesignMode>("lowpoly");
 
   useEffect(() => {
     AsyncStorage.getItem(DESIGN_KEY).then((raw) => {
