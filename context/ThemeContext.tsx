@@ -66,7 +66,7 @@ export function useCardExtras(): { shadow: ViewStyle; topHighlight: string } {
           shadowRadius: 16,
           elevation: 10,
         },
-      topHighlight: "rgba(255,255,255,0.10)",
+      topHighlight: "#e1a24a",
     };
   }
 
