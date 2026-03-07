@@ -11,7 +11,7 @@ import {
   Animated,
   Image,
 } from "react-native";
-import Svg, { Path, Circle, Line, Rect, G } from "react-native-svg";
+import Svg, { Path, Circle, Line, Rect, G, Polygon as SvgPolygon } from "react-native-svg";
 import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
@@ -19,7 +19,8 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { getCoffeeById, updateCoffee, deleteCoffee, getGrinders, Coffee, GrindSetting } from "@/lib/storage";
 import { useUserNames } from "@/context/UserNamesContext";
-import { useThemeColors, useCardExtras } from "@/context/ThemeContext";
+import { useThemeColors, useCardExtras, useTheme } from "@/context/ThemeContext";
+import { PolyBackground } from "@/components/PolyBackground";
 
 function RatingSlider({
   label,
@@ -235,6 +236,8 @@ function ScaleSlider({
   aromaIcons?: boolean;
 }) {
   const steps = [1, 2, 3, 4, 5];
+  const { design } = useTheme();
+  const isLowpoly = design === "lowpoly";
 
   return (
     <View style={{ gap: 10 }}>
@@ -254,41 +257,78 @@ function ScaleSlider({
         ) : null}
       </View>
       <View style={{ flexDirection: "row", gap: 8 }}>
-        {steps.map((step) => (
-          <Pressable
-            key={step}
-            onPress={() => {
-              Haptics.selectionAsync();
-              onChange(step);
-            }}
-            style={({ pressed }) => ({
-              flex: 1,
-              height: 56,
-              borderRadius: 12,
-              backgroundColor: step === value ? color : surfaceColor,
-              borderWidth: 1.5,
-              borderColor: step === value ? color : borderColor,
-              justifyContent: "center",
-              alignItems: "center",
-              opacity: pressed ? 0.8 : 1,
-              transform: [{ scale: pressed ? 0.95 : 1 }],
-            })}
-          >
-            {aromaIcons ? (
-              <AromaIcon step={step} size={26} color={step === value ? "#fff" : textColor} />
-            ) : (
-              <Text
-                style={{
-                  color: step === value ? "#fff" : textColor,
-                  fontFamily: step === value ? "Inter_700Bold" : "Inter_500Medium",
-                  fontSize: 16,
-                }}
+        {steps.map((step) => {
+          const active = step === value;
+          if (isLowpoly) {
+            return (
+              <Pressable
+                key={step}
+                onPress={() => { Haptics.selectionAsync(); onChange(step); }}
+                style={({ pressed }) => ({
+                  flex: 1,
+                  height: 56,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  transform: [{ scale: pressed ? 0.92 : 1 }],
+                })}
               >
-                {step}
-              </Text>
-            )}
-          </Pressable>
-        ))}
+                <Svg
+                  width="100%"
+                  height="56"
+                  viewBox="0 0 60 56"
+                  preserveAspectRatio="none"
+                  style={StyleSheet.absoluteFill}
+                >
+                  <SvgPolygon
+                    points="9,0 51,0 60,9 60,47 51,56 9,56 0,47 0,9"
+                    fill={active ? color : surfaceColor}
+                  />
+                  {active && (
+                    <SvgPolygon
+                      points="9,0 51,0 60,9 30,32 0,9"
+                      fill="rgba(255,255,255,0.11)"
+                    />
+                  )}
+                </Svg>
+                <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, justifyContent: "center", alignItems: "center" }}>
+                  {aromaIcons ? (
+                    <AromaIcon step={step} size={26} color={active ? "#1a0800" : textColor} />
+                  ) : (
+                    <Text style={{ color: active ? "#1a0800" : textColor, fontFamily: active ? "Inter_700Bold" : "Inter_500Medium", fontSize: 16 }}>
+                      {step}
+                    </Text>
+                  )}
+                </View>
+              </Pressable>
+            );
+          }
+          return (
+            <Pressable
+              key={step}
+              onPress={() => { Haptics.selectionAsync(); onChange(step); }}
+              style={({ pressed }) => ({
+                flex: 1,
+                height: 56,
+                borderRadius: 12,
+                backgroundColor: active ? color : surfaceColor,
+                borderWidth: 1.5,
+                borderColor: active ? color : borderColor,
+                justifyContent: "center",
+                alignItems: "center",
+                opacity: pressed ? 0.8 : 1,
+                transform: [{ scale: pressed ? 0.95 : 1 }],
+              })}
+            >
+              {aromaIcons ? (
+                <AromaIcon step={step} size={26} color={active ? "#fff" : textColor} />
+              ) : (
+                <Text style={{ color: active ? "#fff" : textColor, fontFamily: active ? "Inter_700Bold" : "Inter_500Medium", fontSize: 16 }}>
+                  {step}
+                </Text>
+              )}
+            </Pressable>
+          );
+        })}
       </View>
       {(minLabel || maxLabel) && (
         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
@@ -601,6 +641,7 @@ export default function CoffeeDetailScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <PolyBackground />
       <View style={[styles.header, { paddingTop: topPad + 12 }]}>
         <Pressable
           onPress={() => {

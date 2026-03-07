@@ -58,15 +58,15 @@ export function useCardExtras(): { shadow: ViewStyle; topHighlight: string } {
   if (design === "lowpoly") {
     return {
       shadow: Platform.OS === "web"
-        ? ({ boxShadow: "0 0 18px rgba(255,179,0,0.28)" } as ViewStyle)
+        ? ({ boxShadow: "0 4px 20px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.07)" } as ViewStyle)
         : {
-          shadowColor: colors.tint,
-          shadowOffset: { width: 0, height: 0 },
-          shadowOpacity: 0.22,
-          shadowRadius: 18,
-          elevation: 12,
+          shadowColor: "#000000",
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.38,
+          shadowRadius: 16,
+          elevation: 10,
         },
-      topHighlight: colors.tint + "50",
+      topHighlight: "rgba(255,255,255,0.10)",
     };
   }
 

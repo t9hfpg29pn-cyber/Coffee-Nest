@@ -19,6 +19,7 @@ import * as Haptics from "expo-haptics";
 import { getRoasteries, saveRoastery, deleteRoastery, getCoffees, Roastery } from "@/lib/storage";
 import { useUserNames } from "@/context/UserNamesContext";
 import { useThemeColors, useCardExtras } from "@/context/ThemeContext";
+import { PolyBackground } from "@/components/PolyBackground";
 
 export default function RoasteriesScreen() {
   const insets = useSafeAreaInsets();
@@ -122,6 +123,7 @@ export default function RoasteriesScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <PolyBackground />
       <View style={[styles.header, { paddingTop: topPad + 16 }]}>
         <View style={styles.headerLeft}>
           <Image

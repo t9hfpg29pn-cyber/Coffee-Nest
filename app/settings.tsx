@@ -19,6 +19,7 @@ import * as Sharing from "expo-sharing";
 import * as DocumentPicker from "expo-document-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useUserNames } from "@/context/UserNamesContext";
+import { PolyBackground } from "@/components/PolyBackground";
 import { getRoasteries, getAllCoffees, getGrinders, saveGrinders } from "@/lib/storage";
 import { useTheme, useThemeColors, useCardExtras, DesignMode } from "@/context/ThemeContext";
 
@@ -244,6 +245,7 @@ export default function SettingsScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <PolyBackground />
       <View style={[styles.header, { paddingTop: topPad + 16 }]}>
         <Pressable
           onPress={() => router.back()}
@@ -321,7 +323,7 @@ export default function SettingsScreen() {
           </View>
           <Text style={[styles.designHint, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
             {design === "lowpoly"
-              ? "Geometrisch · dunkel · modern"
+              ? "Warm · geometrisch · facettiert"
               : "Warm · klassisch · Kaffeefarben"}
           </Text>
         </View>

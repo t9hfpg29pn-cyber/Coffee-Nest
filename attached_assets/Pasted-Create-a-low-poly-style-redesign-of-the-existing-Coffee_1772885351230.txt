@@ -1,0 +1,27 @@
+Create a **low-poly style redesign** of the existing Coffee Nest mobile UI while **keeping the current layout and color palette**. The goal is a subtle, modern low-poly aesthetic that feels premium and calm, not playful or game-like. The layout structure and screen hierarchy must remain unchanged; only the visual style of components should evolve.
+
+Keep the existing palette exactly as it is. Use:
+Background `#2b1408`, Card `#7a4322`, Card Dark `#5a2e15`, Primary Accent `#e1a24a`, Secondary Accent `#c7893e`, Primary Text `#f4e8dc`, Secondary Text `#caa58b`.
+For subtle lighting facets add `rgba(255,255,255,0.06)` for highlights and `rgba(0,0,0,0.12)` for shadow facets.
+
+First implement a **very subtle polygon background** for the entire app. This should simulate large low-poly surfaces but remain extremely soft so it does not distract from content. Use a large-scale polygon SVG mesh with opacity around 2–4%. Polygons should be large and sparse so the background feels textured rather than patterned. Apply this SVG as a background layer behind the main UI color `#2b1408`.
+
+Next modify all cards (coffee cards, rating cards, roastery cards) so they look slightly faceted instead of perfectly flat. Keep their rounded shape but add a subtle lighting gradient and a faint highlight facet from the top-left direction. The base should remain the caramel brown color but include a gradient from `#7a4322` to `#6b381b`. Add a pseudo-element overlay that creates a very faint diagonal highlight to simulate a polygon facet. Maintain the current corner radius and shadows but slightly deepen the shadow so cards feel lifted from the background.
+
+Rating buttons should no longer be simple rounded rectangles. Convert them into **polygon tiles** to reinforce the low-poly theme. Use a hexagonal or octagonal shape created with CSS clip-path. Each tile should remain about the same size but appear as a small geometric “facet stone.” The inactive state should use the darker card color (`#5a2e15`). The active state should switch to the accent color (`#e1a24a`) with dark text. Add a subtle hover or press animation where the tile moves upward slightly or scales to about 1.05 before returning to normal.
+
+Replace line-based icons with **simple low-poly icons** made of a few filled polygon faces. Each icon should consist of approximately 4–8 polygon surfaces with slightly different brightness levels to simulate faceting. Avoid outlines. Keep the shapes simple and recognizable. For example, the coffee bean icon can be built from three or four polygons with slightly different browns and a darker center seam. The shapes should remain minimal and readable at small sizes.
+
+Cards can optionally include a subtle geometric corner cut that resembles a polygon slice. This can be done with a clip-path that slightly trims one corner of the card so it appears “cut.” The effect should be very small so the card still feels like a standard UI element.
+
+Add very subtle interaction depth to interactive elements. When a card is pressed, scale it slightly down to around 0.98. When hovered (if applicable) or focused, move it upward by a few pixels or slightly increase brightness. The animation duration should remain very short (around 120–150 ms) so the UI feels responsive.
+
+The rating visualization can also include a small geometric bar representation. Instead of purely numeric emphasis, you may show small hexagon facets or polygon segments representing the score visually while still keeping the numeric value visible.
+
+Implement the existing Easter egg interaction: when the aroma level “very strong” is selected, a small low-poly coffee bean character should briefly appear in the bottom-right corner of the screen. The bean should have a speech bubble saying “Toasty!”. The animation should be a quick pop-in motion. Start slightly below the visible area with lower opacity, then animate upward with a slight bounce and fade in. Total animation duration should be around 300 ms.
+
+Ensure performance remains mobile-friendly. Do not use WebGL or heavy rendering libraries. Use SVG shapes, CSS gradients, clip-paths, and lightweight overlays instead of large textures. Limit extra layers per component to two or fewer. Avoid heavy image assets for backgrounds; prefer vector or gradient approaches.
+
+The overall design principle should be subtlety. The interface should remain mostly clean and minimal, with the polygon aesthetic acting as a light visual layer rather than a dominant style. Approximately ninety-five percent of the UI should remain simple and readable, with only about five percent showing polygon faceting or geometric styling.
+
+The final result should feel like a refined coffee tasting application with a modern geometric character, consistent warm coffee tones, soft depth, and subtle low-poly surfaces integrated into the interface.

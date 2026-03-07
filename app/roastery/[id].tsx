@@ -29,6 +29,7 @@ import {
   Coffee,
 } from "@/lib/storage";
 import { useUserNames } from "@/context/UserNamesContext";
+import { PolyBackground } from "@/components/PolyBackground";
 import { useThemeColors, useCardExtras } from "@/context/ThemeContext";
 
 function CoffeeBeanIcon({ size = 18, color }: { size?: number; color: string }) {
@@ -285,6 +286,7 @@ export default function RoasteryScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <PolyBackground />
       <View style={[styles.header, { paddingTop: topPad + 12 }]}>
         <Pressable
           onPress={() => router.back()}
