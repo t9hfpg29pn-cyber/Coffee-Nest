@@ -19,7 +19,7 @@ import * as Haptics from "expo-haptics";
 import { getRoasteries, saveRoastery, deleteRoastery, getCoffees, Roastery } from "@/lib/storage";
 import { useUserNames } from "@/context/UserNamesContext";
 import { useThemeColors, useCardExtras } from "@/context/ThemeContext";
-import { PolyBackground } from "@/components/PolyBackground";
+import { PolyBackground, PolyCornerCut } from "@/components/PolyBackground";
 
 export default function RoasteriesScreen() {
   const insets = useSafeAreaInsets();
@@ -321,6 +321,8 @@ export default function RoasteriesScreen() {
                   backgroundColor: colors.surfaceElevated,
                   borderColor: colors.border,
                   borderTopColor: cardExtras.topHighlight,
+                  borderRadius: cardExtras.cardRadius,
+                  overflow: "hidden" as const,
                   opacity: pressed ? 0.92 : 1,
                   transform: [{ scale: pressed ? 0.985 : 1 }],
                 },
@@ -376,6 +378,7 @@ export default function RoasteriesScreen() {
                 ) : null}
               </View>
               <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
+              <PolyCornerCut />
             </Pressable>
           )}
         />

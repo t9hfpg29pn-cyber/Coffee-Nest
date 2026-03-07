@@ -34,3 +34,18 @@ export function PolyBackground() {
     </View>
   );
 }
+
+export function PolyCornerCut() {
+  const { design } = useTheme();
+  if (design !== "lowpoly") return null;
+  return (
+    <View
+      style={{ position: "absolute", top: 0, right: 0, width: 28, height: 28 }}
+      pointerEvents="none"
+    >
+      <Svg width="28" height="28" viewBox="0 0 28 28">
+        <Polygon points="28,0 28,28 0,0" fill="#e1a24a" fillOpacity="0.30" />
+      </Svg>
+    </View>
+  );
+}

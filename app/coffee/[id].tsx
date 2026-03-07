@@ -20,7 +20,7 @@ import * as Haptics from "expo-haptics";
 import { getCoffeeById, updateCoffee, deleteCoffee, getGrinders, Coffee, GrindSetting } from "@/lib/storage";
 import { useUserNames } from "@/context/UserNamesContext";
 import { useThemeColors, useCardExtras, useTheme } from "@/context/ThemeContext";
-import { PolyBackground } from "@/components/PolyBackground";
+import { PolyBackground, PolyCornerCut } from "@/components/PolyBackground";
 
 function RatingSlider({
   label,
@@ -48,6 +48,8 @@ function RatingSlider({
   surfaceColor: string;
 }) {
   const steps = Array.from({ length: max - min + 1 }, (_, i) => min + i);
+  const { design } = useTheme();
+  const isLowpoly = design === "lowpoly";
 
   return (
     <View style={{ gap: 10 }}>
@@ -66,9 +68,53 @@ function RatingSlider({
           )}
         </View>
       </View>
-      <View style={{ flexDirection: "row", gap: 6 }}>
+      <View style={{ flexDirection: "row", gap: isLowpoly ? 5 : 6 }}>
         {steps.map((step) => {
           const filled = value !== null && step <= value;
+          if (isLowpoly) {
+            return (
+              <Pressable
+                key={step}
+                onPress={() => { Haptics.selectionAsync(); onChange(step === value ? null : step); }}
+                style={({ pressed }) => ({
+                  flex: 1,
+                  height: 36,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  transform: [{ scale: pressed ? 0.90 : 1 }],
+                })}
+              >
+                <Svg
+                  width="100%"
+                  height="36"
+                  viewBox="0 0 26 36"
+                  preserveAspectRatio="none"
+                  style={StyleSheet.absoluteFill}
+                >
+                  <SvgPolygon
+                    points="5,0 21,0 26,5 26,31 21,36 5,36 0,31 0,5"
+                    fill={filled ? color : surfaceColor}
+                  />
+                  {filled && (
+                    <SvgPolygon
+                      points="5,0 21,0 26,5 13,20 0,5"
+                      fill="rgba(255,255,255,0.12)"
+                    />
+                  )}
+                </Svg>
+                <Text
+                  style={{
+                    color: filled ? "#1a0800" : textColor,
+                    fontFamily: filled ? "Inter_700Bold" : "Inter_500Medium",
+                    fontSize: max > 5 ? 10 : 13,
+                    position: "relative",
+                  }}
+                >
+                  {step}
+                </Text>
+              </Pressable>
+            );
+          }
           return (
             <Pressable
               key={step}
@@ -696,7 +742,7 @@ export default function CoffeeDetailScreen() {
         keyboardShouldPersistTaps="handled"
         bottomOffset={24}
       >
-        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight }]}>
+        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight, borderRadius: cardExtras.cardRadius }]}>
           <SectionHeader title="KAFFEE" color={colors.textSecondary} />
           <TextInput
             style={[
@@ -710,7 +756,7 @@ export default function CoffeeDetailScreen() {
           />
         </View>
 
-        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight }]}>
+        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight, borderRadius: cardExtras.cardRadius }]}>
           <SectionHeader title="BEWERTUNGEN" color={colors.textSecondary} />
           <View style={{ gap: 20, marginTop: 8 }}>
             <RatingSlider
@@ -747,7 +793,7 @@ export default function CoffeeDetailScreen() {
           </View>
         </View>
 
-        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight }]}>
+        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight, borderRadius: cardExtras.cardRadius }]}>
           <SectionHeader title="EIGENSCHAFTEN" color={colors.textSecondary} />
           <View style={{ gap: 20, marginTop: 8 }}>
             <GrinderPicker
@@ -775,7 +821,7 @@ export default function CoffeeDetailScreen() {
           </View>
         </View>
 
-        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight }]}>
+        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight, borderRadius: cardExtras.cardRadius }]}>
           <SectionHeader title="NOTIZEN" color={colors.textSecondary} />
           <View style={{ gap: 16, marginTop: 8 }}>
             <View style={{ gap: 6 }}>
@@ -825,7 +871,7 @@ export default function CoffeeDetailScreen() {
           </View>
         </View>
 
-        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight }]}>
+        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight, borderRadius: cardExtras.cardRadius }]}>
           <SectionHeader title="PREIS" color={colors.textSecondary} />
           <View style={{ gap: 6, marginTop: 8 }}>
             <Text style={[styles.fieldLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>

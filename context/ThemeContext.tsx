@@ -50,7 +50,7 @@ export function useThemeColors() {
   return colorScheme === "dark" ? Colors.dark : Colors.light;
 }
 
-export function useCardExtras(): { shadow: ViewStyle; topHighlight: string } {
+export function useCardExtras(): { shadow: ViewStyle; topHighlight: string; cardRadius: number } {
   const { design } = useContext(ThemeContext);
   const colorScheme = useColorScheme();
   const colors = useThemeColors();
@@ -67,6 +67,7 @@ export function useCardExtras(): { shadow: ViewStyle; topHighlight: string } {
           elevation: 10,
         },
       topHighlight: "#e1a24a",
+      cardRadius: 6,
     };
   }
 
@@ -82,5 +83,6 @@ export function useCardExtras(): { shadow: ViewStyle; topHighlight: string } {
         elevation: 6,
       },
     topHighlight: isDark ? "rgba(255,225,170,0.10)" : "rgba(255,255,255,0.85)",
+    cardRadius: 16,
   };
 }

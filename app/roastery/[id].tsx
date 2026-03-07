@@ -29,7 +29,7 @@ import {
   Coffee,
 } from "@/lib/storage";
 import { useUserNames } from "@/context/UserNamesContext";
-import { PolyBackground } from "@/components/PolyBackground";
+import { PolyBackground, PolyCornerCut } from "@/components/PolyBackground";
 import { useThemeColors, useCardExtras } from "@/context/ThemeContext";
 
 function CoffeeBeanIcon({ size = 18, color }: { size?: number; color: string }) {
@@ -363,6 +363,8 @@ export default function RoasteryScreen() {
                   backgroundColor: colors.surfaceElevated,
                   borderColor: colors.border,
                   borderTopColor: cardExtras.topHighlight,
+                  borderRadius: cardExtras.cardRadius,
+                  overflow: "hidden" as const,
                   opacity: pressed ? 0.92 : 1,
                   transform: [{ scale: pressed ? 0.985 : 1 }],
                 },
@@ -438,6 +440,7 @@ export default function RoasteryScreen() {
                   </>
                 )}
               </View>
+              <PolyCornerCut />
             </Pressable>
           )}
         />

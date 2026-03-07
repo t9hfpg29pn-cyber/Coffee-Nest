@@ -280,7 +280,7 @@ export default function SettingsScreen() {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight }]}>
+        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight, borderRadius: cardExtras.cardRadius }]}>
           <Text style={[styles.sectionLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
             DESIGN
           </Text>
@@ -332,7 +332,7 @@ export default function SettingsScreen() {
           Das Design wird sofort überall in der App angewendet.
         </Text>
 
-        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight, marginTop: 16 }]}>
+        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight, borderRadius: cardExtras.cardRadius, marginTop: 16 }]}>
           <Text style={[styles.sectionLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
             BENUTZER
           </Text>
@@ -441,7 +441,7 @@ export default function SettingsScreen() {
           Die Namen werden überall in der App verwendet und lokal gespeichert.
         </Text>
 
-        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight, marginTop: 16 }]}>
+        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight, borderRadius: cardExtras.cardRadius, marginTop: 16 }]}>
           <Text style={[styles.sectionLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
             KAFFEEMÜHLEN
           </Text>
@@ -511,7 +511,7 @@ export default function SettingsScreen() {
           Wähle beim Kaffee die verwendete Mühle aus.
         </Text>
 
-        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight, marginTop: 16 }]}>
+        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight, borderRadius: cardExtras.cardRadius, marginTop: 16 }]}>
           <Text style={[styles.sectionLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
             DATENSICHERUNG
           </Text>
