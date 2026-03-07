@@ -12,22 +12,25 @@
     <meta name="theme-color" content="#1A0F08" media="(prefers-color-scheme: dark)" />
     <meta name="theme-color" content="#FBF6EE" media="(prefers-color-scheme: light)" />
     <style id="expo-reset">
-      html,
-      body {
-        height: 100%;
+      html {
+        height: 100dvh;
         background-color: #1A0F08;
+      }
+      body {
+        height: 100dvh;
+        min-height: -webkit-fill-available;
+        background-color: #1A0F08;
+        overflow: hidden;
       }
       @media (prefers-color-scheme: light) {
         html, body {
           background-color: #FBF6EE;
         }
       }
-      body {
-        overflow: hidden;
-      }
       #root {
         display: flex;
-        height: 100%;
+        height: 100dvh;
+        min-height: -webkit-fill-available;
         flex: 1;
       }
     </style>
