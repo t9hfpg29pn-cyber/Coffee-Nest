@@ -9,7 +9,6 @@
     <meta name="theme-color" content="#2b1408" />
     <title>Coffee Nest</title>
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <!-- The `react-native-web` recommended style reset: https://necolas.github.io/react-native-web/docs/setup/#root-element -->
     <style id="expo-reset">
       html {
         height: 100dvh;
@@ -30,14 +29,27 @@
         background-color: #2b1408;
       }
     </style>
+    <script>
+      (function () {
+        var vv = window.visualViewport;
+        if (!vv) return;
+        function update() {
+          var h = Math.round(vv.height) + 'px';
+          document.documentElement.style.height = h;
+          document.body.style.height = h;
+          var root = document.getElementById('root');
+          if (root) root.style.height = h;
+        }
+        vv.addEventListener('resize', update);
+        update();
+      })();
+    </script>
   <link rel="icon" href="/favicon.ico" /></head>
 
   <body>
-    <!-- Use static rendering with Expo Router to support rendering without JavaScript. -->
     <noscript>
       You need to enable JavaScript to run this app.
     </noscript>
-    <!-- The root element for your Expo app. -->
     <div id="root"></div>
   <script src="/_expo/static/js/web/entry-7f6b06bca742c12306971fcff6b15144.js" defer></script>
 </body>
