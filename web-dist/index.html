@@ -23,7 +23,7 @@
         top: 0;
         left: 0;
         right: 0;
-        bottom: 0;
+        height: 100dvh;
         display: flex;
         flex: 1;
         background-color: #2b1408;
@@ -31,18 +31,33 @@
     </style>
     <script>
       (function () {
-        var vv = window.visualViewport;
-        if (!vv) return;
         var root = null;
-        function apply() {
+        function getRoot() {
           if (!root) root = document.getElementById('root');
-          if (!root) return;
-          root.style.top = Math.round(vv.offsetTop) + 'px';
-          root.style.height = Math.round(vv.height) + 'px';
-          root.style.bottom = 'auto';
+          return root;
         }
-        vv.addEventListener('resize', apply);
-        vv.addEventListener('scroll', apply);
+        function apply() {
+          var el = getRoot();
+          if (!el) return;
+          var vv = window.visualViewport;
+          var h = vv ? Math.round(vv.height) : window.innerHeight;
+          el.style.height = h + 'px';
+        }
+        // Primary: visualViewport resize
+        if (window.visualViewport) {
+          window.visualViewport.addEventListener('resize', apply);
+          window.visualViewport.addEventListener('scroll', apply);
+        }
+        // Fallback: window resize
+        window.addEventListener('resize', apply);
+        // Key fix: when any input loses focus (numeric keyboard dismisses),
+        // retry multiple times to catch the delayed height restoration on iOS
+        document.addEventListener('focusout', function () {
+          setTimeout(apply, 50);
+          setTimeout(apply, 200);
+          setTimeout(apply, 500);
+        });
+        // Initial sizing
         if (document.readyState === 'loading') {
           document.addEventListener('DOMContentLoaded', apply);
         } else {
