@@ -10,80 +10,26 @@
     <title>Coffee Nest</title>
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <style id="expo-reset">
-      html, body {
-        margin: 0;
-        padding: 0;
-        width: 100%;
-        height: 100%;
+      html,
+      body {
+        height: 100dvh;
         background-color: #2b1408;
+      }
+      body {
         overflow: hidden;
       }
       #root {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 100dvh;
         display: flex;
+        height: 100dvh;
         flex: 1;
         background-color: #2b1408;
       }
     </style>
-    <script>
-      (function () {
-        var root = null;
-        function getRoot() {
-          if (!root) root = document.getElementById('root');
-          return root;
-        }
-
-        // Only override height when a keyboard is actually visible.
-        // When no keyboard: remove inline height so CSS 100dvh fills the screen.
-        // This fixes both the first-load gap AND the post-keyboard gap.
-        var KEYBOARD_THRESHOLD = 120;
-
-        function apply() {
-          var el = getRoot();
-          if (!el) return;
-          var vv = window.visualViewport;
-          if (!vv) return;
-          var vh = Math.round(vv.height);
-          var wh = Math.round(window.innerHeight);
-          if (wh - vh > KEYBOARD_THRESHOLD) {
-            // Keyboard open: constrain root to visible area
-            el.style.height = vh + 'px';
-          } else {
-            // No keyboard: let CSS 100dvh handle full-screen sizing
-            el.style.height = '';
-          }
-        }
-
-        if (window.visualViewport) {
-          window.visualViewport.addEventListener('resize', apply);
-          window.visualViewport.addEventListener('scroll', apply);
-        }
-        window.addEventListener('resize', apply);
-
-        // When any input loses focus (numeric pad dismissed via tap-outside),
-        // retry multiple times to catch iOS's delayed height restoration.
-        document.addEventListener('focusout', function () {
-          setTimeout(apply, 50);
-          setTimeout(apply, 200);
-          setTimeout(apply, 500);
-        });
-
-        if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', apply);
-        } else {
-          apply();
-        }
-      })();
-    </script>
     <link rel="icon" href="/favicon.ico" />
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
-    <script src="/_expo/static/js/web/entry-32789aa3d795a5ed40996385560b4cf7.js" defer></script>
+    <script src="/_expo/static/js/web/entry-b6b7b3d94106168cfb5fba277dad5425.js" defer></script>
   </body>
 </html>

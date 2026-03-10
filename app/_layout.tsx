@@ -13,7 +13,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { queryClient } from "@/lib/query-client";
-import { Image, StyleSheet, View } from "react-native";
+import { Dimensions, Image, Platform, StyleSheet, View } from "react-native";
 import { UserNamesProvider } from "@/context/UserNamesContext";
 import { ThemeProvider, useThemeColors } from "@/context/ThemeContext";
 
@@ -65,6 +65,30 @@ export default function RootLayout() {
       SplashScreen.hideAsync().catch(() => {});
     }
   }, [fontsLoaded, fontError]);
+
+  useEffect(() => {
+    if (Platform.OS !== "web") return;
+    const syncDimensions = () => {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      const scale = window.devicePixelRatio || 1;
+      Dimensions.set({
+        window: { width: w, height: h, scale, fontScale: 1 },
+        screen: { width: window.screen.width, height: window.screen.height, scale, fontScale: 1 },
+      });
+    };
+    const onFocusOut = () => {
+      setTimeout(syncDimensions, 100);
+      setTimeout(syncDimensions, 350);
+      setTimeout(syncDimensions, 700);
+    };
+    window.addEventListener("resize", syncDimensions);
+    document.addEventListener("focusout", onFocusOut);
+    return () => {
+      window.removeEventListener("resize", syncDimensions);
+      document.removeEventListener("focusout", onFocusOut);
+    };
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
