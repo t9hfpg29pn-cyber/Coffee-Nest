@@ -36,28 +36,42 @@
           if (!root) root = document.getElementById('root');
           return root;
         }
+
+        // Only override height when a keyboard is actually visible.
+        // When no keyboard: remove inline height so CSS 100dvh fills the screen.
+        // This fixes both the first-load gap AND the post-keyboard gap.
+        var KEYBOARD_THRESHOLD = 120;
+
         function apply() {
           var el = getRoot();
           if (!el) return;
           var vv = window.visualViewport;
-          var h = vv ? Math.round(vv.height) : window.innerHeight;
-          el.style.height = h + 'px';
+          if (!vv) return;
+          var vh = Math.round(vv.height);
+          var wh = Math.round(window.innerHeight);
+          if (wh - vh > KEYBOARD_THRESHOLD) {
+            // Keyboard open: constrain root to visible area
+            el.style.height = vh + 'px';
+          } else {
+            // No keyboard: let CSS 100dvh handle full-screen sizing
+            el.style.height = '';
+          }
         }
-        // Primary: visualViewport resize
+
         if (window.visualViewport) {
           window.visualViewport.addEventListener('resize', apply);
           window.visualViewport.addEventListener('scroll', apply);
         }
-        // Fallback: window resize
         window.addEventListener('resize', apply);
-        // Key fix: when any input loses focus (numeric keyboard dismisses),
-        // retry multiple times to catch the delayed height restoration on iOS
+
+        // When any input loses focus (numeric pad dismissed via tap-outside),
+        // retry multiple times to catch iOS's delayed height restoration.
         document.addEventListener('focusout', function () {
           setTimeout(apply, 50);
           setTimeout(apply, 200);
           setTimeout(apply, 500);
         });
-        // Initial sizing
+
         if (document.readyState === 'loading') {
           document.addEventListener('DOMContentLoaded', apply);
         } else {
