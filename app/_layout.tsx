@@ -105,13 +105,9 @@ export default function RootLayout() {
         <ThemeProvider>
           <UserNamesProvider>
             <GestureHandlerRootView>
-              {Platform.OS === "web" ? (
+              <KeyboardProvider>
                 <RootLayoutNav />
-              ) : (
-                <KeyboardProvider>
-                  <RootLayoutNav />
-                </KeyboardProvider>
-              )}
+              </KeyboardProvider>
             </GestureHandlerRootView>
           </UserNamesProvider>
         </ThemeProvider>

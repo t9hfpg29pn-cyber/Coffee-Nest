@@ -12,9 +12,7 @@ import {
   Dimensions,
   Animated,
 } from "react-native";
-import { KeyboardAvoidingView as KCKeyboardAvoidingView } from "react-native-keyboard-controller";
-import { KeyboardAvoidingView as RNKeyboardAvoidingView } from "react-native";
-const KeyboardAvoidingView = Platform.OS === "web" ? RNKeyboardAvoidingView : KCKeyboardAvoidingView;
+import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useLocalSearchParams, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
