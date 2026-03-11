@@ -108,7 +108,40 @@ function getAppName(): string {
   }
 }
 
-function serveExpoManifest(platform: string, res: Response) {
+async function serveExpoManifest(platform: string, req: Request, res: Response) {
+  // In development, proxy manifest requests to the Metro bundler on port 8081
+  if (process.env.NODE_ENV === "development") {
+    try {
+      const metroUrl = `http://localhost:8081${req.path}`;
+      const forwardedHost = req.header("x-forwarded-host") || req.get("host") || "";
+      const forwardedProto = req.header("x-forwarded-proto") || "https";
+      const headers: Record<string, string> = {
+        "expo-platform": platform,
+        "host": forwardedHost,
+        "x-forwarded-host": forwardedHost,
+        "x-forwarded-proto": forwardedProto,
+      };
+      if (req.header("expo-protocol-version")) {
+        headers["expo-protocol-version"] = req.header("expo-protocol-version")!;
+      }
+      if (req.header("expo-sfv-version")) {
+        headers["expo-sfv-version"] = req.header("expo-sfv-version")!;
+      }
+      if (req.header("accept")) {
+        headers["accept"] = req.header("accept")!;
+      }
+      const metroRes = await fetch(metroUrl, { headers });
+      const body = await metroRes.text();
+      metroRes.headers.forEach((value, key) => {
+        if (key.toLowerCase() !== "transfer-encoding") res.setHeader(key, value);
+      });
+      return res.status(metroRes.status).send(body);
+    } catch {
+      return res.status(502).json({ error: "Metro bundler not reachable" });
+    }
+  }
+
+  // In production, serve from static-build
   const manifestPath = path.resolve(
     process.cwd(),
     "static-build",
@@ -193,7 +226,7 @@ function configureExpoAndLanding(app: express.Application) {
       (platform === "ios" || platform === "android") &&
       (req.path === "/" || req.path === "/manifest")
     ) {
-      return serveExpoManifest(platform, res);
+      return serveExpoManifest(platform, req, res);
     }
 
     // Browser: serve PWA SPA for all HTML-accepting requests
