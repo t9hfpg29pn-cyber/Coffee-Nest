@@ -9,8 +9,8 @@ import {
   Modal,
   Alert,
   Platform,
-  Animated,
   Dimensions,
+  Animated,
 } from "react-native";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -203,6 +203,17 @@ export default function RoasteryScreen() {
   useFocusEffect(
     useCallback(() => {
       load();
+      if (Platform.OS === "web") {
+        const sync = () => {
+          const scale = window.devicePixelRatio || 1;
+          Dimensions.set({
+            window: { width: window.innerWidth, height: window.innerHeight, scale, fontScale: 1 },
+            screen: { width: window.screen.width, height: window.screen.height, scale, fontScale: 1 },
+          });
+        };
+        sync();
+        setTimeout(sync, 200);
+      }
     }, [load])
   );
 

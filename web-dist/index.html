@@ -24,12 +24,18 @@
         flex: 1;
         background-color: #2b1408;
       }
+      /* Force the React Native root view to always fill the full viewport.
+         Prevents a stale-Dimensions brown gap after keyboard close + navigation. */
+      #root > div,
+      #root > div > div {
+        min-height: 100dvh !important;
+      }
     </style>
     <link rel="icon" href="/favicon.ico" />
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
-    <script src="/_expo/static/js/web/entry-713ade658411bbee64695fc2b9b8b2e1.js" defer></script>
+    <script src="/_expo/static/js/web/entry-fa39bebe3f722b0c5f2033dba94f7258.js" defer></script>
   </body>
 </html>
