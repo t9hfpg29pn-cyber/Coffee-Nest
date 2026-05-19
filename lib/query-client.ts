@@ -6,15 +6,20 @@ import { QueryClient, QueryFunction } from "@tanstack/react-query";
  * @returns {string} The API base URL
  */
 export function getApiUrl(): string {
-  let host = process.env.EXPO_PUBLIC_DOMAIN;
+  const host = process.env.EXPO_PUBLIC_DOMAIN;
 
-  if (!host) {
-    throw new Error("EXPO_PUBLIC_DOMAIN is not set");
+  if (host) {
+    return new URL(`https://${host}`).href;
   }
 
-  let url = new URL(`https://${host}`);
+  // Standalone web/PWA build: use the current origin so the app works on any
+  // static host (Cloudflare Pages, Netlify, etc.) without env vars.
+  if (typeof window !== "undefined" && window.location) {
+    return window.location.origin + "/";
+  }
 
-  return url.href;
+  // Native dev fallback. The app uses AsyncStorage, so API calls are optional.
+  return "http://localhost:5000/";
 }
 
 async function throwIfResNotOk(res: Response) {
