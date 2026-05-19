@@ -5,14 +5,12 @@ import {
   Inter_700Bold,
   useFonts,
 } from "@expo-google-fonts/inter";
-import { QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { queryClient } from "@/lib/query-client";
 import { Dimensions, Image, Platform, StyleSheet, View } from "react-native";
 import { UserNamesProvider } from "@/context/UserNamesContext";
 import { ThemeProvider, useThemeColors } from "@/context/ThemeContext";
@@ -101,17 +99,15 @@ export default function RootLayout() {
 
   return (
     <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider>
-          <UserNamesProvider>
-            <GestureHandlerRootView>
-              <KeyboardProvider>
-                <RootLayoutNav />
-              </KeyboardProvider>
-            </GestureHandlerRootView>
-          </UserNamesProvider>
-        </ThemeProvider>
-      </QueryClientProvider>
+      <ThemeProvider>
+        <UserNamesProvider>
+          <GestureHandlerRootView>
+            <KeyboardProvider>
+              <RootLayoutNav />
+            </KeyboardProvider>
+          </GestureHandlerRootView>
+        </UserNamesProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }

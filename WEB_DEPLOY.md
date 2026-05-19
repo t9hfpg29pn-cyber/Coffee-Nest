@@ -1,53 +1,75 @@
-# Coffee Nest — Standalone Web/PWA Deployment
+# Coffee Nest — Standalone Offline-First PWA
 
-The Expo app can be exported as a fully static, installable PWA that runs on
-any static host (Cloudflare Pages, Netlify, GitHub Pages, S3, …) without any
-Replit-specific environment variables.
+Coffee Nest is a 100% client-side React Native Web app. There is no backend,
+no API, no database, no auth. All data lives in the browser via
+`AsyncStorage` (which on web is backed by `localStorage`). Backup and restore
+go through a JSON file the user picks or downloads — no server involved.
+
+After the first load the service worker keeps the app shell and assets cached,
+so it runs fully offline. It is installable as a PWA on iOS, Android and
+desktop.
 
 ## Build
 
 ```bash
-node scripts/build-web.js
+npm run build:web
+# equivalent to: node scripts/build-web.js
 ```
 
-This produces `web-dist/` containing:
+This produces a deployable folder `web-dist/` containing:
 
 - `index.html` (with PWA meta tags + service-worker registration)
 - `_expo/static/js/web/entry-*.js` (the app bundle)
 - `assets/` (images, fonts, etc.)
 - `manifest.webmanifest` (PWA app manifest)
-- `sw.js` (offline service worker, network-first for navigations, cache-first
-  for assets)
+- `sw.js` (offline service worker — network-first for navigations, cache-first
+  for static assets)
 - `apple-touch-icon.png`, `icon-192.png`, `icon-512.png`
 - `_redirects`, `_headers` (Netlify / Cloudflare Pages config)
 
-All data is stored locally via AsyncStorage — no backend required for the
-deployed app. `getApiUrl()` in `lib/query-client.ts` falls back to
-`window.location.origin` so any future API calls just hit the same origin.
+No Replit-only env vars are required. The build script does not read
+`REPLIT_INTERNAL_APP_DOMAIN`, `REPLIT_DEV_DOMAIN` or `EXPO_PUBLIC_DOMAIN`.
 
-## Cloudflare Pages
+## Deploy to Cloudflare Pages
 
-1. Connect the repo.
-2. Build command: `node scripts/build-web.js`
+1. Connect the repository to Cloudflare Pages.
+2. Build command: `npm run build:web`
 3. Build output directory: `web-dist`
-4. Node version: `20` (set in env vars).
+4. Node version: `20` (set as env var `NODE_VERSION`).
 
-`_redirects` and `_headers` are honoured automatically.
+`_redirects` (SPA fallback) and `_headers` (cache rules) are honoured
+automatically.
 
-## Netlify
+## Deploy to Netlify
 
-`netlify.toml` is already configured. Just connect the repo or drag-drop
-`web-dist/` into Netlify Drop.
+`netlify.toml` at the repo root is already configured:
+
+```toml
+[build]
+  command = "node scripts/build-web.js"
+  publish = "web-dist"
+```
+
+Either connect the repo or drag-drop `web-dist/` into Netlify Drop.
 
 ## Editing PWA assets
 
-The source PWA assets live in `web-pwa/` and are copied verbatim into
-`web-dist/` by the build script. Edit `web-pwa/manifest.webmanifest`,
-`web-pwa/sw.js`, the icons, etc., then rebuild.
+Source PWA files live in `web-pwa/` and are copied verbatim into `web-dist/`
+during the build. Edit `web-pwa/manifest.webmanifest`, `web-pwa/sw.js`, the
+icons, etc., then rebuild.
 
-## Notes
+When you ship breaking app changes, bump the `CACHE` constant in
+`web-pwa/sw.js` (e.g. `coffeenest-v1` → `coffeenest-v2`) so installed clients
+refetch.
 
-- The build script never reads `REPLIT_INTERNAL_APP_DOMAIN`,
-  `REPLIT_DEV_DOMAIN` or `EXPO_PUBLIC_DOMAIN`.
-- Service-worker cache name is `coffeenest-v1` — bump it in `web-pwa/sw.js`
-  when you ship breaking changes to force clients to refetch.
+## Data: import / export
+
+In **Einstellungen → Datensicherung** the user can:
+
+- **Export** — download a JSON file containing all roasteries, coffees and
+  grinder settings.
+- **Import** — pick a JSON backup; data is restored into `AsyncStorage`,
+  overwriting whatever is there.
+
+This is the only way to move data between devices since no account/sync
+backend exists.
