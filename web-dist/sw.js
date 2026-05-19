@@ -1,4 +1,7 @@
-const CACHE = "coffeenest-v1";
+// Bump CACHE whenever you ship breaking asset changes. Installed clients
+// will then drop the old cache on activate.
+const CACHE = "coffeenest-v2";
+
 const PRECACHE = [
   "/",
   "/index.html",
@@ -29,21 +32,35 @@ self.addEventListener("activate", (event) => {
   );
 });
 
+function isCacheable(response) {
+  // Don't cache failures, redirects, partial/range responses, or opaque
+  // responses — caching those poisons icons/fonts in production.
+  return (
+    response &&
+    response.ok &&
+    response.status === 200 &&
+    response.type === "basic"
+  );
+}
+
 self.addEventListener("fetch", (event) => {
   const { request } = event;
   if (request.method !== "GET") return;
+  if (request.headers.get("range")) return; // never intercept byte-range requests
 
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
-  // Network-first for navigations so updates are picked up quickly,
-  // falling back to the cached shell when offline.
+  // Network-first for navigations so updates ship instantly,
+  // cached shell only as offline fallback.
   if (request.mode === "navigate") {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          const copy = response.clone();
-          caches.open(CACHE).then((cache) => cache.put("/index.html", copy));
+          if (isCacheable(response)) {
+            const copy = response.clone();
+            caches.open(CACHE).then((cache) => cache.put("/index.html", copy));
+          }
           return response;
         })
         .catch(() => caches.match("/index.html")),
@@ -51,13 +68,13 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Cache-first for static assets (JS bundles, images, fonts, etc.).
+  // Cache-first for static assets (JS bundles, fonts, images).
   event.respondWith(
     caches.match(request).then(
       (cached) =>
         cached ||
         fetch(request).then((response) => {
-          if (response.ok && response.type === "basic") {
+          if (isCacheable(response)) {
             const copy = response.clone();
             caches.open(CACHE).then((cache) => cache.put(request, copy));
           }
