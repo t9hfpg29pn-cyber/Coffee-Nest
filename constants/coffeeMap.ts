@@ -95,7 +95,7 @@ const FACETS: Facet[] = [
 
 export const MAP_REGIONS: MapRegion[] = [
   { id: "mittelamerika", label: "MITTELAMERIKA", labelX: 195, labelY: 48,  bg: { x: 20,  y: 25,  width: 360, height: 450 } },
-  { id: "suedamerika",   label: "SÜDAMERIKA",    labelX: 195, labelY: 505, bg: { x: 20,  y: 482, width: 360, height: 200 } },
+  { id: "suedamerika",   label: "SÜDAMERIKA",    labelX: 100, labelY: 496, bg: { x: 20,  y: 482, width: 360, height: 200 } },
   { id: "afrika",        label: "AFRIKA",        labelX: 625, labelY: 48,  bg: { x: 470, y: 25,  width: 300, height: 540 } },
   { id: "asien",         label: "ASIEN",         labelX: 895, labelY: 48,  bg: { x: 790, y: 25,  width: 195, height: 600 } },
 ];

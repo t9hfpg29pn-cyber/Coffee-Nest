@@ -142,7 +142,7 @@ export default function DiscoveriesScreen() {
   const [highlightCountry, setHighlightCountry] = useState<string | null>(null);
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
-  const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
+  const bottomPad = insets.bottom;
 
   useFocusEffect(
     useCallback(() => {

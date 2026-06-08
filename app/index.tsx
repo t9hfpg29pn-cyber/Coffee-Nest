@@ -126,7 +126,7 @@ export default function RoasteriesScreen() {
   };
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
-  const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
+  const bottomPad = insets.bottom;
 
   const openDropdown = () => {
     filterBtnRef.current?.measureInWindow((x, y, _w, h) => {

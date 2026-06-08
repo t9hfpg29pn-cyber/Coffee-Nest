@@ -186,28 +186,17 @@ export function CoffeeOriginMap({
             preserveAspectRatio="xMidYMid meet"
           >
             {data.regions.map((rg) => (
-              <G key={`region-${rg.id}`} pointerEvents="none">
-                <SvgRect
-                  x={rg.bg.x}
-                  y={rg.bg.y}
-                  width={rg.bg.width}
-                  height={rg.bg.height}
-                  rx={18}
-                  ry={18}
-                  fill={colors.regionBg}
-                />
-                <SvgText
-                  x={rg.labelX}
-                  y={rg.labelY}
-                  fill={colors.regionLabel}
-                  fontSize={17}
-                  fontWeight="700"
-                  textAnchor="middle"
-                  letterSpacing={1.5}
-                >
-                  {rg.label}
-                </SvgText>
-              </G>
+              <SvgRect
+                key={`region-bg-${rg.id}`}
+                x={rg.bg.x}
+                y={rg.bg.y}
+                width={rg.bg.width}
+                height={rg.bg.height}
+                rx={18}
+                ry={18}
+                fill={colors.regionBg}
+                pointerEvents="none"
+              />
             ))}
 
             {data.countries.map((c) => {
@@ -252,6 +241,22 @@ export function CoffeeOriginMap({
                 </G>
               );
             })}
+
+            {data.regions.map((rg) => (
+              <SvgText
+                key={`region-label-${rg.id}`}
+                x={rg.labelX}
+                y={rg.labelY}
+                fill={colors.regionLabel}
+                fontSize={17}
+                fontWeight="700"
+                textAnchor="middle"
+                letterSpacing={1.5}
+                pointerEvents="none"
+              >
+                {rg.label}
+              </SvgText>
+            ))}
 
             {highlightData && (
               <AnimatedG animatedProps={highlightProps} pointerEvents="none">
