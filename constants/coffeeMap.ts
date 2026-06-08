@@ -74,7 +74,7 @@ const FACETS: Facet[] = [
   { id: "Panama",      name: "Panama",      region: "mittelamerika", cx: 285, cy: 405, r: 48, small: true },
 
   // ── SÜDAMERIKA (3) — bottom-left ─────────────────────────────
-  { id: "Kolumbien",   name: "Kolumbien",   region: "suedamerika", cx: 160, cy: 530, r: 56 },
+  { id: "Kolumbien",   name: "Kolumbien",   region: "suedamerika", cx: 215, cy: 530, r: 56 },
   { id: "Peru",        name: "Peru",        region: "suedamerika", cx: 135, cy: 640, r: 52 },
   { id: "Brasilien",   name: "Brasilien",   region: "suedamerika", cx: 330, cy: 590, r: 68 },
 

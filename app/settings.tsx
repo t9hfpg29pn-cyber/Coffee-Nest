@@ -60,7 +60,7 @@ export default function SettingsScreen() {
   const [newGrinderDesign, setNewGrinderDesign] = useState<GrinderDesign>("commandante");
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
-  const bottomPad = insets.bottom;
+  const bottomPad = Platform.OS === "web" ? 0 : insets.bottom;
 
   const isDirty = draft1.trim() !== name1 || (user2active && draft2.trim() !== name2);
 

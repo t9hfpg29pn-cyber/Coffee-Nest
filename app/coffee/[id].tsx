@@ -933,7 +933,7 @@ export default function CoffeeDetailScreen() {
   };
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
-  const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
+  const bottomPad = Platform.OS === "web" ? 0 : insets.bottom;
 
   if (loading) {
     return (
