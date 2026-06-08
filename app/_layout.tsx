@@ -34,6 +34,16 @@ function AppSplash() {
 function RootLayoutNav() {
   const colors = useThemeColors();
 
+  useEffect(() => {
+    if (Platform.OS !== "web") return;
+    // Paint the page (incl. iOS home-indicator safe area) with the current
+    // theme background so the PWA never shows a white bar at the bottom.
+    document.documentElement.style.backgroundColor = colors.background;
+    document.body.style.backgroundColor = colors.background;
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute("content", colors.background);
+  }, [colors.background]);
+
   return (
     <Stack
       screenOptions={{

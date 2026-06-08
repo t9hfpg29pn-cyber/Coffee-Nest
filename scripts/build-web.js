@@ -212,6 +212,11 @@ const injections = `    <meta name="apple-mobile-web-app-capable" content="yes" 
     <meta name="apple-mobile-web-app-title" content="Coffee Nest" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="theme-color" content="#2b1408" />
+    <style>
+      /* Dark fallback so the iOS PWA never flashes a white bar in the
+         home-indicator safe area before JS paints the real theme color. */
+      html, body { background-color: #2b1408; }
+    </style>
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
