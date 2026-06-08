@@ -547,7 +547,6 @@ function ProcessingPicker({
   const isLowpoly = design === "lowpoly";
   return (
     <View style={{ gap: 10 }}>
-      <Text style={{ color: textColor, fontFamily: "Inter_600SemiBold", fontSize: 15 }}>Aufbereitung</Text>
       <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
         {PROCESSING_METHODS.map(({ value: v, label }) => {
           const active = value === v;
@@ -588,14 +587,11 @@ function RoastLevelPicker({
   const isLowpoly = design === "lowpoly";
   return (
     <View style={{ gap: 10 }}>
-      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-        <Text style={{ color: textColor, fontFamily: "Inter_600SemiBold", fontSize: 15 }}>Röstgrad</Text>
-        {!!value && (
-          <Text style={{ color: textColor, fontFamily: "Inter_400Regular", fontSize: 12, opacity: 0.55 }}>
-            {ROAST_LEVEL_LABELS[value]}
-          </Text>
-        )}
-      </View>
+      {!!value && (
+        <Text style={{ color: textColor, fontFamily: "Inter_400Regular", fontSize: 12, opacity: 0.55, textAlign: "right" }}>
+          {ROAST_LEVEL_LABELS[value]}
+        </Text>
+      )}
       <View style={{ flexDirection: "row", gap: isLowpoly ? 5 : 8 }}>
         {ROAST_LEVELS.map(({ value: v, label }) => {
           const active = value === v;
@@ -606,20 +602,15 @@ function RoastLevelPicker({
                 key={v}
                 onPress={() => { Haptics.selectionAsync(); onChange(active ? "" : v); }}
                 style={({ pressed }) => ({
-                  flex: 1, height: 72, justifyContent: "center", alignItems: "center",
+                  flex: 1, height: 52, justifyContent: "center", alignItems: "center",
                   transform: [{ scale: pressed ? 0.92 : 1 }],
                 })}
               >
-                <Svg width="100%" height="72" viewBox="0 0 60 72" preserveAspectRatio="none" style={StyleSheet.absoluteFill}>
-                  <SvgPolygon points="9,0 51,0 60,9 60,63 51,72 9,72 0,63 0,9" fill={active ? color : surfaceColor} />
-                  {active && <SvgPolygon points="9,0 51,0 60,9 30,40 0,9" fill="rgba(255,255,255,0.11)" />}
+                <Svg width="100%" height="52" viewBox="0 0 60 52" preserveAspectRatio="none" style={StyleSheet.absoluteFill}>
+                  <SvgPolygon points="9,0 51,0 60,9 60,43 51,52 9,52 0,43 0,9" fill={active ? color : surfaceColor} />
+                  {active && <SvgPolygon points="9,0 51,0 60,9 30,30 0,9" fill="rgba(255,255,255,0.11)" />}
                 </Svg>
-                <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, justifyContent: "center", alignItems: "center", gap: 4 }}>
-                  <RoastIcon level={v} size={24} color={iconColor} />
-                  <Text style={{ color: iconColor, fontFamily: active ? "Inter_700Bold" : "Inter_500Medium", fontSize: 9, textAlign: "center", paddingHorizontal: 2, lineHeight: 12 }}>
-                    {label}
-                  </Text>
-                </View>
+                <RoastIcon level={v} size={24} color={iconColor} />
               </Pressable>
             );
           }
@@ -628,17 +619,14 @@ function RoastLevelPicker({
               key={v}
               onPress={() => { Haptics.selectionAsync(); onChange(active ? "" : v); }}
               style={({ pressed }) => ({
-                flex: 1, height: 72, borderRadius: 12,
+                flex: 1, height: 52, borderRadius: 12,
                 backgroundColor: active ? color : surfaceColor,
                 borderWidth: 1.5, borderColor: active ? color : borderColor,
-                justifyContent: "center", alignItems: "center", gap: 4,
+                justifyContent: "center", alignItems: "center",
                 opacity: pressed ? 0.8 : 1, transform: [{ scale: pressed ? 0.95 : 1 }],
               })}
             >
               <RoastIcon level={v} size={24} color={iconColor} />
-              <Text style={{ color: iconColor, fontFamily: active ? "Inter_700Bold" : "Inter_500Medium", fontSize: 9, textAlign: "center", paddingHorizontal: 2, lineHeight: 12 }}>
-                {label}
-              </Text>
             </Pressable>
           );
         })}
