@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useRef } from "react";
+import React, { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -16,7 +16,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useFocusEffect } from "expo-router";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { getRoasteries, saveRoastery, deleteRoastery, getCoffees, Roastery, getDiscoveryStats, DiscoveryStats } from "@/lib/storage";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getRoasteries, saveRoastery, deleteRoastery, getCoffees, Roastery, getDiscoveryStats, DiscoveryStats, getDiscoveryFact, DiscoveryFact } from "@/lib/storage";
 import { useUserNames } from "@/context/UserNamesContext";
 import { useThemeColors, useCardExtras } from "@/context/ThemeContext";
 import { PolyBackground, PolyCornerCut, PolyActionButton } from "@/components/PolyBackground";
@@ -39,6 +40,19 @@ export default function RoasteriesScreen() {
   const [newLocation, setNewLocation] = useState("");
   const [loading, setLoading] = useState(true);
   const [discoveryStats, setDiscoveryStats] = useState<DiscoveryStats | null>(null);
+  const [discoveryFact, setDiscoveryFact] = useState<DiscoveryFact | null>(null);
+  const [factCollapsed, setFactCollapsed] = useState(false);
+  const [factDismissed, setFactDismissed] = useState(false);
+
+  useEffect(() => {
+    Promise.all([
+      AsyncStorage.getItem("discovery_card_collapsed"),
+      AsyncStorage.getItem("discovery_card_dismissed"),
+    ]).then(([collapsed, dismissed]) => {
+      if (collapsed === "true") setFactCollapsed(true);
+      if (dismissed === "true") setFactDismissed(true);
+    });
+  }, []);
 
   const cities = useMemo(() => {
     const seen = new Set<string>();
@@ -55,6 +69,7 @@ export default function RoasteriesScreen() {
 
   const load = useCallback(async () => {
     getDiscoveryStats().then(setDiscoveryStats);
+    getDiscoveryFact().then(setDiscoveryFact);
     const data = await getRoasteries();
     const counts: Record<string, number> = {};
     const avgs: Record<string, { hase: number | null; dodo: number | null } | null> = {};
@@ -310,13 +325,74 @@ export default function RoasteriesScreen() {
           contentContainerStyle={{ padding: 20, paddingBottom: bottomPad + 20 }}
           ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
           ListHeaderComponent={() => (
-            <Pressable
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                router.push("/discoveries");
-              }}
-              style={({ pressed }) => [
-                styles.discoveryCard,
+            <View>
+              {!factDismissed && discoveryFact ? (
+                <View
+                  style={[
+                    styles.todayCard,
+                    cardExtras.shadow,
+                    {
+                      backgroundColor: colors.surfaceElevated,
+                      borderColor: colors.border,
+                      borderTopColor: colors.tint,
+                      borderRadius: cardExtras.cardRadius,
+                      overflow: "hidden" as const,
+                      marginBottom: 12,
+                    },
+                  ]}
+                >
+                  <View style={[styles.todayCardHeader, { borderBottomColor: colors.border }]}>
+                    <Text style={styles.todayCardBulb}>💡</Text>
+                    <Text style={[styles.todayCardLabel, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
+                      HEUTE ENTDECKT
+                    </Text>
+                    <View style={styles.todayCardActions}>
+                      <Pressable
+                        onPress={() => {
+                          const next = !factCollapsed;
+                          setFactCollapsed(next);
+                          AsyncStorage.setItem("discovery_card_collapsed", next ? "true" : "false");
+                        }}
+                        hitSlop={8}
+                        style={({ pressed }) => [
+                          styles.todayCardBtn,
+                          { opacity: pressed ? 0.6 : 1, borderColor: colors.border, backgroundColor: colors.surface },
+                        ]}
+                      >
+                        <Feather name={factCollapsed ? "plus" : "minus"} size={12} color={colors.textSecondary} />
+                      </Pressable>
+                      <Pressable
+                        onPress={() => {
+                          setFactDismissed(true);
+                          AsyncStorage.setItem("discovery_card_dismissed", "true");
+                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        }}
+                        hitSlop={8}
+                        style={({ pressed }) => [
+                          styles.todayCardBtn,
+                          { opacity: pressed ? 0.6 : 1, borderColor: colors.border, backgroundColor: colors.surface },
+                        ]}
+                      >
+                        <Feather name="x" size={12} color={colors.textSecondary} />
+                      </Pressable>
+                    </View>
+                  </View>
+                  {!factCollapsed && (
+                    <View style={[styles.todayCardBody, { borderTopColor: colors.border }]}>
+                      <Text style={[styles.todayCardText, { color: colors.text, fontFamily: "Inter_500Medium" }]}>
+                        {discoveryFact.text}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              ) : null}
+              <Pressable
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  router.push("/discoveries");
+                }}
+                style={({ pressed }) => [
+                  styles.discoveryCard,
                 cardExtras.shadow,
                 {
                   backgroundColor: colors.surfaceElevated,
@@ -378,7 +454,8 @@ export default function RoasteriesScreen() {
                   </Text>
                 </View>
               ) : null}
-            </Pressable>
+              </Pressable>
+            </View>
           )}
           renderItem={({ item }) => (
             <Pressable
@@ -779,6 +856,47 @@ const styles = StyleSheet.create({
   },
   discoveryFooterValue: {
     fontSize: 13,
+  },
+  todayCard: {
+    borderWidth: 1,
+    borderTopWidth: 2,
+  },
+  todayCardHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    gap: 8,
+  },
+  todayCardBulb: {
+    fontSize: 18,
+    lineHeight: 24,
+  },
+  todayCardLabel: {
+    flex: 1,
+    fontSize: 11,
+    letterSpacing: 1.5,
+  },
+  todayCardActions: {
+    flexDirection: "row",
+    gap: 6,
+  },
+  todayCardBtn: {
+    width: 26,
+    height: 26,
+    borderRadius: 6,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  todayCardBody: {
+    borderTopWidth: 1,
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+  },
+  todayCardText: {
+    fontSize: 16,
+    lineHeight: 24,
   },
   modalOverlay: {
     flex: 1,

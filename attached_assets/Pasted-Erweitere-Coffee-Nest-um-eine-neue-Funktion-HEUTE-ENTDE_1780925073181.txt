@@ -1,0 +1,197 @@
+Erweitere Coffee Nest um eine neue Funktion:
+
+HEUTE ENTDECKT
+
+Ziel:
+Die App soll beim Öffnen einen einzelnen interessanten, automatisch generierten Fakt anzeigen.
+
+Dieser Fakt soll nicht nur beschreiben, was der Nutzer mag, sondern neue Erkenntnisse, Lücken oder Empfehlungen liefern.
+
+====================
+PLATZIERUNG
+====================
+
+Auf der Startseite.
+
+Position:
+
+Ganz oben über der ENTDECKUNGEN-Karte.
+
+Die Karte soll sofort sichtbar sein, ohne scrollen zu müssen.
+
+====================
+DARSTELLUNG
+====================
+
+Neue Karte:
+
+💡 HEUTE ENTDECKT
+
+Darunter genau EIN Fakt.
+
+Beispiel:
+
+"Du hast bereits 15 Kaffees bewertet und trotzdem noch nie einen Honey Process erfasst."
+
+oder
+
+"Von 20 Herkunftsländern hast du bisher erst 4 entdeckt."
+
+oder
+
+"Alle deine Top-3-Kaffees stammen aus Afrika."
+
+Die Karte soll im bestehenden Low-Poly Stil gestaltet werden.
+
+Keine neuen Farben einführen.
+
+====================
+INTERAKTION
+====================
+
+Rechts oben zwei Buttons:
+
+[ – ] einklappen
+
+[ × ] dauerhaft ausblenden
+
+Zustand lokal speichern.
+
+Wenn eingeklappt:
+
+Nur Titelzeile anzeigen.
+
+Wenn dauerhaft ausgeblendet:
+
+Nicht mehr anzeigen.
+
+Später kann daraus ein Einstellungswert werden.
+
+====================
+FACT ENGINE
+====================
+
+Neue Utility:
+
+getDiscoveryFact()
+
+Rückgabe:
+
+{
+  title,
+  text,
+  type
+}
+
+====================
+FACT PRIORITÄTEN
+====================
+
+Die Funktion soll aus mehreren möglichen Fakten den interessantesten auswählen.
+
+Priorität 1:
+
+UNENTDECKTE AUFBEREITUNGEN
+
+Wenn eine Aufbereitung noch nie vorkam:
+
+- Honey
+- Anaerobic
+- Experimental
+
+Beispiel:
+
+"Du hast bereits 15 Kaffees bewertet und trotzdem noch nie einen Honey Process erfasst."
+
+====================
+
+Priorität 2:
+
+UNENTDECKTE HERKUNFTSLÄNDER
+
+Wenn weniger als 10 Länder entdeckt wurden.
+
+Beispiel:
+
+"Von 20 Herkunftsländern hast du bisher erst 4 entdeckt."
+
+====================
+
+Priorität 3:
+
+AFRIKA / SÜDAMERIKA ERKENNTNISSE
+
+Wenn genügend Daten vorhanden sind.
+
+Beispiel:
+
+"Alle deine Top-3-Kaffees stammen aus Afrika."
+
+oder
+
+"Dein bestbewertetes Herkunftsland ist Äthiopien."
+
+====================
+
+Priorität 4:
+
+AUFBEREITUNGS-EMPFEHLUNGEN
+
+Beispiel:
+
+"Du bevorzugst Washed Coffees. Ein Honey Process könnte eine spannende Entdeckung sein."
+
+====================
+
+Priorität 5:
+
+SAMMLUNGS-FORTSCHRITT
+
+Beispiel:
+
+"Noch 2 Herkunftsländer bis zur Hälfte aller verfügbaren Länder."
+
+====================
+
+FALLBACK
+
+Wenn keine der Regeln greift:
+
+"Füge weitere Kaffees hinzu, um neue Entdeckungen zu erhalten."
+
+====================
+TECHNIK
+====================
+
+Alle Fakten sollen dynamisch aus den vorhandenen Daten berechnet werden.
+
+Keine fest hinterlegten Texte.
+
+Die Architektur soll so aufgebaut werden, dass später weitere Fakten leicht ergänzt werden können.
+
+Nutze dafür eine Liste von Fact-Generatoren mit Prioritäten.
+
+====================
+DESIGN
+====================
+
+Die Karte soll bewusst wie ein Highlight wirken.
+
+Etwas größer als normale Karten.
+
+Mehr Innenabstand.
+
+Icon 💡 links neben dem Titel.
+
+Keine Animationen.
+
+====================
+ABSCHLUSS
+====================
+
+1. Build durchführen
+2. TypeScript Fehler beheben
+3. Mit realen Daten testen
+4. Prüfen, dass immer maximal ein Fakt angezeigt wird
+5. Prüfen, dass Einklappen und Ausblenden dauerhaft gespeichert werden
+6. Sicherstellen, dass fehlende Daten keinen Absturz verursachen

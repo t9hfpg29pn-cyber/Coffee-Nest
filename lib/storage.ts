@@ -181,6 +181,163 @@ export async function getCountryCounts(): Promise<Record<string, number>> {
   return counts;
 }
 
+export interface DiscoveryFact {
+  title: string;
+  text: string;
+  type: string;
+}
+
+const AFRICAN_COUNTRIES = new Set([
+  "Äthiopien", "Kenia", "Ruanda", "Burundi", "Tansania", "Uganda",
+]);
+const SA_COUNTRIES = new Set(["Brasilien", "Kolumbien", "Peru"]);
+const TOTAL_DISCOVERY_COUNTRIES = 20;
+
+type FactGenerator = (coffees: Coffee[]) => DiscoveryFact | null;
+
+const FACT_GENERATORS: FactGenerator[] = [
+  // P1: missing interesting processing methods
+  (coffees) => {
+    if (coffees.length < 3) return null;
+    const usedProcessing = new Set(coffees.map((c) => c.processingMethod).filter(Boolean));
+    const interesting = [
+      { value: "honey",        label: "Honey Process" },
+      { value: "anaerobic",    label: "Anaerobic" },
+      { value: "experimental", label: "Experimental" },
+    ];
+    for (const { value, label } of interesting) {
+      if (!usedProcessing.has(value)) {
+        return {
+          title: "Heute entdeckt",
+          text: `Du hast bereits ${coffees.length} Kaffees bewertet und trotzdem noch nie einen ${label} erfasst.`,
+          type: "missing_processing",
+        };
+      }
+    }
+    return null;
+  },
+
+  // P2: fewer than 10 countries discovered
+  (coffees) => {
+    const countries = new Set<string>();
+    for (const c of coffees) {
+      for (const o of c.origins ?? []) { if (o.country) countries.add(o.country); }
+    }
+    const n = countries.size;
+    if (n > 0 && n < 10) {
+      return {
+        title: "Heute entdeckt",
+        text: `Von ${TOTAL_DISCOVERY_COUNTRIES} Herkunftsländern hast du bisher erst ${n} entdeckt.`,
+        type: "country_progress_low",
+      };
+    }
+    return null;
+  },
+
+  // P3: Africa / South America insights
+  (coffees) => {
+    const rated = coffees
+      .filter((c) => c.haseRating !== null || c.dodoRating !== null)
+      .map((c) => {
+        const vals = [c.haseRating, c.dodoRating].filter((v): v is number => v !== null);
+        return { ...c, avgScore: vals.reduce((s, v) => s + v, 0) / vals.length };
+      })
+      .sort((a, b) => b.avgScore - a.avgScore);
+    if (rated.length >= 3) {
+      const top3Countries = rated.slice(0, 3).flatMap((c) =>
+        (c.origins ?? []).map((o) => o.country).filter(Boolean)
+      );
+      if (top3Countries.length > 0 && top3Countries.every((c) => AFRICAN_COUNTRIES.has(c as string))) {
+        return { title: "Heute entdeckt", text: "Alle deine Top-3-Kaffees stammen aus Afrika.", type: "africa_insight" };
+      }
+    }
+    const countryScores: Record<string, { total: number; count: number }> = {};
+    for (const c of coffees) {
+      const vals = [c.haseRating, c.dodoRating].filter((v): v is number => v !== null);
+      if (!vals.length) continue;
+      const avg = vals.reduce((s, v) => s + v, 0) / vals.length;
+      for (const o of c.origins ?? []) {
+        if (!o.country) continue;
+        if (!countryScores[o.country]) countryScores[o.country] = { total: 0, count: 0 };
+        countryScores[o.country].total += avg;
+        countryScores[o.country].count += 1;
+      }
+    }
+    const sorted = Object.entries(countryScores).sort(
+      (a, b) => b[1].total / b[1].count - a[1].total / a[1].count
+    );
+    if (sorted.length > 0) {
+      const [best] = sorted[0];
+      if (AFRICAN_COUNTRIES.has(best) || SA_COUNTRIES.has(best)) {
+        return { title: "Heute entdeckt", text: `Dein bestbewertetes Herkunftsland ist ${best}.`, type: "best_country" };
+      }
+    }
+    return null;
+  },
+
+  // P4: processing recommendation
+  (coffees) => {
+    const usedProcessing = new Set(coffees.map((c) => c.processingMethod).filter(Boolean));
+    const processingCounts: Record<string, number> = {};
+    for (const c of coffees) {
+      if (c.processingMethod) processingCounts[c.processingMethod] = (processingCounts[c.processingMethod] ?? 0) + 1;
+    }
+    const LABELS: Record<string, string> = {
+      washed: "Washed", natural: "Natural", honey: "Honey",
+      anaerobic: "Anaerobic", experimental: "Experimental",
+    };
+    const sorted = Object.entries(processingCounts).sort((a, b) => b[1] - a[1]);
+    if (!sorted.length) return null;
+    const [fav] = sorted[0];
+    const interesting = [
+      { value: "honey", label: "Honey Process" },
+      { value: "anaerobic", label: "Anaerobic" },
+      { value: "experimental", label: "Experimental" },
+    ];
+    const alt = interesting.find((p) => p.value !== fav && !usedProcessing.has(p.value));
+    if (!alt) return null;
+    return {
+      title: "Heute entdeckt",
+      text: `Du bevorzugst ${LABELS[fav] ?? fav} Coffees. Ein ${alt.label} könnte eine spannende Entdeckung sein.`,
+      type: "processing_recommendation",
+    };
+  },
+
+  // P5: collection progress (fewer than half)
+  (coffees) => {
+    const countries = new Set<string>();
+    for (const c of coffees) {
+      for (const o of c.origins ?? []) { if (o.country) countries.add(o.country); }
+    }
+    const n = countries.size;
+    const half = Math.ceil(TOTAL_DISCOVERY_COUNTRIES / 2);
+    if (n < half) {
+      const remaining = half - n;
+      return {
+        title: "Heute entdeckt",
+        text: `Noch ${remaining} ${remaining === 1 ? "Herkunftsland" : "Herkunftsländer"} bis zur Hälfte aller verfügbaren Länder.`,
+        type: "collection_progress",
+      };
+    }
+    return null;
+  },
+];
+
+export async function getDiscoveryFact(): Promise<DiscoveryFact> {
+  const coffees = await getAllCoffees();
+  const fallback: DiscoveryFact = {
+    title: "Heute entdeckt",
+    text: "Füge weitere Kaffees hinzu, um neue Entdeckungen zu erhalten.",
+    type: "fallback",
+  };
+  if (coffees.length === 0) return fallback;
+  for (const gen of FACT_GENERATORS) {
+    const result = gen(coffees);
+    if (result) return result;
+  }
+  return fallback;
+}
+
 export interface CoffeeInsights {
   favoriteCountry: string | null;
   favoriteAroma: { value: number; label: string; emoji: string } | null;
