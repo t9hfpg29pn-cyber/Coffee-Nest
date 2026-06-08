@@ -1,0 +1,253 @@
+```text
+Erweitere das Datenmodell der Coffee Nest App um strukturierte Herkunfts- und Kaffee-Metadaten.
+
+WICHTIG:
+Vorhandene Daten müssen erhalten bleiben.
+Bestehende Kaffees dürfen nach der Migration nicht verloren gehen.
+Neue Felder sollen optional sein, damit ältere Datensätze weiterhin funktionieren.
+
+====================
+DATENMODELL
+====================
+
+Erweitere jeden Kaffee um folgende Felder:
+
+origins: [
+  {
+    country: string,
+    region: string,
+    percentage: number | null
+  }
+]
+
+processingMethod: string
+
+Mögliche Werte:
+
+- washed
+- natural
+- honey
+- anaerobic
+- experimental
+- other
+
+roastLevel: string
+
+Mögliche Werte:
+
+- light
+- medium-light
+- medium
+- medium-dark
+- dark
+
+Für bestehende Datensätze:
+
+origins = []
+processingMethod = ""
+roastLevel = ""
+
+====================
+BEARBEITUNGSANSICHT
+====================
+
+Füge in der Kaffee-Bearbeitungsseite einen neuen Abschnitt zwischen "Aroma" und "Notizen" ein.
+
+Überschrift:
+
+HERKUNFT
+
+Innerhalb des Abschnitts:
+
+1. Herkunftsländer
+
+Der Nutzer kann mehrere Herkünfte anlegen.
+
+Jede Herkunft besitzt:
+
+- Land
+- Region
+- Anteil %
+
+Layout:
+
+[ Land auswählen ]
+
+[ Region ]
+
+[ Anteil % ]
+
+Button:
+
++ Herkunft hinzufügen
+
+Mehrere Einträge sollen untereinander angezeigt werden.
+
+====================
+LÄNDERAUSWAHL
+====================
+
+Verwende eine Dropdown-Auswahl.
+
+Die Länder sollen in der Oberfläche und in den gespeicherten Daten auf Deutsch angezeigt werden.
+
+Folgende Länder zunächst anbieten:
+
+- Brasilien
+- Kolumbien
+- Äthiopien
+- Kenia
+- Guatemala
+- Costa Rica
+- Panama
+- Ruanda
+- Burundi
+- Peru
+- Honduras
+- Nicaragua
+- El Salvador
+- Indien
+- Indonesien
+- Vietnam
+- Mexiko
+- Tansania
+- Uganda
+- Jemen
+- Sonstiges
+
+Bei Auswahl von "Sonstiges" soll ein zusätzliches Freitextfeld erscheinen.
+
+====================
+AUFBEREITUNG
+====================
+
+Neuer Abschnitt:
+
+AUFBEREITUNG
+
+Darstellung analog zur Mühlenauswahl.
+
+Auswahlbuttons:
+
+- Washed
+- Natural
+- Honey
+- Anaerobic
+- Experimental
+
+Nur eine Auswahl gleichzeitig.
+
+Die englischen Begriffe dürfen verwendet werden, da sie in der Specialty-Coffee-Welt üblich sind.
+
+====================
+RÖSTGRAD
+====================
+
+Neuer Abschnitt:
+
+RÖSTGRAD
+
+Darstellung analog zur Aroma-Auswahl.
+
+5 Stufen:
+
+- Hell
+- Mittel-Hell
+- Mittel
+- Mittel-Dunkel
+- Dunkel
+
+Visualisierung als horizontale Auswahl.
+
+Heller Röstgrad links.
+Dunkler Röstgrad rechts.
+
+Intern können weiterhin die Werte
+
+light
+medium-light
+medium
+medium-dark
+dark
+
+gespeichert werden.
+
+====================
+DETAILSEITE
+====================
+
+Zeige die neuen Informationen auf der Kaffee-Detailseite an.
+
+Beispiel:
+
+Herkunft
+
+Äthiopien – Yirgacheffe
+
+Aufbereitung
+
+Washed
+
+Röstgrad
+
+Mittel-Hell
+
+Bei mehreren Herkünften:
+
+Brasilien 60 %
+Kolumbien 40 %
+
+====================
+VORBEREITUNG FÜR SPÄTERE FEATURES
+====================
+
+Erstelle bereits Hilfsfunktionen:
+
+getUniqueCountries()
+
+getUniqueRegions()
+
+getCountryCounts()
+
+Diese Funktionen müssen noch nicht sichtbar verwendet werden.
+
+Sie dienen später für:
+
+- Entdeckungsseite
+- Herkunftsländer-Karte
+- Statistiken
+- Persönliche Erkenntnisse
+
+====================
+DESIGN
+====================
+
+Die neuen Bereiche müssen den bestehenden Low-Poly Stil übernehmen:
+
+- gleiche Kartenoptik
+- gleiche Farben
+- gleiche Polygon-Buttons
+- gleiche Abstände
+
+Keine neuen Farben einführen.
+
+====================
+ABSCHLUSS
+====================
+
+Nach Umsetzung:
+
+1. Anwendung bauen
+2. TypeScript Fehler beheben
+3. Migration bestehender Daten prüfen
+4. Testdaten erzeugen
+5. Sicherstellen, dass Speichern und Bearbeiten der neuen Felder funktioniert
+
+Zusätzlich:
+
+- Prüfen, dass mehrere Herkünfte pro Kaffee korrekt gespeichert und wieder geladen werden.
+- Prüfen, dass bestehende Kaffees ohne Herkunftsdaten weiterhin fehlerfrei angezeigt werden.
+- Sicherstellen, dass die neue Datenstruktur für spätere Entdeckungs- und Kartenfunktionen geeignet ist.
+```
+
+Noch ein fachlicher Hinweis: Ich würde „Land“ und „Region“ tatsächlich getrennt halten und nicht nur ein Freitextfeld „Herkunft“ verwenden. Bei Specialty Coffee wird oft nach Regionen gesammelt (z. B. Yirgacheffe, Guji, Sidamo, Nyeri, Tarrazú), und genau daraus können später die spannendsten Entdeckungsfunktionen entstehen.

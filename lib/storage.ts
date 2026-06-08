@@ -12,6 +12,12 @@ export interface GrindSetting {
   level: number;
 }
 
+export interface CoffeeOrigin {
+  country: string;
+  region: string;
+  percentage: number | null;
+}
+
 export interface Coffee {
   id: string;
   roasteryId: string;
@@ -25,6 +31,9 @@ export interface Coffee {
   aromaDescription: string;
   notes: string;
   pricePerKg: string;
+  origins?: CoffeeOrigin[];
+  processingMethod?: string;
+  roastLevel?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -91,7 +100,13 @@ export async function deleteRoastery(id: string): Promise<void> {
 export async function getAllCoffees(): Promise<Coffee[]> {
   const data = await AsyncStorage.getItem(COFFEES_KEY);
   if (!data) return [];
-  return JSON.parse(data);
+  const coffees: Coffee[] = JSON.parse(data);
+  return coffees.map((c) => ({
+    origins: [],
+    processingMethod: "",
+    roastLevel: "",
+    ...c,
+  }));
 }
 
 export async function getCoffees(roasteryId: string): Promise<Coffee[]> {
@@ -131,4 +146,37 @@ export async function deleteCoffee(id: string): Promise<void> {
   const all = await getAllCoffees();
   const filtered = all.filter((c) => c.id !== id);
   await AsyncStorage.setItem(COFFEES_KEY, JSON.stringify(filtered));
+}
+
+export async function getUniqueCountries(): Promise<string[]> {
+  const coffees = await getAllCoffees();
+  const countries = new Set<string>();
+  for (const c of coffees) {
+    for (const o of c.origins ?? []) {
+      if (o.country) countries.add(o.country);
+    }
+  }
+  return Array.from(countries).sort();
+}
+
+export async function getUniqueRegions(): Promise<string[]> {
+  const coffees = await getAllCoffees();
+  const regions = new Set<string>();
+  for (const c of coffees) {
+    for (const o of c.origins ?? []) {
+      if (o.region) regions.add(o.region);
+    }
+  }
+  return Array.from(regions).sort();
+}
+
+export async function getCountryCounts(): Promise<Record<string, number>> {
+  const coffees = await getAllCoffees();
+  const counts: Record<string, number> = {};
+  for (const c of coffees) {
+    for (const o of c.origins ?? []) {
+      if (o.country) counts[o.country] = (counts[o.country] ?? 0) + 1;
+    }
+  }
+  return counts;
 }

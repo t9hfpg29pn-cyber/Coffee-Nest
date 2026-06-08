@@ -10,6 +10,8 @@ import {
   ActivityIndicator,
   Animated,
   Image,
+  Modal,
+  ScrollView,
 } from "react-native";
 import Svg, { Path, Circle, Line, Rect, G, Polygon as SvgPolygon } from "react-native-svg";
 import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
@@ -17,7 +19,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { getCoffeeById, updateCoffee, deleteCoffee, getGrinders, Coffee, GrindSetting } from "@/lib/storage";
+import { getCoffeeById, updateCoffee, deleteCoffee, getGrinders, Coffee, GrindSetting, CoffeeOrigin } from "@/lib/storage";
 import { useUserNames } from "@/context/UserNamesContext";
 import { useThemeColors, useCardExtras, useTheme } from "@/context/ThemeContext";
 import { PolyBackground, PolyCornerCut, PolyActionButton } from "@/components/PolyBackground";
@@ -407,6 +409,317 @@ function SectionHeader({ title, color }: { title: string; color: string }) {
   );
 }
 
+// ─── Herkunft / Aufbereitung / Röstgrad ──────────────────────────────────────
+
+const COUNTRIES = [
+  "Brasilien", "Kolumbien", "Äthiopien", "Kenia", "Guatemala",
+  "Costa Rica", "Panama", "Ruanda", "Burundi", "Peru",
+  "Honduras", "Nicaragua", "El Salvador", "Indien", "Indonesien",
+  "Vietnam", "Mexiko", "Tansania", "Uganda", "Jemen", "Sonstiges",
+] as const;
+
+const PROCESSING_METHODS = [
+  { value: "washed",        label: "Washed"       },
+  { value: "natural",       label: "Natural"      },
+  { value: "honey",         label: "Honey"        },
+  { value: "anaerobic",     label: "Anaerobic"    },
+  { value: "experimental",  label: "Experimental" },
+] as const;
+
+const ROAST_LEVELS = [
+  { value: "light",        label: "Hell"         },
+  { value: "medium-light", label: "Mittel-\nHell"   },
+  { value: "medium",       label: "Mittel"       },
+  { value: "medium-dark",  label: "Mittel-\nDunkel" },
+  { value: "dark",         label: "Dunkel"       },
+] as const;
+
+const ROAST_LEVEL_LABELS: Record<string, string> = {
+  light: "Hell", "medium-light": "Mittel-Hell",
+  medium: "Mittel", "medium-dark": "Mittel-Dunkel", dark: "Dunkel",
+};
+
+type OriginDraft = {
+  key: string;
+  country: string;
+  customCountry: string;
+  region: string;
+  percentageText: string;
+};
+
+function makeOriginKey() {
+  return Date.now().toString() + Math.random().toString(36).substr(2, 4);
+}
+
+function CountryPickerModal({
+  visible, onSelect, onClose, colors, design,
+}: {
+  visible: boolean;
+  onSelect: (c: string) => void;
+  onClose: () => void;
+  colors: ReturnType<typeof useThemeColors>;
+  design: string;
+}) {
+  const isLowpoly = design === "lowpoly";
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "flex-end" }}>
+        <View style={{
+          backgroundColor: colors.surface,
+          borderTopLeftRadius: isLowpoly ? 4 : 20,
+          borderTopRightRadius: isLowpoly ? 4 : 20,
+          maxHeight: "70%",
+        }}>
+          <View style={{
+            flexDirection: "row", justifyContent: "space-between", alignItems: "center",
+            padding: 16, borderBottomWidth: 1, borderBottomColor: colors.border,
+          }}>
+            <Text style={{ color: colors.text, fontFamily: "Inter_600SemiBold", fontSize: 16 }}>
+              Land auswählen
+            </Text>
+            <Pressable onPress={onClose} style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}>
+              <Ionicons name="close" size={22} color={colors.textSecondary} />
+            </Pressable>
+          </View>
+          <ScrollView bounces={false}>
+            {COUNTRIES.map((c) => (
+              <Pressable
+                key={c}
+                onPress={() => { Haptics.selectionAsync(); onSelect(c); onClose(); }}
+                style={({ pressed }) => ({
+                  paddingHorizontal: 20, paddingVertical: 14,
+                  borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border,
+                  backgroundColor: pressed ? colors.surfaceElevated : "transparent",
+                })}
+              >
+                <Text style={{ color: colors.text, fontFamily: "Inter_500Medium", fontSize: 16 }}>{c}</Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+function OriginEditor({
+  origins, onAdd, onUpdate, onRemove, openPickerKey, onOpenPicker, onClosePicker, colors, design,
+}: {
+  origins: OriginDraft[];
+  onAdd: () => void;
+  onUpdate: (key: string, field: keyof OriginDraft, value: string) => void;
+  onRemove: (key: string) => void;
+  openPickerKey: string | null;
+  onOpenPicker: (key: string) => void;
+  onClosePicker: () => void;
+  colors: ReturnType<typeof useThemeColors>;
+  design: string;
+}) {
+  const isLowpoly = design === "lowpoly";
+  const br = isLowpoly ? 4 : 10;
+
+  return (
+    <View style={{ gap: 12 }}>
+      {origins.map((o, idx) => (
+        <View key={o.key} style={{
+          backgroundColor: colors.surface,
+          borderRadius: isLowpoly ? 4 : 12,
+          borderWidth: 1, borderColor: colors.border,
+          padding: 12, gap: 8,
+        }}>
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+            <Text style={{ color: colors.textSecondary, fontFamily: "Inter_500Medium", fontSize: 12 }}>
+              Herkunft {idx + 1}
+            </Text>
+            <Pressable onPress={() => { Haptics.selectionAsync(); onRemove(o.key); }}
+              style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}>
+              <Ionicons name="close-circle" size={18} color={colors.textSecondary} />
+            </Pressable>
+          </View>
+
+          <Pressable
+            onPress={() => { Haptics.selectionAsync(); onOpenPicker(o.key); }}
+            style={({ pressed }) => ({
+              flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+              backgroundColor: colors.surfaceElevated,
+              borderWidth: 1.5, borderColor: colors.border, borderRadius: br,
+              paddingHorizontal: 14, paddingVertical: 12,
+              opacity: pressed ? 0.8 : 1,
+            })}
+          >
+            <Text style={{ color: o.country ? colors.text : colors.textSecondary, fontFamily: "Inter_500Medium", fontSize: 15 }}>
+              {o.country || "Land auswählen"}
+            </Text>
+            <Ionicons name="chevron-down" size={16} color={colors.textSecondary} />
+          </Pressable>
+
+          <CountryPickerModal
+            visible={openPickerKey === o.key}
+            onSelect={(c) => { onUpdate(o.key, "country", c); if (c !== "Sonstiges") onUpdate(o.key, "customCountry", ""); }}
+            onClose={onClosePicker}
+            colors={colors}
+            design={design}
+          />
+
+          {o.country === "Sonstiges" && (
+            <TextInput
+              style={{ borderWidth: 1.5, borderColor: colors.border, borderRadius: br, paddingHorizontal: 14, paddingVertical: 10, color: colors.text, fontFamily: "Inter_500Medium", fontSize: 15, backgroundColor: colors.surfaceElevated }}
+              placeholder="Land eingeben"
+              placeholderTextColor={colors.textSecondary}
+              value={o.customCountry}
+              onChangeText={(v) => onUpdate(o.key, "customCountry", v)}
+            />
+          )}
+
+          <TextInput
+            style={{ borderWidth: 1.5, borderColor: colors.border, borderRadius: br, paddingHorizontal: 14, paddingVertical: 10, color: colors.text, fontFamily: "Inter_400Regular", fontSize: 15, backgroundColor: colors.surfaceElevated }}
+            placeholder="Region (z.B. Yirgacheffe)"
+            placeholderTextColor={colors.textSecondary}
+            value={o.region}
+            onChangeText={(v) => onUpdate(o.key, "region", v)}
+          />
+
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <TextInput
+              style={{ flex: 1, borderWidth: 1.5, borderColor: colors.border, borderRadius: br, paddingHorizontal: 14, paddingVertical: 10, color: colors.text, fontFamily: "Inter_400Regular", fontSize: 15, backgroundColor: colors.surfaceElevated }}
+              placeholder="Anteil"
+              placeholderTextColor={colors.textSecondary}
+              value={o.percentageText}
+              onChangeText={(v) => onUpdate(o.key, "percentageText", v.replace(/[^0-9]/g, ""))}
+              keyboardType="number-pad"
+              maxLength={3}
+            />
+            <Text style={{ color: colors.textSecondary, fontFamily: "Inter_600SemiBold", fontSize: 15 }}>%</Text>
+          </View>
+        </View>
+      ))}
+
+      <Pressable
+        onPress={() => { Haptics.selectionAsync(); onAdd(); }}
+        style={({ pressed }) => ({
+          flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6,
+          paddingVertical: 12, borderRadius: isLowpoly ? 4 : 10,
+          borderWidth: 1.5, borderColor: colors.tint,
+          borderStyle: "dashed" as const,
+          opacity: pressed ? 0.7 : 1,
+        })}
+      >
+        <Ionicons name="add" size={18} color={colors.tint} />
+        <Text style={{ color: colors.tint, fontFamily: "Inter_600SemiBold", fontSize: 14 }}>
+          Herkunft hinzufügen
+        </Text>
+      </Pressable>
+    </View>
+  );
+}
+
+function ProcessingPicker({
+  value, onChange, color, textColor, borderColor, surfaceColor,
+}: {
+  value: string; onChange: (v: string) => void;
+  color: string; textColor: string; borderColor: string; surfaceColor: string;
+}) {
+  const { design } = useTheme();
+  const isLowpoly = design === "lowpoly";
+  return (
+    <View style={{ gap: 10 }}>
+      <Text style={{ color: textColor, fontFamily: "Inter_600SemiBold", fontSize: 15 }}>Aufbereitung</Text>
+      <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
+        {PROCESSING_METHODS.map(({ value: v, label }) => {
+          const active = value === v;
+          return (
+            <Pressable
+              key={v}
+              onPress={() => { Haptics.selectionAsync(); onChange(active ? "" : v); }}
+              style={({ pressed }) => ({
+                paddingHorizontal: 14, paddingVertical: 10,
+                borderRadius: isLowpoly ? 4 : 12,
+                backgroundColor: active ? color : surfaceColor,
+                borderWidth: 1.5, borderColor: active ? color : borderColor,
+                opacity: pressed ? 0.8 : 1,
+                transform: [{ scale: pressed ? 0.97 : 1 }],
+              })}
+            >
+              <Text style={{ color: active ? "#fff" : textColor, fontFamily: active ? "Inter_700Bold" : "Inter_500Medium", fontSize: 14 }}>
+                {label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+function RoastLevelPicker({
+  value, onChange, color, textColor, borderColor, surfaceColor,
+}: {
+  value: string; onChange: (v: string) => void;
+  color: string; textColor: string; borderColor: string; surfaceColor: string;
+}) {
+  const { design } = useTheme();
+  const isLowpoly = design === "lowpoly";
+  return (
+    <View style={{ gap: 10 }}>
+      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+        <Text style={{ color: textColor, fontFamily: "Inter_600SemiBold", fontSize: 15 }}>Röstgrad</Text>
+        {!!value && (
+          <Text style={{ color: textColor, fontFamily: "Inter_400Regular", fontSize: 12, opacity: 0.55 }}>
+            {ROAST_LEVEL_LABELS[value]}
+          </Text>
+        )}
+      </View>
+      <View style={{ flexDirection: "row", gap: isLowpoly ? 5 : 8 }}>
+        {ROAST_LEVELS.map(({ value: v, label }) => {
+          const active = value === v;
+          if (isLowpoly) {
+            return (
+              <Pressable
+                key={v}
+                onPress={() => { Haptics.selectionAsync(); onChange(active ? "" : v); }}
+                style={({ pressed }) => ({
+                  flex: 1, height: 56, justifyContent: "center", alignItems: "center",
+                  transform: [{ scale: pressed ? 0.92 : 1 }],
+                })}
+              >
+                <Svg width="100%" height="56" viewBox="0 0 60 56" preserveAspectRatio="none" style={StyleSheet.absoluteFill}>
+                  <SvgPolygon points="9,0 51,0 60,9 60,47 51,56 9,56 0,47 0,9" fill={active ? color : surfaceColor} />
+                  {active && <SvgPolygon points="9,0 51,0 60,9 30,32 0,9" fill="rgba(255,255,255,0.11)" />}
+                </Svg>
+                <Text style={{ color: active ? "#1a0800" : textColor, fontFamily: active ? "Inter_700Bold" : "Inter_500Medium", fontSize: 9, textAlign: "center", paddingHorizontal: 2, lineHeight: 12 }}>
+                  {label}
+                </Text>
+              </Pressable>
+            );
+          }
+          return (
+            <Pressable
+              key={v}
+              onPress={() => { Haptics.selectionAsync(); onChange(active ? "" : v); }}
+              style={({ pressed }) => ({
+                flex: 1, height: 56, borderRadius: 12,
+                backgroundColor: active ? color : surfaceColor,
+                borderWidth: 1.5, borderColor: active ? color : borderColor,
+                justifyContent: "center", alignItems: "center",
+                opacity: pressed ? 0.8 : 1, transform: [{ scale: pressed ? 0.95 : 1 }],
+              })}
+            >
+              <Text style={{ color: active ? "#fff" : textColor, fontFamily: active ? "Inter_700Bold" : "Inter_500Medium", fontSize: 9, textAlign: "center", paddingHorizontal: 2, lineHeight: 12 }}>
+                {label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+        <Text style={{ color: textColor, fontFamily: "Inter_400Regular", fontSize: 11, opacity: 0.6 }}>← hell</Text>
+        <Text style={{ color: textColor, fontFamily: "Inter_400Regular", fontSize: 11, opacity: 0.6 }}>dunkel →</Text>
+      </View>
+    </View>
+  );
+}
+
+// ─── GrindSettingDraft ───────────────────────────────────────────────────────
 type GrindSettingDraft = { grinder: string; levelText: string };
 
 function GrinderPicker({
@@ -548,6 +861,10 @@ export default function CoffeeDetailScreen() {
   const [aromaDescription, setAromaDescription] = useState("");
   const [notes, setNotes] = useState("");
   const [pricePerKg, setPricePerKg] = useState("");
+  const [origins, setOrigins] = useState<OriginDraft[]>([]);
+  const [processingMethod, setProcessingMethod] = useState("");
+  const [roastLevel, setRoastLevel] = useState("");
+  const [originPickerKey, setOriginPickerKey] = useState<string | null>(null);
 
   const toastyAnim = useRef(new Animated.Value(0)).current;
   const toastyTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -590,6 +907,15 @@ export default function CoffeeDetailScreen() {
         setAromaDescription(data.aromaDescription);
         setNotes(data.notes);
         setPricePerKg(data.pricePerKg);
+        setProcessingMethod(data.processingMethod ?? "");
+        setRoastLevel(data.roastLevel ?? "");
+        setOrigins((data.origins ?? []).map((o) => ({
+          key: makeOriginKey(),
+          country: COUNTRIES.includes(o.country as typeof COUNTRIES[number]) ? o.country : "Sonstiges",
+          customCountry: COUNTRIES.includes(o.country as typeof COUNTRIES[number]) ? "" : o.country,
+          region: o.region,
+          percentageText: o.percentage != null ? String(o.percentage) : "",
+        })));
       } else if (grindersData[0]) {
         setGrindSettings([{ grinder: grindersData[0], levelText: "0" }]);
       }
@@ -646,6 +972,15 @@ export default function CoffeeDetailScreen() {
       aromaDescription,
       notes,
       pricePerKg,
+      processingMethod,
+      roastLevel,
+      origins: origins
+        .map((o) => ({
+          country: o.country === "Sonstiges" ? o.customCountry.trim() : o.country,
+          region: o.region.trim(),
+          percentage: o.percentageText ? (parseInt(o.percentageText, 10) || null) : null,
+        }))
+        .filter((o) => o.country),
     });
     setSaving(false);
     setHasChanges(false);
@@ -821,6 +1156,63 @@ export default function CoffeeDetailScreen() {
               borderColor={colors.border}
               surfaceColor={colors.surface}
               aromaIcons
+            />
+          </View>
+        </View>
+
+        {/* ── HERKUNFT ──────────────────────────────────────────────────── */}
+        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight, borderRadius: cardExtras.cardRadius }]}>
+          <SectionHeader title="HERKUNFT" color={colors.textSecondary} />
+          <View style={{ marginTop: 8 }}>
+            <OriginEditor
+              origins={origins}
+              onAdd={() => {
+                setOrigins((prev) => [...prev, { key: makeOriginKey(), country: "", customCountry: "", region: "", percentageText: "" }]);
+                markChanged();
+              }}
+              onUpdate={(key, field, value) => {
+                setOrigins((prev) => prev.map((o) => o.key === key ? { ...o, [field]: value } : o));
+                markChanged();
+              }}
+              onRemove={(key) => {
+                setOrigins((prev) => prev.filter((o) => o.key !== key));
+                markChanged();
+              }}
+              openPickerKey={originPickerKey}
+              onOpenPicker={(key) => setOriginPickerKey(key)}
+              onClosePicker={() => setOriginPickerKey(null)}
+              colors={colors}
+              design={design}
+            />
+          </View>
+        </View>
+
+        {/* ── AUFBEREITUNG ──────────────────────────────────────────────── */}
+        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight, borderRadius: cardExtras.cardRadius }]}>
+          <SectionHeader title="AUFBEREITUNG" color={colors.textSecondary} />
+          <View style={{ marginTop: 8 }}>
+            <ProcessingPicker
+              value={processingMethod}
+              onChange={(v) => { setProcessingMethod(v); markChanged(); }}
+              color={colors.tint}
+              textColor={colors.text}
+              borderColor={colors.border}
+              surfaceColor={colors.surface}
+            />
+          </View>
+        </View>
+
+        {/* ── RÖSTGRAD ──────────────────────────────────────────────────── */}
+        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight, borderRadius: cardExtras.cardRadius }]}>
+          <SectionHeader title="RÖSTGRAD" color={colors.textSecondary} />
+          <View style={{ marginTop: 8 }}>
+            <RoastLevelPicker
+              value={roastLevel}
+              onChange={(v) => { setRoastLevel(v); markChanged(); }}
+              color={colors.tint}
+              textColor={colors.text}
+              borderColor={colors.border}
+              surfaceColor={colors.surface}
             />
           </View>
         </View>
