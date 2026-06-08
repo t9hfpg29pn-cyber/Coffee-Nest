@@ -14,13 +14,13 @@ import {
   ScrollView,
 } from "react-native";
 import Svg, { Path, Circle, Line, Rect, G, Polygon as SvgPolygon } from "react-native-svg";
-import { AromaIcon, ProcessingIcon, RoastIcon, OriginPinIcon } from "@/components/CoffeeIcons";
+import { AromaIcon, ProcessingIcon, RoastIcon, OriginPinIcon, GrinderIcon } from "@/components/CoffeeIcons";
 import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { getCoffeeById, updateCoffee, deleteCoffee, getGrinders, Coffee, GrindSetting, CoffeeOrigin } from "@/lib/storage";
+import { getCoffeeById, updateCoffee, deleteCoffee, getGrinders, Coffee, GrindSetting, CoffeeOrigin, Grinder } from "@/lib/storage";
 import { useUserNames } from "@/context/UserNamesContext";
 import { useThemeColors, useCardExtras, useTheme } from "@/context/ThemeContext";
 import { PolyBackground, PolyCornerCut, PolyActionButton } from "@/components/PolyBackground";
@@ -649,7 +649,7 @@ function GrinderPicker({
   borderColor,
   surfaceColor,
 }: {
-  grinders: string[];
+  grinders: Grinder[];
   grindSettings: GrindSettingDraft[];
   onToggle: (grinder: string) => void;
   onLevelChange: (grinder: string, v: string) => void;
@@ -668,16 +668,19 @@ function GrinderPicker({
       </Text>
       <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
         {grinders.map((g) => {
-          const active = grindSettings.some((s) => s.grinder === g);
+          const active = grindSettings.some((s) => s.grinder === g.name);
           return (
             <Pressable
-              key={g}
+              key={g.name}
               onPress={() => {
                 Haptics.selectionAsync();
-                onToggle(g);
+                onToggle(g.name);
               }}
               style={({ pressed }) => ({
-                paddingHorizontal: 16,
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 8,
+                paddingHorizontal: 14,
                 paddingVertical: 10,
                 borderRadius: 12,
                 backgroundColor: active ? color : surfaceColor,
@@ -687,6 +690,7 @@ function GrinderPicker({
                 transform: [{ scale: pressed ? 0.97 : 1 }],
               })}
             >
+              <GrinderIcon design={g.design} size={22} color={active ? "#fff" : textColor} />
               <Text
                 style={{
                   color: active ? "#fff" : textColor,
@@ -694,7 +698,7 @@ function GrinderPicker({
                   fontSize: 15,
                 }}
               >
-                {g}
+                {g.name}
               </Text>
             </Pressable>
           );
@@ -768,7 +772,7 @@ export default function CoffeeDetailScreen() {
   const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
-  const [grinders, setGrinders] = useState<string[]>([]);
+  const [grinders, setGrinders] = useState<Grinder[]>([]);
   const [name, setName] = useState("");
   const [haseRating, setHaseRating] = useState<number | null>(null);
   const [dodoRating, setDodoRating] = useState<number | null>(null);
@@ -817,7 +821,7 @@ export default function CoffeeDetailScreen() {
             levelText: data.grindLevel > 0 ? String(data.grindLevel) : "0",
           }]);
         } else if (grindersData[0]) {
-          setGrindSettings([{ grinder: grindersData[0], levelText: "0" }]);
+          setGrindSettings([{ grinder: grindersData[0].name, levelText: "0" }]);
         }
         setAroma(data.aroma);
         setAromaDescription(data.aromaDescription);
@@ -833,7 +837,7 @@ export default function CoffeeDetailScreen() {
           percentageText: o.percentage != null ? String(o.percentage) : "",
         })));
       } else if (grindersData[0]) {
-        setGrindSettings([{ grinder: grindersData[0], levelText: "0" }]);
+        setGrindSettings([{ grinder: grindersData[0].name, levelText: "0" }]);
       }
       setLoading(false);
     })();

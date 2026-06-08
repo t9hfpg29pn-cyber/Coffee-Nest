@@ -20,9 +20,9 @@ import * as DocumentPicker from "expo-document-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useUserNames } from "@/context/UserNamesContext";
 import { PolyBackground, PolyActionButton } from "@/components/PolyBackground";
-import { getRoasteries, getAllCoffees, getGrinders, saveGrinders } from "@/lib/storage";
+import { getRoasteries, getAllCoffees, getGrinders, saveGrinders, normalizeGrinders, DEFAULT_GRINDERS, Grinder, GrinderDesign } from "@/lib/storage";
 import { useTheme, useThemeColors, useCardExtras, DesignMode } from "@/context/ThemeContext";
-import { CupIcon, GemIcon } from "@/components/CoffeeIcons";
+import { CupIcon, GemIcon, GrinderIcon } from "@/components/CoffeeIcons";
 
 function showAlert(title: string, message: string, buttons?: { text: string; style?: string; onPress?: () => void }[]) {
   if (Platform.OS === "web") {
@@ -55,8 +55,9 @@ export default function SettingsScreen() {
   const [exporting, setExporting] = useState(false);
   const [importing, setImporting] = useState(false);
 
-  const [grinders, setGrinders] = useState<string[]>([]);
+  const [grinders, setGrinders] = useState<Grinder[]>([]);
   const [newGrinder, setNewGrinder] = useState("");
+  const [newGrinderDesign, setNewGrinderDesign] = useState<GrinderDesign>("commandante");
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
@@ -67,7 +68,7 @@ export default function SettingsScreen() {
     getGrinders().then(setGrinders);
   }, []);
 
-  const persistGrinders = async (list: string[]) => {
+  const persistGrinders = async (list: Grinder[]) => {
     setGrinders(list);
     await saveGrinders(list);
   };
@@ -79,18 +80,18 @@ export default function SettingsScreen() {
       showAlert("Hinweis", "Maximal 3 Mühlen können eingetragen werden.");
       return;
     }
-    if (grinders.includes(trimmed)) {
+    if (grinders.some((g) => g.name.toLowerCase() === trimmed.toLowerCase())) {
       showAlert("Hinweis", "Diese Mühle ist bereits vorhanden.");
       return;
     }
     Haptics.selectionAsync();
-    await persistGrinders([...grinders, trimmed]);
+    await persistGrinders([...grinders, { name: trimmed, design: newGrinderDesign }]);
     setNewGrinder("");
   };
 
   const handleRemoveGrinder = async (name: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await persistGrinders(grinders.filter((g) => g !== name));
+    await persistGrinders(grinders.filter((g) => g.name !== name));
   };
 
   const handleSave = async () => {
@@ -194,10 +195,10 @@ export default function SettingsScreen() {
             onPress: async () => {
               await AsyncStorage.setItem("roasteries", JSON.stringify(data.roasteries));
               await AsyncStorage.setItem("coffees", JSON.stringify(data.coffees));
-              if (Array.isArray(data.grinders) && data.grinders.length > 0) {
-                await AsyncStorage.setItem("grinders", JSON.stringify(data.grinders));
-                setGrinders(data.grinders);
-              }
+              const normalized = normalizeGrinders(data.grinders);
+              const importedGrinders = normalized.length > 0 ? normalized : [...DEFAULT_GRINDERS];
+              await AsyncStorage.setItem("grinders", JSON.stringify(importedGrinders));
+              setGrinders(importedGrinders);
               Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
               showAlert("Erfolg", "Daten wurden erfolgreich importiert.");
             },
@@ -453,7 +454,7 @@ export default function SettingsScreen() {
 
           {grinders.map((g, idx) => (
             <View
-              key={g}
+              key={g.name}
               style={[
                 styles.grinderRow,
                 {
@@ -462,12 +463,12 @@ export default function SettingsScreen() {
                 },
               ]}
             >
-              <Ionicons name="settings-outline" size={18} color={colors.tint} style={{ marginRight: 2 }} />
+              <GrinderIcon design={g.design} size={22} color={colors.tint} />
               <Text style={[styles.grinderName, { color: colors.text, fontFamily: "Inter_500Medium" }]}>
-                {g}
+                {g.name}
               </Text>
               <Pressable
-                onPress={() => handleRemoveGrinder(g)}
+                onPress={() => handleRemoveGrinder(g.name)}
                 hitSlop={12}
                 style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
               >
@@ -477,31 +478,62 @@ export default function SettingsScreen() {
           ))}
 
           {grinders.length < 3 && (
-            <View style={[styles.addGrinderRow, { borderTopColor: colors.border, borderTopWidth: grinders.length > 0 ? 1 : 0 }]}>
-              <TextInput
-                value={newGrinder}
-                onChangeText={setNewGrinder}
-                style={[styles.grinderInput, { color: colors.text, fontFamily: "Inter_400Regular" }]}
-                placeholder="Neue Mühle..."
-                placeholderTextColor={colors.textSecondary}
-                maxLength={30}
-                returnKeyType="done"
-                onSubmitEditing={handleAddGrinder}
-                autoCorrect={false}
-              />
-              <Pressable
-                onPress={handleAddGrinder}
-                disabled={!newGrinder.trim()}
-                style={({ pressed }) => [
-                  styles.addGrinderBtn,
-                  {
-                    backgroundColor: colors.tint,
-                    opacity: newGrinder.trim() ? (pressed ? 0.7 : 1) : 0.3,
-                  },
-                ]}
-              >
-                <Ionicons name="add" size={18} color="#fff" />
-              </Pressable>
+            <View style={{ borderTopColor: colors.border, borderTopWidth: grinders.length > 0 ? 1 : 0, paddingTop: grinders.length > 0 ? 12 : 0, gap: 10 }}>
+              <View style={{ flexDirection: "row", gap: 8 }}>
+                {(["commandante", "niche"] as GrinderDesign[]).map((d) => {
+                  const active = newGrinderDesign === d;
+                  return (
+                    <Pressable
+                      key={d}
+                      onPress={() => { Haptics.selectionAsync(); setNewGrinderDesign(d); }}
+                      style={({ pressed }) => ({
+                        flex: 1,
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 6,
+                        paddingVertical: 8,
+                        borderRadius: design === "lowpoly" ? 5 : 10,
+                        backgroundColor: active ? colors.tint : colors.surface,
+                        borderWidth: 1.5,
+                        borderColor: active ? colors.tint : colors.border,
+                        opacity: pressed ? 0.8 : 1,
+                      })}
+                    >
+                      <GrinderIcon design={d} size={20} color={active ? "#fff" : colors.text} />
+                      <Text style={{ color: active ? "#fff" : colors.text, fontFamily: active ? "Inter_600SemiBold" : "Inter_500Medium", fontSize: 13 }}>
+                        {d === "niche" ? "Niche" : "Commandante"}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+              <View style={styles.addGrinderRow}>
+                <TextInput
+                  value={newGrinder}
+                  onChangeText={setNewGrinder}
+                  style={[styles.grinderInput, { color: colors.text, fontFamily: "Inter_400Regular" }]}
+                  placeholder="Neue Mühle..."
+                  placeholderTextColor={colors.textSecondary}
+                  maxLength={30}
+                  returnKeyType="done"
+                  onSubmitEditing={handleAddGrinder}
+                  autoCorrect={false}
+                />
+                <Pressable
+                  onPress={handleAddGrinder}
+                  disabled={!newGrinder.trim()}
+                  style={({ pressed }) => [
+                    styles.addGrinderBtn,
+                    {
+                      backgroundColor: colors.tint,
+                      opacity: newGrinder.trim() ? (pressed ? 0.7 : 1) : 0.3,
+                    },
+                  ]}
+                >
+                  <Ionicons name="add" size={18} color="#fff" />
+                </Pressable>
+              </View>
             </View>
           )}
 

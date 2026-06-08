@@ -182,7 +182,7 @@ export default function RoasteryScreen() {
       getRoasteries(),
       getGrinders(),
     ]);
-    setDefaultGrinder(grinders[0] ?? "");
+    setDefaultGrinder(grinders[0]?.name ?? "");
     const roastery = roasteries.find((r) => r.id === id);
     if (roastery) {
       setRoasteryName(roastery.name);

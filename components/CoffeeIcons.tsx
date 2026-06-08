@@ -256,6 +256,44 @@ export function MillIcon({ size = 26, color }: IconProps) {
   );
 }
 
+// ─── Grinder designs ─────────────────────────────────────────────────────────
+// Niche Zero — domed lid, rounded tapered body, centre badge, spout, wooden base
+export function NicheGrinderIcon({ size = 26, color }: IconProps) {
+  const p = stroke(color, 2);
+  const pt = stroke(color, 1.6);
+  return (
+    <Svg width={size} height={size} viewBox="0 0 28 28">
+      <Path d="M8.5,8 Q14,2.5 19.5,8" {...p} />
+      <Path d="M8.5,8 C7.4,12.5 8.2,17 10.2,21 L17.8,21 C19.8,17 20.6,12.5 19.5,8" {...p} />
+      <Circle cx="14" cy="11.5" r="2.1" {...pt} />
+      <Path d="M12.4,21 L12.4,24 L15.6,24 L15.6,21" {...pt} />
+      <Path d="M9.5,24.5 L18.5,24.5" {...p} />
+      <Path d="M10.5,24.5 L9.8,26" {...pt} />
+      <Path d="M17.5,24.5 L18.2,26" {...pt} />
+    </Svg>
+  );
+}
+
+// Commandante C40 — hand grinder: crank with knob on top, knurled cylinder body
+export function CommandanteGrinderIcon({ size = 26, color }: IconProps) {
+  const p = stroke(color, 2);
+  const pt = stroke(color, 1.6);
+  return (
+    <Svg width={size} height={size} viewBox="0 0 28 28">
+      <Path d="M14,10 L14,4.5 L19.5,4.5" {...p} />
+      <Circle cx="20" cy="4.5" r="1.5" {...pt} />
+      <Path d="M9.5,10 L18.5,10 L18.5,21 Q18.5,25 14,25 Q9.5,25 9.5,21 Z" {...p} />
+      <Line x1="9.5" y1="14" x2="18.5" y2="14" {...pt} />
+      <Line x1="9.5" y1="17.5" x2="18.5" y2="17.5" {...pt} />
+    </Svg>
+  );
+}
+
+export function GrinderIcon({ design, size = 26, color }: IconProps & { design: string }) {
+  if (design === "niche") return <NicheGrinderIcon size={size} color={color} />;
+  return <CommandanteGrinderIcon size={size} color={color} />;
+}
+
 export function TrophyIcon({ size = 26, color }: IconProps) {
   const p = stroke(color, 2);
   const pt = stroke(color, 1.6);

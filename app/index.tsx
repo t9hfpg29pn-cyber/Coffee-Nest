@@ -46,12 +46,8 @@ export default function RoasteriesScreen() {
   const [factDismissed, setFactDismissed] = useState(false);
 
   useEffect(() => {
-    Promise.all([
-      AsyncStorage.getItem("discovery_card_collapsed"),
-      AsyncStorage.getItem("discovery_card_dismissed"),
-    ]).then(([collapsed, dismissed]) => {
+    AsyncStorage.getItem("discovery_card_collapsed").then((collapsed) => {
       if (collapsed === "true") setFactCollapsed(true);
-      if (dismissed === "true") setFactDismissed(true);
     });
   }, []);
 
@@ -364,7 +360,6 @@ export default function RoasteriesScreen() {
                       <Pressable
                         onPress={() => {
                           setFactDismissed(true);
-                          AsyncStorage.setItem("discovery_card_dismissed", "true");
                           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                         }}
                         hitSlop={8}

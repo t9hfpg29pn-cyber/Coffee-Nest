@@ -43,22 +43,60 @@ const COFFEES_KEY = "coffees";
 const GRINDERS_KEY = "grinders";
 const CELEBRATED_COUNTRIES_KEY = "celebratedCountries";
 
-export const DEFAULT_GRINDERS = ["Niche", "Commandante"];
+export type GrinderDesign = "niche" | "commandante";
+
+export interface Grinder {
+  name: string;
+  design: GrinderDesign;
+}
+
+export const DEFAULT_GRINDERS: Grinder[] = [
+  { name: "Niche", design: "niche" },
+  { name: "Commandante", design: "commandante" },
+];
 
 function generateId(): string {
   return Date.now().toString() + Math.random().toString(36).substr(2, 9);
 }
 
-export async function getGrinders(): Promise<string[]> {
-  const data = await AsyncStorage.getItem(GRINDERS_KEY);
-  if (!data) return [...DEFAULT_GRINDERS];
-  const parsed = JSON.parse(data);
-  if (!Array.isArray(parsed) || parsed.length === 0) return [...DEFAULT_GRINDERS];
-  return parsed;
+/** Accepts legacy string[] backups and new object form; returns clean Grinder[]. */
+export function normalizeGrinders(arr: unknown): Grinder[] {
+  if (!Array.isArray(arr)) return [];
+  const out: Grinder[] = [];
+  const seen = new Set<string>();
+  for (const g of arr) {
+    let grinder: Grinder | null = null;
+    if (typeof g === "string") {
+      const name = g.trim();
+      if (name) grinder = { name, design: /niche/i.test(name) ? "niche" : "commandante" };
+    } else if (g && typeof (g as any).name === "string") {
+      const name = (g as any).name.trim();
+      if (name) grinder = { name, design: (g as any).design === "niche" ? "niche" : "commandante" };
+    }
+    if (grinder) {
+      const key = grinder.name.toLowerCase();
+      if (!seen.has(key)) {
+        seen.add(key);
+        out.push(grinder);
+      }
+    }
+  }
+  return out;
 }
 
-export async function saveGrinders(names: string[]): Promise<void> {
-  await AsyncStorage.setItem(GRINDERS_KEY, JSON.stringify(names));
+export async function getGrinders(): Promise<Grinder[]> {
+  const data = await AsyncStorage.getItem(GRINDERS_KEY);
+  if (!data) return [...DEFAULT_GRINDERS];
+  try {
+    const normalized = normalizeGrinders(JSON.parse(data));
+    return normalized.length > 0 ? normalized : [...DEFAULT_GRINDERS];
+  } catch {
+    return [...DEFAULT_GRINDERS];
+  }
+}
+
+export async function saveGrinders(list: Grinder[]): Promise<void> {
+  await AsyncStorage.setItem(GRINDERS_KEY, JSON.stringify(list));
 }
 
 /**
