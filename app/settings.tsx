@@ -22,6 +22,7 @@ import { useUserNames } from "@/context/UserNamesContext";
 import { PolyBackground, PolyActionButton } from "@/components/PolyBackground";
 import { getRoasteries, getAllCoffees, getGrinders, saveGrinders } from "@/lib/storage";
 import { useTheme, useThemeColors, useCardExtras, DesignMode } from "@/context/ThemeContext";
+import { CupIcon, GemIcon } from "@/components/CoffeeIcons";
 
 function showAlert(title: string, message: string, buttons?: { text: string; style?: string; onPress?: () => void }[]) {
   if (Platform.OS === "web") {
@@ -289,7 +290,6 @@ export default function SettingsScreen() {
             {(["classic", "lowpoly"] as DesignMode[]).map((mode) => {
               const active = design === mode;
               const label = mode === "classic" ? "Klassisch" : "Low-Poly";
-              const icon = mode === "classic" ? "☕" : "◆";
               return (
                 <Pressable
                   key={mode}
@@ -306,7 +306,11 @@ export default function SettingsScreen() {
                     },
                   ]}
                 >
-                  <Text style={{ fontSize: 16 }}>{icon}</Text>
+                  {mode === "classic" ? (
+                    <CupIcon size={18} color={active ? "#fff" : colors.text} />
+                  ) : (
+                    <GemIcon size={18} color={active ? "#fff" : colors.text} />
+                  )}
                   <Text
                     style={[
                       styles.designLabel,

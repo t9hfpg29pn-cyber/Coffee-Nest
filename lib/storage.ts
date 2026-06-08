@@ -229,7 +229,7 @@ const FACT_GENERATORS: FactGenerator[] = [
       if (!usedProcessing.has(value)) {
         return {
           title: "Heute entdeckt",
-          text: `Du hast bereits ${coffees.length} Kaffees bewertet und trotzdem noch nie einen ${label} erfasst.`,
+          text: `Du hast schon ${coffees.length} Kaffees in deiner Sammlung. Ein ${label} wäre eine spannende neue Entdeckung für dich.`,
           type: "missing_processing",
         };
       }
@@ -247,7 +247,7 @@ const FACT_GENERATORS: FactGenerator[] = [
     if (n > 0 && n < 10) {
       return {
         title: "Heute entdeckt",
-        text: `Von ${TOTAL_DISCOVERY_COUNTRIES} Herkunftsländern hast du bisher erst ${n} entdeckt.`,
+        text: `Du hast schon ${n} ${n === 1 ? "Herkunftsland" : "Herkunftsländer"} entdeckt — die Kaffeewelt hält noch viele spannende Regionen für dich bereit.`,
         type: "country_progress_low",
       };
     }
@@ -268,7 +268,7 @@ const FACT_GENERATORS: FactGenerator[] = [
         (c.origins ?? []).map((o) => o.country).filter(Boolean)
       );
       if (top3Countries.length > 0 && top3Countries.every((c) => AFRICAN_COUNTRIES.has(c as string))) {
-        return { title: "Heute entdeckt", text: "Alle deine Top-3-Kaffees stammen aus Afrika.", type: "africa_insight" };
+        return { title: "Heute entdeckt", text: "Spannend: Alle deine Top-3-Kaffees stammen aus Afrika — eine Region voller außergewöhnlicher Aromen.", type: "africa_insight" };
       }
     }
     const countryScores: Record<string, { total: number; count: number }> = {};
@@ -289,7 +289,7 @@ const FACT_GENERATORS: FactGenerator[] = [
     if (sorted.length > 0) {
       const [best] = sorted[0];
       if (AFRICAN_COUNTRIES.has(best) || SA_COUNTRIES.has(best)) {
-        return { title: "Heute entdeckt", text: `Dein bestbewertetes Herkunftsland ist ${best}.`, type: "best_country" };
+        return { title: "Heute entdeckt", text: `${best} ist gerade dein bestbewertetes Herkunftsland — ein echtes Highlight in deiner Sammlung.`, type: "best_country" };
       }
     }
     return null;
@@ -332,10 +332,9 @@ const FACT_GENERATORS: FactGenerator[] = [
     const n = countries.size;
     const half = Math.ceil(TOTAL_DISCOVERY_COUNTRIES / 2);
     if (n < half) {
-      const remaining = half - n;
       return {
         title: "Heute entdeckt",
-        text: `Noch ${remaining} ${remaining === 1 ? "Herkunftsland" : "Herkunftsländer"} bis zur Hälfte aller verfügbaren Länder.`,
+        text: `Deine Sammlung umfasst schon ${n} ${n === 1 ? "Herkunftsland" : "Herkunftsländer"} — entdecke weiter und lass deine Kaffeewelt wachsen.`,
         type: "collection_progress",
       };
     }
@@ -347,7 +346,7 @@ export async function getDiscoveryFact(): Promise<DiscoveryFact> {
   const coffees = await getAllCoffees();
   const fallback: DiscoveryFact = {
     title: "Heute entdeckt",
-    text: "Füge weitere Kaffees hinzu, um neue Entdeckungen zu erhalten.",
+    text: "Füge weitere Kaffees hinzu und entdecke spannende neue Aromen, Aufbereitungen und Herkunftsländer.",
     type: "fallback",
   };
   if (coffees.length === 0) return fallback;
@@ -396,18 +395,18 @@ export async function getCountryDetails(country: string): Promise<CountryDetails
 
 export interface CoffeeInsights {
   favoriteCountry: string | null;
-  favoriteAroma: { value: number; label: string; emoji: string } | null;
+  favoriteAroma: { value: number; label: string } | null;
   favoriteRoastLevel: string | null;
   favoriteGrinder: string | null;
   topCoffee: { name: string; haseRating: number | null; dodoRating: number | null } | null;
 }
 
-const AROMA_MAP: Record<number, { label: string; emoji: string }> = {
-  1: { label: "Schokoladig", emoji: "🍫" },
-  2: { label: "Nussig",      emoji: "🌰" },
-  3: { label: "Klassisch",   emoji: "☕" },
-  4: { label: "Beerig",      emoji: "🍇" },
-  5: { label: "Zitrisch",    emoji: "🍊" },
+const AROMA_MAP: Record<number, { label: string }> = {
+  1: { label: "Schokoladig" },
+  2: { label: "Nussig" },
+  3: { label: "Klassisch" },
+  4: { label: "Beerig" },
+  5: { label: "Zitrisch" },
 };
 
 const ROAST_LABELS: Record<string, string> = {
@@ -455,7 +454,7 @@ export async function getCoffeeInsights(): Promise<CoffeeInsights> {
       bestAromaCount = count;
       const val = Number(valStr);
       const info = AROMA_MAP[val];
-      favoriteAroma = info ? { value: val, label: info.label, emoji: info.emoji } : null;
+      favoriteAroma = info ? { value: val, label: info.label } : null;
     }
   }
 

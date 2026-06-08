@@ -1,0 +1,529 @@
+Führe einen UX- und Design-Polish-Sprint für Coffee Nest durch.
+
+WICHTIG:
+
+Keine neuen Funktionen hinzufügen.
+
+Keine Datenmodelle ändern.
+
+Keine Navigation ändern.
+
+Ziel ist ausschließlich die Verbesserung von:
+
+* Verständlichkeit
+* Konsistenz
+* Bedienbarkeit
+* visuelle Qualität
+
+Die bestehenden Funktionen bleiben erhalten.
+
+==================================================
+
+1. HEUTE ENTDECKT ÜBERARBEITEN
+   ==================================================
+
+Aktuelles Problem:
+
+Die Karte wirkt wie ein Desktop-Fenster.
+
+Die Buttons [-] und [x] erinnern an Windows-Fenster.
+
+Einige Fakten wirken negativ oder belehrend.
+
+Beispiel:
+
+"Von 20 Herkunftsländern hast du bisher erst 2 entdeckt."
+
+Das motiviert nicht.
+
+---
+
+Änderungen:
+
+Entferne die Fenstersymbolik.
+
+Ersetze:
+
+[-]
+
+durch:
+
+"Mehr anzeigen"
+bzw.
+"Weniger anzeigen"
+
+als dezente Textaktion.
+
+Das Schließen-Symbol darf bleiben, soll aber deutlich kleiner und weniger dominant wirken.
+
+---
+
+Fakt-Engine anpassen:
+
+Fakten sollen Neugier, Entdeckung oder Vorfreude erzeugen.
+
+Vermeide Formulierungen mit:
+
+* erst
+* nur
+* noch nicht genug
+
+Beispiele:
+
+Statt:
+
+"Von 20 Herkunftsländern hast du bisher erst 2 entdeckt."
+
+Besser:
+
+"18 Herkunftsländer warten noch darauf entdeckt zu werden."
+
+Oder:
+
+"Deine Kaffeereise beginnt gerade: 2 Herkunftsländer entdeckt."
+
+Oder:
+
+"Als Nächstes könnten Ruanda oder Kenia spannende Entdeckungen sein."
+
+==================================================
+2. EMOJIS ENTFERNEN
+===================
+
+Aktuell werden Emojis verwendet in:
+
+* Entdeckungen
+* Kaffeeprofil
+* Erkenntnissen
+
+Diese passen nicht mehr zur Design-Sprache.
+
+Alle Emojis entfernen.
+
+Verwende stattdessen:
+
+* vorhandene App-Icons
+* vorhandene Aroma-Icons
+* neue Coffee-Nest-Icons
+
+Farben gemäß bestehendem Theme.
+
+Keine bunten Emojis mehr.
+
+==================================================
+3. HERKUNFT-BEREICH REDESIGN
+============================
+
+Aktuelles Problem:
+
+Der Bereich wirkt wie ein Verwaltungsformular.
+
+Zu viele klassische Eingabefelder.
+
+---
+
+Neues Konzept:
+
+Eine Herkunft wird als eigene kleine Herkunftskarte dargestellt.
+
+Beispiel:
+
+Äthiopien
+
+Region:
+Yirgacheffe
+
+---
+
+Region bleibt IMMER sichtbar.
+
+Auch wenn keine Region hinterlegt wurde.
+
+Beispiel:
+
+Äthiopien
+
+Region:
+Noch nicht angegeben
+
+Dadurch erkennt der Nutzer:
+
+* dass Regionen unterstützt werden
+* dass Informationen ergänzt werden können
+* dass keine Daten fehlen oder verschwunden sind
+
+---
+
+Prozent:
+
+Wenn nur eine Herkunft vorhanden:
+
+keine Prozentanzeige darstellen.
+
+Intern weiterhin speichern.
+
+Wenn mehrere Herkünfte vorhanden:
+
+Brasilien 60 %
+
+Kolumbien 40 %
+
+anzeigen.
+
+---
+
+Die Herkunftskarten sollen optisch stärker an die übrigen Karten der App angepasst werden.
+
+Weniger Formular.
+
+Mehr Coffee Experience.
+
+Keine klassische Formularoptik.
+
+==================================================
+4. AUFBEREITUNG REDESIGN
+========================
+
+Aktuelles Problem:
+
+Die Buttons wirken wie Standard-Formularelemente.
+
+---
+
+Verwende die gleiche visuelle Sprache wie beim Aroma.
+
+Jede Aufbereitungsart erhält ein eigenes Icon.
+
+WICHTIG:
+
+Keine externen Icon-Sets verwenden.
+
+Keine Emojis verwenden.
+
+Keine generischen SVGs verwenden.
+
+Die Icons müssen speziell für Coffee Nest erstellt werden.
+
+---
+
+Designregeln:
+
+* gleiche Linienbreite wie die Aroma-Icons
+* gleiche Größe wie die Aroma-Icons
+* gleiche Farbgebung
+* monochrom
+* minimalistisch
+* leicht erkennbar
+* Low-Poly-kompatibel
+
+Die Icons müssen wirken, als wären sie Teil derselben Icon-Familie wie:
+
+* Schokolade
+* Nuss
+* Kaffeebohne
+* Beere
+* Zitrus
+
+---
+
+Vorschläge:
+
+Washed:
+stilisierter Wassertropfen
+
+Natural:
+Blatt oder Kaffeekirsche
+
+Honey:
+Honigwabe
+
+Anaerobic:
+Gärgefäß / Fermentation
+
+Experimental:
+kleines Laborgefäß
+
+Die finale Gestaltung soll konsistent zur bestehenden Coffee-Nest-Iconsprache sein.
+
+==================================================
+5. RÖSTGRAD REDESIGN
+====================
+
+Aktuelles Problem:
+
+Zu viel Text.
+
+Doppelte Beschriftung.
+
+---
+
+Entfernen:
+
+← hell
+
+→ dunkel
+
+---
+
+Neue Darstellung:
+
+Röstgrade sollen primär visuell verstanden werden.
+
+Verwende eine neue Familie von Coffee-Nest-Röstgrad-Icons.
+
+Keine Standardicons verwenden.
+
+Keine Emojis verwenden.
+
+---
+
+Designregeln:
+
+* gleiche Linienbreite wie Aroma-Icons
+* gleiche Größe wie Aroma-Icons
+* gleiche Farbgebung
+* monochrom
+* minimalistisch
+
+---
+
+Vorschlag:
+
+Eine stilisierte Kaffeebohne in fünf Ausprägungen:
+
+Hell:
+sehr helle Bohne
+
+Mittel-Hell:
+leicht geröstet
+
+Mittel:
+ausgewogen
+
+Mittel-Dunkel:
+kräftiger
+
+Dunkel:
+stark geröstet
+
+Die Veränderung soll intuitiv sichtbar sein.
+
+Textlabels dürfen bleiben:
+
+Hell
+Mittel-Hell
+Mittel
+Mittel-Dunkel
+Dunkel
+
+Die Icons sollen jedoch die Hauptinformation transportieren.
+
+==================================================
+6. KAFFEEWELT REDESIGN
+======================
+
+Aktuelles Problem:
+
+Die Karte wird nicht als Weltkarte wahrgenommen.
+
+Die aktuelle Hexagon-Anordnung wirkt zufällig.
+
+Labels sind schwer lesbar.
+
+---
+
+Ziel:
+
+Nicht geografisch exakt.
+
+Aber geografisch verständlich.
+
+---
+
+Neue Struktur:
+
+Länder visuell in vier klar erkennbare Regionen gruppieren:
+
+SÜDAMERIKA
+
+* Brasilien
+* Kolumbien
+* Peru
+
+MITTELAMERIKA
+
+* Mexiko
+* Guatemala
+* Costa Rica
+* Panama
+* Honduras
+* Nicaragua
+* El Salvador
+
+AFRIKA
+
+* Äthiopien
+* Kenia
+* Ruanda
+* Burundi
+* Uganda
+* Tansania
+
+ASIEN
+
+* Indien
+* Indonesien
+* Vietnam
+* Jemen
+
+---
+
+Die Cluster müssen sofort verständlich sein.
+
+Der Nutzer soll erkennen:
+
+"Diese Länder gehören zusammen."
+
+---
+
+Länder deutlich größer darstellen.
+
+Touch-Ziele vergrößern.
+
+Beschriftungen besser lesbar machen.
+
+Die Karte soll der visuelle Mittelpunkt der Seite werden.
+
+==================================================
+7. HERKUNFTSLÄNDER-BEREICH AUFRÄUMEN
+====================================
+
+Aktuell:
+
+Liste und Karte zeigen nahezu dieselben Informationen.
+
+---
+
+Reduziere Redundanz.
+
+Die Karte soll die Hauptrolle übernehmen.
+
+Die Länderliste darüber kompakter gestalten.
+
+Anzeigen:
+
+* Anzahl entdeckter Länder
+* Fortschritt
+* letzte Entdeckung
+
+Keine vollständige Dopplung aller Länder oberhalb der Karte.
+
+==================================================
+8. KAFFEEPROFIL REDESIGN
+========================
+
+Aktuelles Problem:
+
+Wirkt wie eine Einstellungsseite.
+
+Zu tabellarisch.
+
+---
+
+Neue Darstellung:
+
+Jede Erkenntnis als kleine Informationskarte.
+
+Beispiel:
+
+Lieblingsherkunft
+
+Äthiopien
+
+5 Kaffees entdeckt
+
+Ø Bewertung 7,5
+
+---
+
+Lieblingsaroma
+
+Schokoladig
+
+---
+
+Lieblingsmühle
+
+Niche
+
+---
+
+Spitzenreiter
+
+Yirgacheffe
+
+Hase 9
+Dodo 6
+
+Weniger Tabellenoptik.
+
+Mehr Sammlungs- und Entdeckungscharakter.
+
+==================================================
+9. ICON SYSTEM
+==============
+
+Coffee Nest benötigt eine konsistente eigene Icon-Familie.
+
+Neue Icons müssen sich optisch an den bestehenden Aroma-Icons orientieren.
+
+Regeln:
+
+* monochrom
+* gleiche Strichstärke
+* gleiche Größe
+* gleiche optische Gewichtung
+* gleiche Innenabstände
+* keine bunten Farben
+* keine Emojis
+* keine Material Icons
+* keine Font Awesome Icons
+* keine iOS-Systemicons
+
+Alle neuen Icons müssen wirken, als wären sie gemeinsam mit:
+
+* Schokolade
+* Nuss
+* Kaffeebohne
+* Beere
+* Zitrus
+
+entworfen worden.
+
+Bei fehlenden Icons sollen neue Coffee-Nest-Icons erstellt werden statt bestehende Icon-Bibliotheken zu verwenden.
+
+Die neue Icon-Familie soll anschließend auch in folgenden Bereichen verwendet werden:
+
+* Entdeckungen
+* Kaffeeprofil
+* Herkunften
+* Aufbereitung
+* Röstgrad
+* zukünftige Länder- und Röstereikarten
+
+==================================================
+ABSCHLUSS
+=========
+
+Nach Umsetzung:
+
+1. Build durchführen
+2. TypeScript Fehler beheben
+3. Mobile Ansicht testen
+4. iPhone-PWA testen
+5. Touch-Ziele prüfen
+6. Lesbarkeit prüfen
+7. Sicherstellen, dass keine bunten Emojis mehr verwendet werden
+8. Sicherstellen, dass alle Änderungen den bestehenden Low-Poly-Stil respektieren
+9. Keine neuen Features hinzufügen
+10. Fokus auf UX, Konsistenz und Produktqualität

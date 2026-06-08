@@ -21,6 +21,7 @@ import { getRoasteries, saveRoastery, deleteRoastery, getCoffees, Roastery, getD
 import { useUserNames } from "@/context/UserNamesContext";
 import { useThemeColors, useCardExtras } from "@/context/ThemeContext";
 import { PolyBackground, PolyCornerCut, PolyActionButton } from "@/components/PolyBackground";
+import { CompassIcon, CupIcon, RoasteryIcon, GlobeIcon } from "@/components/CoffeeIcons";
 
 export default function RoasteriesScreen() {
   const insets = useSafeAreaInsets();
@@ -342,7 +343,7 @@ export default function RoasteriesScreen() {
                   ]}
                 >
                   <View style={[styles.todayCardHeader, { borderBottomColor: colors.border }]}>
-                    <Text style={styles.todayCardBulb}>💡</Text>
+                    <CompassIcon size={16} color={colors.tint} />
                     <Text style={[styles.todayCardLabel, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
                       HEUTE ENTDECKT
                     </Text>
@@ -354,12 +355,11 @@ export default function RoasteriesScreen() {
                           AsyncStorage.setItem("discovery_card_collapsed", next ? "true" : "false");
                         }}
                         hitSlop={8}
-                        style={({ pressed }) => [
-                          styles.todayCardBtn,
-                          { opacity: pressed ? 0.6 : 1, borderColor: colors.border, backgroundColor: colors.surface },
-                        ]}
+                        style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
                       >
-                        <Feather name={factCollapsed ? "plus" : "minus"} size={12} color={colors.textSecondary} />
+                        <Text style={[styles.todayCardToggle, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
+                          {factCollapsed ? "Mehr anzeigen" : "Weniger anzeigen"}
+                        </Text>
                       </Pressable>
                       <Pressable
                         onPress={() => {
@@ -368,12 +368,9 @@ export default function RoasteriesScreen() {
                           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                         }}
                         hitSlop={8}
-                        style={({ pressed }) => [
-                          styles.todayCardBtn,
-                          { opacity: pressed ? 0.6 : 1, borderColor: colors.border, backgroundColor: colors.surface },
-                        ]}
+                        style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
                       >
-                        <Feather name="x" size={12} color={colors.textSecondary} />
+                        <Feather name="x" size={13} color={colors.textSecondary} />
                       </Pressable>
                     </View>
                   </View>
@@ -415,7 +412,7 @@ export default function RoasteriesScreen() {
               </View>
               <View style={[styles.discoveryStats, { borderTopColor: colors.border }]}>
                 <View style={styles.discoveryStat}>
-                  <Text style={styles.discoveryStatEmoji}>☕</Text>
+                  <CupIcon size={22} color={colors.tint} />
                   <Text style={[styles.discoveryStatValue, { color: colors.text, fontFamily: "Inter_700Bold" }]}>
                     {discoveryStats?.coffeeCount ?? 0}
                   </Text>
@@ -425,7 +422,7 @@ export default function RoasteriesScreen() {
                 </View>
                 <View style={[styles.discoveryStatDivider, { backgroundColor: colors.border }]} />
                 <View style={styles.discoveryStat}>
-                  <Text style={styles.discoveryStatEmoji}>🏭</Text>
+                  <RoasteryIcon size={22} color={colors.tint} />
                   <Text style={[styles.discoveryStatValue, { color: colors.text, fontFamily: "Inter_700Bold" }]}>
                     {discoveryStats?.roasteryCount ?? 0}
                   </Text>
@@ -435,7 +432,7 @@ export default function RoasteriesScreen() {
                 </View>
                 <View style={[styles.discoveryStatDivider, { backgroundColor: colors.border }]} />
                 <View style={styles.discoveryStat}>
-                  <Text style={styles.discoveryStatEmoji}>🌍</Text>
+                  <GlobeIcon size={22} color={colors.tint} />
                   <Text style={[styles.discoveryStatValue, { color: colors.text, fontFamily: "Inter_700Bold" }]}>
                     {discoveryStats?.countryCount ?? 0}
                   </Text>
@@ -826,10 +823,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 3,
   },
-  discoveryStatEmoji: {
-    fontSize: 20,
-    lineHeight: 26,
-  },
   discoveryStatValue: {
     fontSize: 22,
     lineHeight: 26,
@@ -868,10 +861,6 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     gap: 8,
   },
-  todayCardBulb: {
-    fontSize: 18,
-    lineHeight: 24,
-  },
   todayCardLabel: {
     flex: 1,
     fontSize: 11,
@@ -879,15 +868,11 @@ const styles = StyleSheet.create({
   },
   todayCardActions: {
     flexDirection: "row",
-    gap: 6,
-  },
-  todayCardBtn: {
-    width: 26,
-    height: 26,
-    borderRadius: 6,
-    borderWidth: 1,
     alignItems: "center",
-    justifyContent: "center",
+    gap: 12,
+  },
+  todayCardToggle: {
+    fontSize: 12,
   },
   todayCardBody: {
     borderTopWidth: 1,

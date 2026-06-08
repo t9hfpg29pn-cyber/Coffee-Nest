@@ -26,6 +26,15 @@ import { useThemeColors, useCardExtras, useTheme } from "@/context/ThemeContext"
 import { PolyBackground, PolyCornerCut } from "@/components/PolyBackground";
 import { CoffeeOriginMap } from "@/components/CoffeeOriginMap";
 import { COFFEE_WORLD_MAP } from "@/constants/coffeeMap";
+import {
+  AromaIcon,
+  RoastIcon,
+  GlobeIcon,
+  MillIcon,
+  TrophyIcon,
+  StarIcon,
+  OriginPinIcon,
+} from "@/components/CoffeeIcons";
 import Colors from "@/constants/colors";
 
 const KNOWN_COUNTRIES = [
@@ -37,53 +46,86 @@ const KNOWN_COUNTRIES = [
 
 const TOTAL_KNOWN = KNOWN_COUNTRIES.length;
 
-const COUNTRY_FLAGS: Record<string, string> = {
-  "Äthiopien": "🇪🇹", "Brasilien": "🇧🇷", "Burundi": "🇧🇮",
-  "Costa Rica": "🇨🇷", "El Salvador": "🇸🇻", "Guatemala": "🇬🇹",
-  "Honduras": "🇭🇳", "Indien": "🇮🇳", "Indonesien": "🇮🇩",
-  "Jemen": "🇾🇪", "Kenia": "🇰🇪", "Kolumbien": "🇨🇴",
-  "Mexiko": "🇲🇽", "Nicaragua": "🇳🇮", "Panama": "🇵🇦",
-  "Peru": "🇵🇪", "Ruanda": "🇷🇼", "Tansania": "🇹🇿",
-  "Uganda": "🇺🇬", "Vietnam": "🇻🇳",
+
+const ROAST_LEVEL_KEY: Record<string, string> = {
+  "Hell": "light",
+  "Mittel-Hell": "medium-light",
+  "Mittel": "medium",
+  "Mittel-Dunkel": "medium-dark",
+  "Dunkel": "dark",
 };
 
-function getFlag(country: string): string {
-  return COUNTRY_FLAGS[country] ?? "🌍";
-}
-
-function InsightRow({
+function InsightCard({
+  icon,
   label,
   value,
+  valueNode,
   colors,
+  isLowpoly,
 }: {
+  icon: React.ReactNode;
   label: string;
-  value: string;
+  value?: string;
+  valueNode?: React.ReactNode;
   colors: ReturnType<typeof useThemeColors>;
+  isLowpoly: boolean;
 }) {
   return (
-    <View style={[insightRowStyles.row, { borderTopColor: colors.border }]}>
-      <Text style={[insightRowStyles.label, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
-        {label}
-      </Text>
-      <Text style={[insightRowStyles.value, { color: colors.text, fontFamily: "Inter_600SemiBold" }]}>
-        {value}
-      </Text>
+    <View
+      style={[
+        insightCardStyles.card,
+        {
+          backgroundColor: colors.surface,
+          borderColor: colors.border,
+          borderRadius: isLowpoly ? 4 : 12,
+        },
+      ]}
+    >
+      <View
+        style={[
+          insightCardStyles.iconWrap,
+          {
+            backgroundColor: colors.surfaceElevated,
+            borderColor: colors.border,
+            borderRadius: isLowpoly ? 4 : 10,
+          },
+        ]}
+      >
+        {icon}
+      </View>
+      <View style={insightCardStyles.textWrap}>
+        <Text style={[insightCardStyles.label, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
+          {label}
+        </Text>
+        {valueNode ?? (
+          <Text style={[insightCardStyles.value, { color: colors.text, fontFamily: "Inter_600SemiBold" }]}>
+            {value}
+          </Text>
+        )}
+      </View>
     </View>
   );
 }
 
-const insightRowStyles = StyleSheet.create({
-  row: {
+const insightCardStyles = StyleSheet.create({
+  card: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    borderTopWidth: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 13,
-    gap: 12,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    gap: 14,
   },
-  label: { fontSize: 13 },
-  value: { fontSize: 14, textAlign: "right", flex: 1 },
+  iconWrap: {
+    width: 44,
+    height: 44,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+  },
+  textWrap: { flex: 1, gap: 2 },
+  label: { fontSize: 12, letterSpacing: 0.3 },
+  value: { fontSize: 16 },
 });
 
 export default function DiscoveriesScreen() {
@@ -150,12 +192,13 @@ export default function DiscoveriesScreen() {
   const knownDiscovered = discoveredCountries.filter(
     (c) => KNOWN_COUNTRIES.includes(c as typeof KNOWN_COUNTRIES[number])
   );
-  const unknownDiscovered = discoveredCountries.filter(
-    (c) => !KNOWN_COUNTRIES.includes(c as typeof KNOWN_COUNTRIES[number])
-  );
-  const allSorted = [...knownDiscovered, ...unknownDiscovered];
   const totalDiscovered = discoveredCountries.length;
   const progress = Math.min(totalDiscovered / TOTAL_KNOWN, 1);
+  const lastDiscovered =
+    stats?.lastDiscoveredCountry ??
+    (discoveredCountries.length > 0
+      ? discoveredCountries[discoveredCountries.length - 1]
+      : null);
 
   const discoveredSet = new Set(discoveredCountries);
   const mapDiscoveredCount = knownDiscovered.length;
@@ -170,6 +213,8 @@ export default function DiscoveriesScreen() {
     labelOnDiscovered: Colors.espresso,
     labelOnUndiscovered: colors.text,
     star: colors.tint,
+    regionBg: isLowpoly ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)",
+    regionLabel: colors.textSecondary,
   };
 
   const hasInsights =
@@ -259,25 +304,23 @@ export default function DiscoveriesScreen() {
             </Text>
           </View>
 
-          {allSorted.length === 0 ? (
+          {totalDiscovered === 0 ? (
             <View style={[styles.emptyRow, { borderTopColor: colors.border }]}>
               <Text style={[styles.emptyText, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
                 Noch keine Herkünfte eingetragen
               </Text>
             </View>
-          ) : (
-            allSorted.map((country) => (
-              <View
-                key={country}
-                style={[styles.countryRow, { borderTopColor: colors.border }]}
-              >
-                <Text style={styles.countryFlag}>{getFlag(country)}</Text>
-                <Text style={[styles.countryName, { color: colors.text, fontFamily: "Inter_500Medium" }]}>
-                  {country}
-                </Text>
-              </View>
-            ))
-          )}
+          ) : lastDiscovered ? (
+            <View style={[styles.lastDiscoveredRow, { borderTopColor: colors.border }]}>
+              <OriginPinIcon size={18} color={colors.tint} />
+              <Text style={[styles.lastDiscoveredLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
+                Zuletzt entdeckt:
+              </Text>
+              <Text style={[styles.lastDiscoveredValue, { color: colors.text, fontFamily: "Inter_600SemiBold" }]}>
+                {lastDiscovered}
+              </Text>
+            </View>
+          ) : null}
         </View>
 
         {/* ── KAFFEEWELT ────────────────────────────────────────────── */}
@@ -351,7 +394,7 @@ export default function DiscoveriesScreen() {
               </Text>
             </View>
             <View style={styles.legendItem}>
-              <Text style={[styles.legendStar, { color: colors.tint }]}>★</Text>
+              <StarIcon size={15} color={colors.tint} />
               <Text style={[styles.legendText, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
                 Lieblingsland
               </Text>
@@ -375,73 +418,88 @@ export default function DiscoveriesScreen() {
               </Text>
             </View>
           ) : (
-            <>
-              <InsightRow
-                label="Lieblingsherkunft"
-                value={
-                  insights?.favoriteCountry
-                    ? `${getFlag(insights.favoriteCountry)}  ${insights.favoriteCountry}`
-                    : "–"
-                }
-                colors={colors}
-              />
-              <InsightRow
-                label="Lieblingsaroma"
-                value={
-                  insights?.favoriteAroma
-                    ? `${insights.favoriteAroma.emoji}  ${insights.favoriteAroma.label}`
-                    : "–"
-                }
-                colors={colors}
-              />
-              <InsightRow
-                label="Lieblingsröstgrad"
-                value={insights?.favoriteRoastLevel ?? "–"}
-                colors={colors}
-              />
-              <InsightRow
-                label="Lieblingsmühle"
-                value={insights?.favoriteGrinder ?? "–"}
-                colors={colors}
-              />
-              {insights?.topCoffee ? (
-                <View style={[insightRowStyles.row, { borderTopColor: colors.border }]}>
-                  <Text style={[insightRowStyles.label, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
-                    Spitzenreiter
-                  </Text>
-                  <View style={styles.topCoffeeRight}>
-                    <Text style={[styles.topCoffeeName, { color: colors.text, fontFamily: "Inter_600SemiBold" }]}>
-                      {insights.topCoffee.name}
-                    </Text>
-                    <View style={styles.topCoffeeRatings}>
-                      {insights.topCoffee.haseRating !== null && (
-                        <Text style={[styles.topCoffeeRating, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
-                          Hase{" "}
-                          <Text style={{ color: colors.tint, fontFamily: "Inter_700Bold" }}>
-                            {insights.topCoffee.haseRating}
-                          </Text>
-                        </Text>
-                      )}
-                      {insights.topCoffee.haseRating !== null && insights.topCoffee.dodoRating !== null && (
-                        <Text style={[styles.topCoffeeRating, { color: colors.border, fontFamily: "Inter_400Regular" }]}>
-                          {" "}|{" "}
-                        </Text>
-                      )}
-                      {insights.topCoffee.dodoRating !== null && (
-                        <Text style={[styles.topCoffeeRating, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
-                          Dodo{" "}
-                          <Text style={{ color: colors.tint, fontFamily: "Inter_700Bold" }}>
-                            {insights.topCoffee.dodoRating}
-                          </Text>
-                        </Text>
-                      )}
-                    </View>
-                  </View>
-                </View>
-              ) : (
-                <InsightRow label="Spitzenreiter" value="–" colors={colors} />
+            <View style={[styles.profileCards, { borderTopColor: colors.border }]}>
+              {insights?.favoriteCountry && (
+                <InsightCard
+                  icon={<GlobeIcon size={24} color={colors.tint} />}
+                  label="Lieblingsherkunft"
+                  value={insights.favoriteCountry}
+                  colors={colors}
+                  isLowpoly={isLowpoly}
+                />
               )}
-            </>
+              {insights?.favoriteAroma && (
+                <InsightCard
+                  icon={<AromaIcon step={insights.favoriteAroma.value} size={24} color={colors.tint} />}
+                  label="Lieblingsaroma"
+                  value={insights.favoriteAroma.label}
+                  colors={colors}
+                  isLowpoly={isLowpoly}
+                />
+              )}
+              {insights?.favoriteRoastLevel && (
+                <InsightCard
+                  icon={
+                    <RoastIcon
+                      level={ROAST_LEVEL_KEY[insights.favoriteRoastLevel] ?? "medium"}
+                      size={24}
+                      color={colors.tint}
+                    />
+                  }
+                  label="Lieblingsröstgrad"
+                  value={insights.favoriteRoastLevel}
+                  colors={colors}
+                  isLowpoly={isLowpoly}
+                />
+              )}
+              {insights?.favoriteGrinder && (
+                <InsightCard
+                  icon={<MillIcon size={24} color={colors.tint} />}
+                  label="Lieblingsmühle"
+                  value={insights.favoriteGrinder}
+                  colors={colors}
+                  isLowpoly={isLowpoly}
+                />
+              )}
+              {insights?.topCoffee && (
+                <InsightCard
+                  icon={<TrophyIcon size={24} color={colors.tint} />}
+                  label="Spitzenreiter"
+                  colors={colors}
+                  isLowpoly={isLowpoly}
+                  valueNode={
+                    <>
+                      <Text style={[insightCardStyles.value, { color: colors.text, fontFamily: "Inter_600SemiBold" }]}>
+                        {insights.topCoffee.name}
+                      </Text>
+                      <View style={styles.topCoffeeRatings}>
+                        {insights.topCoffee.haseRating !== null && (
+                          <Text style={[styles.topCoffeeRating, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                            Hase{" "}
+                            <Text style={{ color: colors.tint, fontFamily: "Inter_700Bold" }}>
+                              {insights.topCoffee.haseRating}
+                            </Text>
+                          </Text>
+                        )}
+                        {insights.topCoffee.haseRating !== null && insights.topCoffee.dodoRating !== null && (
+                          <Text style={[styles.topCoffeeRating, { color: colors.border, fontFamily: "Inter_400Regular" }]}>
+                            {" "}|{" "}
+                          </Text>
+                        )}
+                        {insights.topCoffee.dodoRating !== null && (
+                          <Text style={[styles.topCoffeeRating, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                            Dodo{" "}
+                            <Text style={{ color: colors.tint, fontFamily: "Inter_700Bold" }}>
+                              {insights.topCoffee.dodoRating}
+                            </Text>
+                          </Text>
+                        )}
+                      </View>
+                    </>
+                  }
+                />
+              )}
+            </View>
           )}
         </View>
       </ScrollView>
@@ -471,7 +529,9 @@ export default function DiscoveriesScreen() {
             <View style={[styles.sheetHandle, { backgroundColor: colors.border }]} />
 
             <View style={styles.sheetHeader}>
-              <Text style={styles.sheetFlag}>{getFlag(selectedCountry ?? "")}</Text>
+              <View style={styles.sheetIcon}>
+                <OriginPinIcon size={30} color={colors.tint} />
+              </View>
               <View style={{ flex: 1 }}>
                 <Text style={[styles.sheetTitle, { color: colors.text, fontFamily: "Inter_700Bold" }]}>
                   {selectedCountry?.toUpperCase()}
@@ -610,19 +670,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   emptyText: { fontSize: 14 },
-  countryRow: {
+  lastDiscoveredRow: {
     flexDirection: "row",
     alignItems: "center",
     borderTopWidth: 1,
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 12,
+    paddingVertical: 14,
+    gap: 8,
   },
-  countryFlag: { fontSize: 22, lineHeight: 28, width: 30, textAlign: "center" },
-  countryName: { fontSize: 16, flex: 1 },
-  topCoffeeRight: { flex: 1, alignItems: "flex-end", gap: 2 },
-  topCoffeeName: { fontSize: 14, textAlign: "right" },
-  topCoffeeRatings: { flexDirection: "row", alignItems: "center" },
+  lastDiscoveredLabel: { fontSize: 13 },
+  lastDiscoveredValue: { fontSize: 15, flex: 1 },
+  profileCards: {
+    borderTopWidth: 1,
+    padding: 16,
+    gap: 10,
+  },
+  topCoffeeRatings: { flexDirection: "row", alignItems: "center", marginTop: 2 },
   topCoffeeRating: { fontSize: 12 },
 
   // KAFFEEWELT
@@ -663,7 +726,6 @@ const styles = StyleSheet.create({
   },
   legendItem: { flexDirection: "row", alignItems: "center", gap: 6 },
   legendSwatch: { width: 14, height: 14 },
-  legendStar: { fontSize: 15 },
   legendText: { fontSize: 12 },
 
   // Bottom sheet
@@ -693,7 +755,7 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingBottom: 16,
   },
-  sheetFlag: { fontSize: 34 },
+  sheetIcon: { width: 34, alignItems: "center" },
   sheetTitle: { fontSize: 20, letterSpacing: 0.5 },
   sheetCount: { fontSize: 13, marginTop: 2 },
   sheetEmpty: { borderTopWidth: 1, paddingVertical: 24 },

@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { StyleSheet, View } from "react-native";
-import Svg, { Polygon, G, Text as SvgText } from "react-native-svg";
+import Svg, { Polygon, G, Text as SvgText, Rect as SvgRect } from "react-native-svg";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   useAnimatedProps,
@@ -26,6 +26,19 @@ export interface CoffeeOriginMapColors {
   labelOnDiscovered: string;
   labelOnUndiscovered: string;
   star: string;
+  regionBg: string;
+  regionLabel: string;
+}
+
+/** Five-point star polygon points centred at (cx, cy). */
+function starPoints(cx: number, cy: number, r: number): string {
+  const pts: string[] = [];
+  for (let i = 0; i < 10; i++) {
+    const radius = i % 2 === 0 ? r : r * 0.42;
+    const a = (Math.PI / 180) * (36 * i - 90);
+    pts.push(`${(cx + radius * Math.cos(a)).toFixed(1)},${(cy + radius * Math.sin(a)).toFixed(1)}`);
+  }
+  return pts.join(" ");
 }
 
 interface Props {
@@ -172,6 +185,31 @@ export function CoffeeOriginMap({
             viewBox={data.viewBox}
             preserveAspectRatio="xMidYMid meet"
           >
+            {data.regions.map((rg) => (
+              <G key={`region-${rg.id}`} pointerEvents="none">
+                <SvgRect
+                  x={rg.bg.x}
+                  y={rg.bg.y}
+                  width={rg.bg.width}
+                  height={rg.bg.height}
+                  rx={18}
+                  ry={18}
+                  fill={colors.regionBg}
+                />
+                <SvgText
+                  x={rg.labelX}
+                  y={rg.labelY}
+                  fill={colors.regionLabel}
+                  fontSize={17}
+                  fontWeight="700"
+                  textAnchor="middle"
+                  letterSpacing={1.5}
+                >
+                  {rg.label}
+                </SvgText>
+              </G>
+            ))}
+
             {data.countries.map((c) => {
               const isDiscovered = discovered.has(c.id);
               const isFavorite = favorite === c.id;
@@ -194,24 +232,22 @@ export function CoffeeOriginMap({
                   />
                   <SvgText
                     x={c.labelX}
-                    y={c.labelY + (isFavorite ? 4 : 3)}
+                    y={c.labelY + (isFavorite ? 6 : 4)}
                     fill={labelColor}
-                    fontSize={c.small ? 11 : 14}
+                    fontSize={c.small ? 14 : 17}
                     fontWeight="700"
                     textAnchor="middle"
                   >
                     {c.name}
                   </SvgText>
                   {isFavorite && (
-                    <SvgText
-                      x={c.labelX}
-                      y={c.labelY - (c.small ? 10 : 14)}
+                    <Polygon
+                      points={starPoints(c.labelX, c.labelY - (c.small ? 16 : 20), c.small ? 8 : 10)}
                       fill={colors.star}
-                      fontSize={c.small ? 13 : 16}
-                      textAnchor="middle"
-                    >
-                      ★
-                    </SvgText>
+                      stroke={colors.star}
+                      strokeWidth={1}
+                      strokeLinejoin="round"
+                    />
                   )}
                 </G>
               );
@@ -234,7 +270,7 @@ export function CoffeeOriginMap({
                   x={highlightData.labelX}
                   y={highlightData.labelY + 3}
                   fill={colors.labelOnDiscovered}
-                  fontSize={highlightData.small ? 11 : 14}
+                  fontSize={highlightData.small ? 14 : 17}
                   fontWeight="700"
                   textAnchor="middle"
                 >

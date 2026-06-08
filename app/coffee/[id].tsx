@@ -14,6 +14,7 @@ import {
   ScrollView,
 } from "react-native";
 import Svg, { Path, Circle, Line, Rect, G, Polygon as SvgPolygon } from "react-native-svg";
+import { AromaIcon, ProcessingIcon, RoastIcon, OriginPinIcon } from "@/components/CoffeeIcons";
 import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
@@ -162,98 +163,6 @@ function RatingSlider({
       )}
     </View>
   );
-}
-
-function AromaIcon({ step, size = 26, color }: { step: number; size?: number; color: string }) {
-  const p = { stroke: color, strokeWidth: 2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, fill: "none" };
-  const pt = { ...p, strokeWidth: 1.6 };
-  switch (step) {
-    case 1:
-      return (
-        <Svg width={size} height={size} viewBox="0 0 28 28">
-          {/* Tilted chocolate bar (~-22°) with 3×3 grid + wrapper */}
-          <G transform="rotate(-22, 14, 14)">
-            {/* Outer bar */}
-            <Rect x="4" y="2" width="20" height="24" rx="2.5" ry="2.5" {...p} />
-            {/* Separator: grid top / wrapper bottom */}
-            <Line x1="4" y1="14" x2="24" y2="14" {...p} />
-            {/* 3×3 grid in upper half */}
-            <Line x1="4"  y1="6.7"  x2="24" y2="6.7"  {...pt} />
-            <Line x1="4"  y1="10.3" x2="24" y2="10.3" {...pt} />
-            <Line x1="10.7" y1="2" x2="10.7" y2="14"  {...pt} />
-            <Line x1="17.3" y1="2" x2="17.3" y2="14"  {...pt} />
-            {/* Wrapper diagonal fold crease */}
-            <Path d="M4,14 L19,26" {...pt} />
-          </G>
-        </Svg>
-      );
-    case 2:
-      return (
-        <Svg width={size} height={size} viewBox="0 0 28 28">
-          {/* Stem — small curved hook */}
-          <Path d="M14,4 C14,2 16,1 16,4" {...p} />
-          {/* Cap — dome arc */}
-          <Path d="M6,13 C6,5 22,5 22,13" {...p} />
-          {/* Divider — slightly wider for ledge effect */}
-          <Line x1="4" y1="13" x2="24" y2="13" {...p} />
-          {/* Body — tapers to a point at bottom (hazelnut shape) */}
-          <Path d="M6,13 Q5,22 14,27 Q23,22 22,13" {...p} />
-        </Svg>
-      );
-    case 3:
-      return (
-        <Svg width={size} height={size} viewBox="0 0 28 28">
-          {/* Simple centered coffee bean */}
-          <Path d="M14,4 C19,4 20,9 20,14 C20,19 19,24 14,24 C9,24 8,19 8,14 C8,9 9,4 14,4 Z" {...p} />
-          {/* Bean crease — S-curve */}
-          <Path d="M14,7 C16,10 12,14 14,18 C15,21 14,23 14,23" {...p} />
-        </Svg>
-      );
-    case 4:
-      return (
-        <Svg width={size} height={size} viewBox="0 0 28 28">
-          {/* Stem */}
-          <Path d="M14,6 L14,3" {...p} />
-          {/* Small leaf */}
-          <Path d="M10,4.5 C10,1.5 14,1 14,3" {...pt} />
-          {/* Grape cluster: 2-3-3 arrangement, r=3.5 */}
-          <Circle cx="11" cy="10" r="3.5" {...p} />
-          <Circle cx="17" cy="10" r="3.5" {...p} />
-          <Circle cx="8"  cy="17" r="3.5" {...p} />
-          <Circle cx="14" cy="17" r="3.5" {...p} />
-          <Circle cx="20" cy="17" r="3.5" {...p} />
-          <Circle cx="11" cy="24" r="3.5" {...p} />
-          <Circle cx="17" cy="24" r="3.5" {...p} />
-        </Svg>
-      );
-    case 5:
-      return (
-        <Svg width={size} height={size} viewBox="0 0 28 28">
-          {/* Outer circle — thick peel */}
-          <Circle cx="14" cy="14" r="11.5" stroke={color} strokeWidth={2.5} fill="none" />
-          {/* Peel inner boundary */}
-          <Circle cx="14" cy="14" r="8.5" {...pt} />
-          {/* 10 segment lines from center to inner circle (every 36°) */}
-          <Path
-            d="M14,14 L14,5.5
-               M14,14 L19,7.1
-               M14,14 L22.1,11.4
-               M14,14 L22.1,16.6
-               M14,14 L19,20.9
-               M14,14 L14,22.5
-               M14,14 L9,20.9
-               M14,14 L5.9,16.6
-               M14,14 L5.9,11.4
-               M14,14 L9,7.1"
-            strokeWidth={1.5} stroke={color} strokeLinecap="round" fill="none"
-          />
-          {/* Center pip */}
-          <Circle cx="14" cy="14" r="1.5" stroke={color} strokeWidth={1.5} fill="none" />
-        </Svg>
-      );
-    default:
-      return null;
-  }
 }
 
 const AROMA_LABELS = ["sehr kräftig", "kräftig", "ausgewogen", "fruchtig", "sehr fruchtig"];
@@ -518,22 +427,34 @@ function OriginEditor({
   const isLowpoly = design === "lowpoly";
   const br = isLowpoly ? 4 : 10;
 
+  const multiple = origins.length > 1;
+
   return (
     <View style={{ gap: 12 }}>
-      {origins.map((o, idx) => (
+      {origins.map((o) => {
+        const headerName = o.country === "Sonstiges" && o.customCountry
+          ? o.customCountry
+          : o.country;
+        return (
         <View key={o.key} style={{
-          backgroundColor: colors.surface,
+          backgroundColor: colors.surfaceElevated,
           borderRadius: isLowpoly ? 4 : 12,
           borderWidth: 1, borderColor: colors.border,
-          padding: 12, gap: 8,
+          padding: 14, gap: 10,
         }}>
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-            <Text style={{ color: colors.textSecondary, fontFamily: "Inter_500Medium", fontSize: 12 }}>
-              Herkunft {idx + 1}
-            </Text>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, flex: 1 }}>
+              <OriginPinIcon size={20} color={colors.tint} />
+              <Text
+                numberOfLines={1}
+                style={{ color: headerName ? colors.text : colors.textSecondary, fontFamily: "Inter_600SemiBold", fontSize: 15, flex: 1 }}
+              >
+                {headerName || "Herkunft wählen"}
+              </Text>
+            </View>
             <Pressable onPress={() => { Haptics.selectionAsync(); onRemove(o.key); }}
-              style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}>
-              <Ionicons name="close-circle" size={18} color={colors.textSecondary} />
+              style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1, paddingLeft: 8 })}>
+              <Ionicons name="close-circle" size={20} color={colors.textSecondary} />
             </Pressable>
           </View>
 
@@ -572,27 +493,30 @@ function OriginEditor({
           )}
 
           <TextInput
-            style={{ borderWidth: 1.5, borderColor: colors.border, borderRadius: br, paddingHorizontal: 14, paddingVertical: 10, color: colors.text, fontFamily: "Inter_400Regular", fontSize: 15, backgroundColor: colors.surfaceElevated }}
-            placeholder="Region (z.B. Yirgacheffe)"
+            style={{ borderWidth: 1.5, borderColor: colors.border, borderRadius: br, paddingHorizontal: 14, paddingVertical: 10, color: colors.text, fontFamily: "Inter_400Regular", fontSize: 15, backgroundColor: colors.surface }}
+            placeholder="Noch nicht angegeben"
             placeholderTextColor={colors.textSecondary}
             value={o.region}
             onChangeText={(v) => onUpdate(o.key, "region", v)}
           />
 
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-            <TextInput
-              style={{ flex: 1, borderWidth: 1.5, borderColor: colors.border, borderRadius: br, paddingHorizontal: 14, paddingVertical: 10, color: colors.text, fontFamily: "Inter_400Regular", fontSize: 15, backgroundColor: colors.surfaceElevated }}
-              placeholder="Anteil"
-              placeholderTextColor={colors.textSecondary}
-              value={o.percentageText}
-              onChangeText={(v) => onUpdate(o.key, "percentageText", v.replace(/[^0-9]/g, ""))}
-              keyboardType="number-pad"
-              maxLength={3}
-            />
-            <Text style={{ color: colors.textSecondary, fontFamily: "Inter_600SemiBold", fontSize: 15 }}>%</Text>
-          </View>
+          {multiple && (
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+              <TextInput
+                style={{ flex: 1, borderWidth: 1.5, borderColor: colors.border, borderRadius: br, paddingHorizontal: 14, paddingVertical: 10, color: colors.text, fontFamily: "Inter_400Regular", fontSize: 15, backgroundColor: colors.surface }}
+                placeholder="Anteil"
+                placeholderTextColor={colors.textSecondary}
+                value={o.percentageText}
+                onChangeText={(v) => onUpdate(o.key, "percentageText", v.replace(/[^0-9]/g, ""))}
+                keyboardType="number-pad"
+                maxLength={3}
+              />
+              <Text style={{ color: colors.textSecondary, fontFamily: "Inter_600SemiBold", fontSize: 15 }}>%</Text>
+            </View>
+          )}
         </View>
-      ))}
+        );
+      })}
 
       <Pressable
         onPress={() => { Haptics.selectionAsync(); onAdd(); }}
@@ -627,11 +551,13 @@ function ProcessingPicker({
       <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
         {PROCESSING_METHODS.map(({ value: v, label }) => {
           const active = value === v;
+          const iconColor = active ? (isLowpoly ? "#1a0800" : "#fff") : textColor;
           return (
             <Pressable
               key={v}
               onPress={() => { Haptics.selectionAsync(); onChange(active ? "" : v); }}
               style={({ pressed }) => ({
+                flexDirection: "row", alignItems: "center", gap: 7,
                 paddingHorizontal: 14, paddingVertical: 10,
                 borderRadius: isLowpoly ? 4 : 12,
                 backgroundColor: active ? color : surfaceColor,
@@ -640,7 +566,8 @@ function ProcessingPicker({
                 transform: [{ scale: pressed ? 0.97 : 1 }],
               })}
             >
-              <Text style={{ color: active ? "#fff" : textColor, fontFamily: active ? "Inter_700Bold" : "Inter_500Medium", fontSize: 14 }}>
+              <ProcessingIcon method={v} size={20} color={iconColor} />
+              <Text style={{ color: iconColor, fontFamily: active ? "Inter_700Bold" : "Inter_500Medium", fontSize: 14 }}>
                 {label}
               </Text>
             </Pressable>
@@ -672,23 +599,27 @@ function RoastLevelPicker({
       <View style={{ flexDirection: "row", gap: isLowpoly ? 5 : 8 }}>
         {ROAST_LEVELS.map(({ value: v, label }) => {
           const active = value === v;
+          const iconColor = active ? (isLowpoly ? "#1a0800" : "#fff") : textColor;
           if (isLowpoly) {
             return (
               <Pressable
                 key={v}
                 onPress={() => { Haptics.selectionAsync(); onChange(active ? "" : v); }}
                 style={({ pressed }) => ({
-                  flex: 1, height: 56, justifyContent: "center", alignItems: "center",
+                  flex: 1, height: 72, justifyContent: "center", alignItems: "center",
                   transform: [{ scale: pressed ? 0.92 : 1 }],
                 })}
               >
-                <Svg width="100%" height="56" viewBox="0 0 60 56" preserveAspectRatio="none" style={StyleSheet.absoluteFill}>
-                  <SvgPolygon points="9,0 51,0 60,9 60,47 51,56 9,56 0,47 0,9" fill={active ? color : surfaceColor} />
-                  {active && <SvgPolygon points="9,0 51,0 60,9 30,32 0,9" fill="rgba(255,255,255,0.11)" />}
+                <Svg width="100%" height="72" viewBox="0 0 60 72" preserveAspectRatio="none" style={StyleSheet.absoluteFill}>
+                  <SvgPolygon points="9,0 51,0 60,9 60,63 51,72 9,72 0,63 0,9" fill={active ? color : surfaceColor} />
+                  {active && <SvgPolygon points="9,0 51,0 60,9 30,40 0,9" fill="rgba(255,255,255,0.11)" />}
                 </Svg>
-                <Text style={{ color: active ? "#1a0800" : textColor, fontFamily: active ? "Inter_700Bold" : "Inter_500Medium", fontSize: 9, textAlign: "center", paddingHorizontal: 2, lineHeight: 12 }}>
-                  {label}
-                </Text>
+                <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, justifyContent: "center", alignItems: "center", gap: 4 }}>
+                  <RoastIcon level={v} size={24} color={iconColor} />
+                  <Text style={{ color: iconColor, fontFamily: active ? "Inter_700Bold" : "Inter_500Medium", fontSize: 9, textAlign: "center", paddingHorizontal: 2, lineHeight: 12 }}>
+                    {label}
+                  </Text>
+                </View>
               </Pressable>
             );
           }
@@ -697,23 +628,20 @@ function RoastLevelPicker({
               key={v}
               onPress={() => { Haptics.selectionAsync(); onChange(active ? "" : v); }}
               style={({ pressed }) => ({
-                flex: 1, height: 56, borderRadius: 12,
+                flex: 1, height: 72, borderRadius: 12,
                 backgroundColor: active ? color : surfaceColor,
                 borderWidth: 1.5, borderColor: active ? color : borderColor,
-                justifyContent: "center", alignItems: "center",
+                justifyContent: "center", alignItems: "center", gap: 4,
                 opacity: pressed ? 0.8 : 1, transform: [{ scale: pressed ? 0.95 : 1 }],
               })}
             >
-              <Text style={{ color: active ? "#fff" : textColor, fontFamily: active ? "Inter_700Bold" : "Inter_500Medium", fontSize: 9, textAlign: "center", paddingHorizontal: 2, lineHeight: 12 }}>
+              <RoastIcon level={v} size={24} color={iconColor} />
+              <Text style={{ color: iconColor, fontFamily: active ? "Inter_700Bold" : "Inter_500Medium", fontSize: 9, textAlign: "center", paddingHorizontal: 2, lineHeight: 12 }}>
                 {label}
               </Text>
             </Pressable>
           );
         })}
-      </View>
-      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-        <Text style={{ color: textColor, fontFamily: "Inter_400Regular", fontSize: 11, opacity: 0.6 }}>← hell</Text>
-        <Text style={{ color: textColor, fontFamily: "Inter_400Regular", fontSize: 11, opacity: 0.6 }}>dunkel →</Text>
       </View>
     </View>
   );
