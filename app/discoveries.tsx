@@ -6,14 +6,27 @@ import {
   ScrollView,
   Pressable,
   Platform,
+  Modal,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { getDiscoveryStats, getCoffeeInsights, DiscoveryStats, CoffeeInsights } from "@/lib/storage";
+import {
+  getDiscoveryStats,
+  getCoffeeInsights,
+  getCountryDetails,
+  getCelebratedCountries,
+  setCelebratedCountries,
+  DiscoveryStats,
+  CoffeeInsights,
+  CountryDetails,
+} from "@/lib/storage";
 import { useThemeColors, useCardExtras, useTheme } from "@/context/ThemeContext";
 import { PolyBackground, PolyCornerCut } from "@/components/PolyBackground";
+import { CoffeeOriginMap } from "@/components/CoffeeOriginMap";
+import { COFFEE_WORLD_MAP } from "@/constants/coffeeMap";
+import Colors from "@/constants/colors";
 
 const KNOWN_COUNTRIES = [
   "Äthiopien", "Brasilien", "Burundi", "Costa Rica", "El Salvador",
@@ -82,16 +95,56 @@ export default function DiscoveriesScreen() {
 
   const [stats, setStats] = useState<DiscoveryStats | null>(null);
   const [insights, setInsights] = useState<CoffeeInsights | null>(null);
+  const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
+  const [countryDetails, setCountryDetails] = useState<CountryDetails | null>(null);
+  const [highlightCountry, setHighlightCountry] = useState<string | null>(null);
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
 
   useFocusEffect(
     useCallback(() => {
-      getDiscoveryStats().then(setStats);
-      getCoffeeInsights().then(setInsights);
+      let active = true;
+      (async () => {
+        const s = await getDiscoveryStats();
+        if (!active) return;
+        setStats(s);
+
+        // First-discovery highlight: compare against the persisted baseline of
+        // countries the user has already seen on the map, then animate the
+        // newest one exactly once.
+        const onMap = (s.countries ?? []).filter((c) =>
+          KNOWN_COUNTRIES.includes(c as typeof KNOWN_COUNTRIES[number])
+        );
+        const baseline = await getCelebratedCountries();
+        if (!active) return;
+        if (baseline !== null) {
+          const seen = new Set(baseline);
+          const fresh = onMap.filter((c) => !seen.has(c));
+          if (fresh.length > 0) setHighlightCountry(fresh[fresh.length - 1]);
+        }
+        await setCelebratedCountries(onMap);
+      })();
+      getCoffeeInsights().then((i) => {
+        if (active) setInsights(i);
+      });
+      return () => {
+        active = false;
+      };
     }, [])
   );
+
+  const openCountry = useCallback((country: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    setSelectedCountry(country);
+    setCountryDetails(null);
+    getCountryDetails(country).then(setCountryDetails);
+  }, []);
+
+  const closeCountry = useCallback(() => {
+    setSelectedCountry(null);
+    setCountryDetails(null);
+  }, []);
 
   const discoveredCountries = (stats?.countries ?? []).slice().sort();
   const knownDiscovered = discoveredCountries.filter(
@@ -103,6 +156,21 @@ export default function DiscoveriesScreen() {
   const allSorted = [...knownDiscovered, ...unknownDiscovered];
   const totalDiscovered = discoveredCountries.length;
   const progress = Math.min(totalDiscovered / TOTAL_KNOWN, 1);
+
+  const discoveredSet = new Set(discoveredCountries);
+  const mapDiscoveredCount = knownDiscovered.length;
+  const mapProgress = Math.min(mapDiscoveredCount / TOTAL_KNOWN, 1);
+  const favoriteCountry = insights?.favoriteCountry ?? null;
+
+  const mapColors = {
+    discovered: colors.tint,
+    undiscovered: colors.surface,
+    favorite: colors.tint,
+    stroke: colors.background,
+    labelOnDiscovered: Colors.espresso,
+    labelOnUndiscovered: colors.text,
+    star: colors.tint,
+  };
 
   const hasInsights =
     insights !== null &&
@@ -212,6 +280,85 @@ export default function DiscoveriesScreen() {
           )}
         </View>
 
+        {/* ── KAFFEEWELT ────────────────────────────────────────────── */}
+        <View style={cardStyle}>
+          <PolyCornerCut />
+          <View style={styles.sectionHeader}>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.sectionLabel, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
+                KAFFEEWELT
+              </Text>
+              <Text style={[styles.sectionSubtitle, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                Entdecke die Herkunft deiner Kaffees
+              </Text>
+            </View>
+          </View>
+
+          <View style={[styles.mapProgressRow, { borderTopColor: colors.border }]}>
+            <Text style={[styles.mapProgressText, { color: colors.text, fontFamily: "Inter_600SemiBold" }]}>
+              {mapDiscoveredCount} von {TOTAL_KNOWN} Herkunftsländern entdeckt
+            </Text>
+            <Text style={[styles.mapProgressPct, { color: colors.tint, fontFamily: "Inter_700Bold" }]}>
+              {Math.round(mapProgress * 100)} %
+            </Text>
+          </View>
+          <View style={styles.mapProgressTrackWrap}>
+            <View style={[styles.progressTrack, { backgroundColor: colors.surface }]}>
+              <View
+                style={[
+                  styles.progressFill,
+                  {
+                    width: `${Math.round(mapProgress * 100)}%` as any,
+                    backgroundColor: colors.tint,
+                    borderRadius: isLowpoly ? 2 : 4,
+                  },
+                ]}
+              />
+            </View>
+          </View>
+
+          <View style={[styles.mapWrap, { backgroundColor: colors.background, borderColor: colors.border }]}>
+            <CoffeeOriginMap
+              data={COFFEE_WORLD_MAP}
+              discovered={discoveredSet}
+              favorite={favoriteCountry}
+              onSelectCountry={openCountry}
+              colors={mapColors}
+              height={300}
+              highlightCountry={highlightCountry}
+              onHighlightComplete={() => setHighlightCountry(null)}
+            />
+          </View>
+
+          {mapDiscoveredCount === 0 && (
+            <Text style={[styles.mapHint, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+              Füge deinen ersten Kaffee mit Herkunftsland hinzu.
+            </Text>
+          )}
+
+          {/* Legend */}
+          <View style={[styles.legend, { borderTopColor: colors.border }]}>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendSwatch, { backgroundColor: colors.tint, borderRadius: isLowpoly ? 1 : 4 }]} />
+              <Text style={[styles.legendText, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                Entdeckt
+              </Text>
+            </View>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendSwatch, { backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1, borderRadius: isLowpoly ? 1 : 4 }]} />
+              <Text style={[styles.legendText, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                Noch nicht entdeckt
+              </Text>
+            </View>
+            <View style={styles.legendItem}>
+              <Text style={[styles.legendStar, { color: colors.tint }]}>★</Text>
+              <Text style={[styles.legendText, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                Lieblingsland
+              </Text>
+            </View>
+          </View>
+        </View>
+
         {/* ── DEIN KAFFEEPROFIL ─────────────────────────────────────── */}
         <View style={cardStyle}>
           <PolyCornerCut />
@@ -298,6 +445,120 @@ export default function DiscoveriesScreen() {
           )}
         </View>
       </ScrollView>
+
+      <Modal
+        visible={selectedCountry !== null}
+        transparent
+        animationType="fade"
+        presentationStyle="overFullScreen"
+        onRequestClose={closeCountry}
+      >
+        <Pressable style={styles.sheetBackdrop} onPress={closeCountry}>
+          <Pressable
+            style={[
+              styles.sheet,
+              cardExtras.shadow,
+              {
+                backgroundColor: colors.surfaceElevated,
+                borderColor: colors.border,
+                borderTopColor: cardExtras.topHighlight,
+                borderRadius: cardExtras.cardRadius,
+                paddingBottom: bottomPad + 20,
+              },
+            ]}
+            onPress={(e) => e.stopPropagation()}
+          >
+            <View style={[styles.sheetHandle, { backgroundColor: colors.border }]} />
+
+            <View style={styles.sheetHeader}>
+              <Text style={styles.sheetFlag}>{getFlag(selectedCountry ?? "")}</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.sheetTitle, { color: colors.text, fontFamily: "Inter_700Bold" }]}>
+                  {selectedCountry?.toUpperCase()}
+                </Text>
+                <Text style={[styles.sheetCount, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                  {(countryDetails?.coffeeCount ?? 0) === 0
+                    ? "Noch nicht entdeckt"
+                    : `${countryDetails?.coffeeCount} ${countryDetails?.coffeeCount === 1 ? "Kaffee" : "Kaffees"} entdeckt`}
+                </Text>
+              </View>
+              <Pressable onPress={closeCountry} hitSlop={10} style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}>
+                <Ionicons name="close" size={24} color={colors.textSecondary} />
+              </Pressable>
+            </View>
+
+            {countryDetails === null ? (
+              <View style={[styles.sheetEmpty, { borderTopColor: colors.border }]}>
+                <Text style={[styles.sheetEmptyText, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                  Lädt …
+                </Text>
+              </View>
+            ) : countryDetails.coffeeCount === 0 ? (
+              <View style={[styles.sheetEmpty, { borderTopColor: colors.border }]}>
+                <Text style={[styles.sheetEmptyText, { color: colors.textSecondary, fontFamily: "Inter_400Regular", textAlign: "center" }]}>
+                  Du hast noch keinen Kaffee aus {selectedCountry} eingetragen.
+                </Text>
+              </View>
+            ) : (
+              <>
+                <View style={[styles.sheetRatings, { borderTopColor: colors.border }]}>
+                  <View style={styles.sheetRatingBox}>
+                    <Text style={[styles.sheetRatingLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
+                      Ø Hase
+                    </Text>
+                    <Text style={[styles.sheetRatingValue, { color: colors.tint, fontFamily: "Inter_700Bold" }]}>
+                      {countryDetails.averageRabbitRating ?? "–"}
+                    </Text>
+                  </View>
+                  <View style={[styles.sheetRatingDivider, { backgroundColor: colors.border }]} />
+                  <View style={styles.sheetRatingBox}>
+                    <Text style={[styles.sheetRatingLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
+                      Ø Dodo
+                    </Text>
+                    <Text style={[styles.sheetRatingValue, { color: colors.tint, fontFamily: "Inter_700Bold" }]}>
+                      {countryDetails.averageDodoRating ?? "–"}
+                    </Text>
+                  </View>
+                </View>
+
+                {countryDetails.regions.length > 0 && (
+                  <View style={[styles.sheetBlock, { borderTopColor: colors.border }]}>
+                    <Text style={[styles.sheetBlockLabel, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
+                      REGIONEN
+                    </Text>
+                    {countryDetails.regions.map((r) => (
+                      <Text key={r} style={[styles.sheetListItem, { color: colors.text, fontFamily: "Inter_400Regular" }]}>
+                        •  {r}
+                      </Text>
+                    ))}
+                  </View>
+                )}
+
+                <View style={[styles.sheetBlock, { borderTopColor: colors.border }]}>
+                  <Text style={[styles.sheetBlockLabel, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
+                    KAFFEES
+                  </Text>
+                  {countryDetails.coffees.map((cf) => (
+                    <Pressable
+                      key={cf.id}
+                      onPress={() => {
+                        closeCountry();
+                        router.push(`/coffee/${cf.id}`);
+                      }}
+                      style={({ pressed }) => [styles.sheetCoffeeRow, { opacity: pressed ? 0.6 : 1 }]}
+                    >
+                      <Text style={[styles.sheetListItem, { color: colors.text, fontFamily: "Inter_500Medium" }]}>
+                        •  {cf.name}
+                      </Text>
+                      <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
+                    </Pressable>
+                  ))}
+                </View>
+              </>
+            )}
+          </Pressable>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
@@ -363,4 +624,96 @@ const styles = StyleSheet.create({
   topCoffeeName: { fontSize: 14, textAlign: "right" },
   topCoffeeRatings: { flexDirection: "row", alignItems: "center" },
   topCoffeeRating: { fontSize: 12 },
+
+  // KAFFEEWELT
+  sectionSubtitle: { fontSize: 13, marginTop: 3 },
+  mapProgressRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderTopWidth: 1,
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 8,
+    gap: 12,
+  },
+  mapProgressText: { fontSize: 13, flex: 1 },
+  mapProgressPct: { fontSize: 14 },
+  mapProgressTrackWrap: { paddingHorizontal: 16, paddingBottom: 14 },
+  mapWrap: {
+    marginHorizontal: 12,
+    borderWidth: 1,
+    borderRadius: 8,
+    overflow: "hidden",
+  },
+  mapHint: {
+    fontSize: 13,
+    textAlign: "center",
+    paddingHorizontal: 24,
+    paddingTop: 14,
+  },
+  legend: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    borderTopWidth: 1,
+    marginTop: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    gap: 16,
+  },
+  legendItem: { flexDirection: "row", alignItems: "center", gap: 6 },
+  legendSwatch: { width: 14, height: 14 },
+  legendStar: { fontSize: 15 },
+  legendText: { fontSize: 12 },
+
+  // Bottom sheet
+  sheetBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.55)",
+    justifyContent: "flex-end",
+  },
+  sheet: {
+    borderWidth: 1,
+    borderTopWidth: 2,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingHorizontal: 20,
+    paddingTop: 10,
+  },
+  sheetHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    alignSelf: "center",
+    marginBottom: 14,
+  },
+  sheetHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingBottom: 16,
+  },
+  sheetFlag: { fontSize: 34 },
+  sheetTitle: { fontSize: 20, letterSpacing: 0.5 },
+  sheetCount: { fontSize: 13, marginTop: 2 },
+  sheetEmpty: { borderTopWidth: 1, paddingVertical: 24 },
+  sheetEmptyText: { fontSize: 14 },
+  sheetRatings: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderTopWidth: 1,
+    paddingVertical: 16,
+  },
+  sheetRatingBox: { flex: 1, alignItems: "center", gap: 4 },
+  sheetRatingDivider: { width: 1, alignSelf: "stretch", marginVertical: 4 },
+  sheetRatingLabel: { fontSize: 12, letterSpacing: 0.4 },
+  sheetRatingValue: { fontSize: 26 },
+  sheetBlock: { borderTopWidth: 1, paddingVertical: 14, gap: 8 },
+  sheetBlockLabel: { fontSize: 11, letterSpacing: 1.5 },
+  sheetListItem: { fontSize: 15, lineHeight: 22 },
+  sheetCoffeeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
 });

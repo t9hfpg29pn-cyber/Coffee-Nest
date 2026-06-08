@@ -1,0 +1,341 @@
+Erweitere Coffee Nest um eine interaktive Coffee Origin Map.
+
+Ziel:
+
+Die Entdeckungsseite soll einen visuellen Mittelpunkt erhalten.
+
+Die Karte dient nicht der geografischen Genauigkeit, sondern dem Sammel- und Entdeckungsgefühl.
+
+Der Nutzer soll sofort erkennen:
+
+* Welche Kaffee-Herkunftsländer bereits entdeckt wurden
+* Welche noch fehlen
+* Welches Land aktuell sein Lieblingsland ist
+
+WICHTIG:
+
+Keine vollwertige Weltkarte mit allen Staaten bauen.
+
+Stattdessen eine speziell für Coffee Nest optimierte Coffee Origin Map, die ausschließlich die bereits unterstützten Kaffee-Herkunftsländer enthält.
+
+====================
+PLATZIERUNG
+===========
+
+Auf der Seite:
+
+/discoveries
+
+Neue Karte direkt unter:
+
+HERKUNFTSLÄNDER
+
+und oberhalb von:
+
+DEIN KAFFEEPROFIL
+
+Überschrift:
+
+KAFFEEWELT
+
+Untertitel:
+
+Entdecke die Herkunft deiner Kaffees
+
+====================
+UNTERSTÜTZTE LÄNDER
+===================
+
+Die Karte soll ausschließlich folgende Herkunftsländer darstellen:
+
+Brasilien
+Kolumbien
+Äthiopien
+Kenia
+Guatemala
+Costa Rica
+Panama
+Ruanda
+Burundi
+Peru
+Honduras
+Nicaragua
+El Salvador
+Indien
+Indonesien
+Vietnam
+Mexiko
+Tansania
+Uganda
+Jemen
+
+Es müssen keine anderen Länder dargestellt werden.
+
+====================
+KARTENKONZEPT
+=============
+
+KEINE klassische Weltkarte.
+
+Stattdessen eine vereinfachte SVG-Karte.
+
+Ziel:
+
+Auf einem iPhone muss jedes Land gut antippbar bleiben.
+
+Länder dürfen vereinfacht und vergrößert dargestellt werden.
+
+Besonders:
+
+* Mittelamerika
+* Ostafrika
+* Südamerika
+
+dürfen größer gezeichnet werden als geografisch korrekt.
+
+Priorität:
+
+Benutzbarkeit vor Realismus.
+
+====================
+DARSTELLUNG
+===========
+
+Nicht entdeckt:
+
+Farbe:
+
+Card Dark
+
+(#5a2e15)
+
+Entdeckt:
+
+Primary Accent
+
+(#e1a24a)
+
+Lieblingsland:
+
+Primary Accent
+
+plus kleiner Stern
+
+oder dezenter Glow
+
+Custom-Länder ("Sonstiges") erscheinen nicht auf der Karte.
+
+====================
+INTERAKTION
+===========
+
+Tap auf ein Land:
+
+öffnet ein Bottom Sheet.
+
+Kein neuer Screen.
+
+Kein Modal.
+
+Verwende das bestehende Bottom-Sheet-Verhalten der App.
+
+====================
+LÄNDERDETAILS
+=============
+
+Beispiel:
+
+ÄTHIOPIEN
+
+5 Kaffees entdeckt
+
+Ø Hase: 8.4
+
+Ø Dodo: 7.8
+
+Regionen:
+
+• Yirgacheffe
+• Guji
+• Sidamo
+
+Kaffees:
+
+• Yirga
+• Ethiopia Natural
+• Aricha
+
+====================
+DATENBASIS
+==========
+
+Neue Utility erstellen:
+
+getCountryDetails(country)
+
+Rückgabe:
+
+{
+country,
+coffeeCount,
+averageRabbitRating,
+averageDodoRating,
+regions[],
+coffees[]
+}
+
+Verwende bestehende Daten.
+
+Keine Migration nötig.
+
+====================
+ZOOM UND PAN
+============
+
+Die Karte muss in der iOS-PWA gut funktionieren.
+
+Anforderungen:
+
+* Pinch Zoom
+* Drag / Pan
+* Double Tap Zoom
+
+Startzoom:
+
+gesamte Coffee-Welt sichtbar
+
+Min Zoom:
+
+1x
+
+Max Zoom:
+
+4x
+
+Animationen weich halten.
+
+Keine WebGL.
+
+Keine Canvas-Library.
+
+SVG bevorzugen.
+
+Performance für iPhone priorisieren.
+
+====================
+LEGEND
+======
+
+Unter der Karte:
+
+Legende anzeigen
+
+■ Entdeckt
+
+■ Noch nicht entdeckt
+
+★ Lieblingsland
+
+Gleiche Farben wie Karte.
+
+====================
+FORTSCHRITT
+===========
+
+Über der Karte zusätzlich anzeigen:
+
+X von 20 Herkunftsländern entdeckt
+
+Prozentwert
+
+Fortschrittsbalken weiterverwenden.
+
+====================
+ANIMATION
+=========
+
+Wenn ein Land erstmals entdeckt wird:
+
+kurze Highlight-Animation
+
+Dauer:
+
+ca. 500ms
+
+z.B.
+
+Scale:
+
+1 → 1.1 → 1
+
+Keine Partikeleffekte.
+
+Keine Konfetti-Animation.
+
+====================
+DESIGN
+======
+
+Die Karte muss den bestehenden Low-Poly Stil übernehmen.
+
+Länder nicht als komplexe Geometrien.
+
+Stattdessen:
+
+vereinfachte polygonale Flächen.
+
+Jedes Land wirkt wie eine kleine Facette.
+
+Gleiche Farben wie restliche App.
+
+Keine neuen Farben einführen.
+
+Keine Google-Maps-Anmutung.
+
+Die Karte soll wie ein Bestandteil von Coffee Nest wirken.
+
+====================
+LEERE DATEN
+===========
+
+Wenn noch kein Herkunftsland vorhanden:
+
+Karte trotzdem anzeigen.
+
+Alle Länder dunkel.
+
+Hinweis:
+
+"Füge deinen ersten Kaffee mit Herkunftsland hinzu."
+
+====================
+TECHNISCHE QUALITÄT
+===================
+
+* TypeScript sauber halten
+* keine Build-Warnungen
+* keine Performance-Probleme
+* keine zusätzlichen schweren Abhängigkeiten
+* möglichst SVG-basiert
+* iOS-PWA optimieren
+
+====================
+ABSCHLUSS
+=========
+
+Nach Umsetzung:
+
+1. Build durchführen
+2. TypeScript Fehler beheben
+3. Karte auf iPhone-Viewport testen
+4. Zoom testen
+5. Pan testen
+6. Tap auf Länder testen
+7. Länderdetails prüfen
+8. Fortschrittsanzeige prüfen
+9. Performance prüfen
+10. Sicherstellen, dass die Karte auch mit nur einem entdeckten Land sinnvoll aussieht
+
+Zusätzlich:
+
+Die Lösung soll so aufgebaut werden, dass später eine zweite Karte für Röstereien (Deutschland/Europa) mit derselben Architektur ergänzt werden kann.

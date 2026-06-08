@@ -41,6 +41,7 @@ export interface Coffee {
 const ROASTERIES_KEY = "roasteries";
 const COFFEES_KEY = "coffees";
 const GRINDERS_KEY = "grinders";
+const CELEBRATED_COUNTRIES_KEY = "celebratedCountries";
 
 export const DEFAULT_GRINDERS = ["Niche", "Commandante"];
 
@@ -58,6 +59,25 @@ export async function getGrinders(): Promise<string[]> {
 
 export async function saveGrinders(names: string[]): Promise<void> {
   await AsyncStorage.setItem(GRINDERS_KEY, JSON.stringify(names));
+}
+
+/**
+ * Countries the user has already "seen" discovered on the map. Used to play the
+ * first-discovery highlight exactly once, deterministically across navigation.
+ * Returns null when no baseline has ever been stored (first run).
+ */
+export async function getCelebratedCountries(): Promise<string[] | null> {
+  const data = await AsyncStorage.getItem(CELEBRATED_COUNTRIES_KEY);
+  if (data === null) return null;
+  const parsed = JSON.parse(data);
+  return Array.isArray(parsed) ? parsed : [];
+}
+
+export async function setCelebratedCountries(countries: string[]): Promise<void> {
+  await AsyncStorage.setItem(
+    CELEBRATED_COUNTRIES_KEY,
+    JSON.stringify(countries)
+  );
 }
 
 export async function getRoasteries(): Promise<Roastery[]> {
@@ -336,6 +356,42 @@ export async function getDiscoveryFact(): Promise<DiscoveryFact> {
     if (result) return result;
   }
   return fallback;
+}
+
+export interface CountryDetails {
+  country: string;
+  coffeeCount: number;
+  averageRabbitRating: number | null;
+  averageDodoRating: number | null;
+  regions: string[];
+  coffees: { id: string; name: string }[];
+}
+
+export async function getCountryDetails(country: string): Promise<CountryDetails> {
+  const all = await getAllCoffees();
+  const matching = all.filter((c) =>
+    (c.origins ?? []).some((o) => o.country === country)
+  );
+  const haseVals: number[] = [];
+  const dodoVals: number[] = [];
+  const regions = new Set<string>();
+  for (const c of matching) {
+    if (c.haseRating !== null) haseVals.push(c.haseRating);
+    if (c.dodoRating !== null) dodoVals.push(c.dodoRating);
+    for (const o of c.origins ?? []) {
+      if (o.country === country && o.region?.trim()) regions.add(o.region.trim());
+    }
+  }
+  const avg = (vals: number[]): number | null =>
+    vals.length ? Math.round((vals.reduce((s, v) => s + v, 0) / vals.length) * 10) / 10 : null;
+  return {
+    country,
+    coffeeCount: matching.length,
+    averageRabbitRating: avg(haseVals),
+    averageDodoRating: avg(dodoVals),
+    regions: Array.from(regions).sort(),
+    coffees: matching.map((c) => ({ id: c.id, name: c.name })),
+  };
 }
 
 export interface CoffeeInsights {
