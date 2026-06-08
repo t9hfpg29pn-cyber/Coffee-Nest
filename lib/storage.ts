@@ -181,6 +181,112 @@ export async function getCountryCounts(): Promise<Record<string, number>> {
   return counts;
 }
 
+export interface CoffeeInsights {
+  favoriteCountry: string | null;
+  favoriteAroma: { value: number; label: string; emoji: string } | null;
+  favoriteRoastLevel: string | null;
+  favoriteGrinder: string | null;
+  topCoffee: { name: string; haseRating: number | null; dodoRating: number | null } | null;
+}
+
+const AROMA_MAP: Record<number, { label: string; emoji: string }> = {
+  1: { label: "Schokoladig", emoji: "🍫" },
+  2: { label: "Nussig",      emoji: "🌰" },
+  3: { label: "Klassisch",   emoji: "☕" },
+  4: { label: "Beerig",      emoji: "🍇" },
+  5: { label: "Zitrisch",    emoji: "🍊" },
+};
+
+const ROAST_LABELS: Record<string, string> = {
+  "light":       "Hell",
+  "medium-light":"Mittel-Hell",
+  "medium":      "Mittel",
+  "medium-dark": "Mittel-Dunkel",
+  "dark":        "Dunkel",
+};
+
+export async function getCoffeeInsights(): Promise<CoffeeInsights> {
+  const coffees = await getAllCoffees();
+  const empty: CoffeeInsights = { favoriteCountry: null, favoriteAroma: null, favoriteRoastLevel: null, favoriteGrinder: null, topCoffee: null };
+  if (coffees.length === 0) return empty;
+
+  // favoriteCountry: country with highest avg score across coffees that include it
+  const countryScores: Record<string, { total: number; count: number }> = {};
+  for (const c of coffees) {
+    const vals = [c.haseRating, c.dodoRating].filter((v): v is number => v !== null);
+    if (vals.length === 0) continue;
+    const avg = vals.reduce((s, v) => s + v, 0) / vals.length;
+    for (const o of c.origins ?? []) {
+      if (!o.country) continue;
+      if (!countryScores[o.country]) countryScores[o.country] = { total: 0, count: 0 };
+      countryScores[o.country].total += avg;
+      countryScores[o.country].count += 1;
+    }
+  }
+  let favoriteCountry: string | null = null;
+  let bestCountryAvg = -1;
+  for (const [country, { total, count }] of Object.entries(countryScores)) {
+    const avg = total / count;
+    if (avg > bestCountryAvg) { bestCountryAvg = avg; favoriteCountry = country; }
+  }
+
+  // favoriteAroma: most frequent aroma value (1–5)
+  const aromaCounts: Record<number, number> = {};
+  for (const c of coffees) {
+    if (c.aroma >= 1 && c.aroma <= 5) aromaCounts[c.aroma] = (aromaCounts[c.aroma] ?? 0) + 1;
+  }
+  let favoriteAroma: CoffeeInsights["favoriteAroma"] = null;
+  let bestAromaCount = -1;
+  for (const [valStr, count] of Object.entries(aromaCounts)) {
+    if (count > bestAromaCount) {
+      bestAromaCount = count;
+      const val = Number(valStr);
+      const info = AROMA_MAP[val];
+      favoriteAroma = info ? { value: val, label: info.label, emoji: info.emoji } : null;
+    }
+  }
+
+  // favoriteRoastLevel: most frequent non-empty roastLevel
+  const roastCounts: Record<string, number> = {};
+  for (const c of coffees) {
+    if (c.roastLevel) roastCounts[c.roastLevel] = (roastCounts[c.roastLevel] ?? 0) + 1;
+  }
+  let favoriteRoastLevel: string | null = null;
+  let bestRoastCount = -1;
+  for (const [level, count] of Object.entries(roastCounts)) {
+    if (count > bestRoastCount) { bestRoastCount = count; favoriteRoastLevel = ROAST_LABELS[level] ?? level; }
+  }
+
+  // favoriteGrinder: most frequent grinder from grindSettings or grinderName
+  const grinderCounts: Record<string, number> = {};
+  for (const c of coffees) {
+    if (c.grindSettings && c.grindSettings.length > 0) {
+      for (const gs of c.grindSettings) {
+        if (gs.grinder) grinderCounts[gs.grinder] = (grinderCounts[gs.grinder] ?? 0) + 1;
+      }
+    } else if (c.grinderName) {
+      grinderCounts[c.grinderName] = (grinderCounts[c.grinderName] ?? 0) + 1;
+    }
+  }
+  let favoriteGrinder: string | null = null;
+  let bestGrinderCount = -1;
+  for (const [grinder, count] of Object.entries(grinderCounts)) {
+    if (count > bestGrinderCount) { bestGrinderCount = count; favoriteGrinder = grinder; }
+  }
+
+  // topCoffee: highest average score (avg of non-null ratings)
+  let topCoffee: CoffeeInsights["topCoffee"] = null;
+  let topScore = -1;
+  for (const c of coffees) {
+    const vals = [c.haseRating, c.dodoRating].filter((v): v is number => v !== null);
+    if (vals.length === 0) continue;
+    const avg = vals.reduce((s, v) => s + v, 0) / vals.length;
+    if (avg > topScore) { topScore = avg; topCoffee = { name: c.name, haseRating: c.haseRating, dodoRating: c.dodoRating }; }
+  }
+
+  return { favoriteCountry, favoriteAroma, favoriteRoastLevel, favoriteGrinder, topCoffee };
+}
+
 export interface DiscoveryStats {
   coffeeCount: number;
   roasteryCount: number;

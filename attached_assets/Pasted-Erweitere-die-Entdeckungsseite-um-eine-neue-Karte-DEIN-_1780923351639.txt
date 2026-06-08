@@ -1,0 +1,142 @@
+Erweitere die Entdeckungsseite um eine neue Karte:
+
+DEIN KAFFEEPROFIL
+
+====================
+ZIEL
+====================
+
+Die App soll aus vorhandenen Daten automatisch persönliche Erkenntnisse ableiten.
+
+Die Karte erscheint unterhalb des Abschnitts "Herkunftsländer".
+
+Verwende den bestehenden Low-Poly Stil.
+
+Keine neuen Farben einführen.
+
+====================
+NEUE UTILITY
+====================
+
+Erstelle:
+
+getCoffeeInsights()
+
+Rückgabe:
+
+{
+  favoriteCountry,
+  favoriteAroma,
+  favoriteRoastLevel,
+  favoriteGrinder,
+  topCoffee
+}
+
+====================
+LIEBLINGSHERKUNFT
+====================
+
+Berechne für jedes Herkunftsland den durchschnittlichen Gesamtscore.
+
+Gesamtscore:
+
+(Hase Rating + Dodo Rating) / 2
+
+Lieblingsherkunft:
+
+Land mit dem höchsten Durchschnitt.
+
+Nur Länder mit mindestens einem Kaffee berücksichtigen.
+
+====================
+LIEBLINGSAROMA
+====================
+
+Die aktuell am häufigsten gewählte Aromastufe.
+
+Anzeige:
+
+🍫 Schokoladig
+🌰 Nussig
+☕ Klassisch
+🍇 Beerig
+🍊 Zitrisch
+
+====================
+LIEBLINGSRÖSTGRAD
+====================
+
+Häufigster Röstgrad.
+
+Anzeigen als:
+
+Hell
+Mittel-Hell
+Mittel
+Mittel-Dunkel
+Dunkel
+
+====================
+LIEBLINGSMÜHLE
+====================
+
+Die am häufigsten verwendete Mühle.
+
+Beispiel:
+
+Niche
+
+oder
+
+Comandante
+
+====================
+SPITZENREITER
+====================
+
+Kaffee mit dem höchsten Durchschnittsscore.
+
+Format:
+
+Name des Kaffees
+(Hase X | Dodo Y)
+
+====================
+DARSTELLUNG
+====================
+
+Neue Karte:
+
+DEIN KAFFEEPROFIL
+
+Lieblingsherkunft
+[Land]
+
+Lieblingsaroma
+[Aroma]
+
+Lieblingsröstgrad
+[Röstgrad]
+
+Lieblingsmühle
+[Mühle]
+
+Spitzenreiter
+[Kaffeename]
+
+====================
+LEERE DATEN
+====================
+
+Falls noch nicht genügend Daten vorhanden sind:
+
+"Mehr Kaffees entdecken, um Erkenntnisse zu erhalten."
+
+====================
+ABSCHLUSS
+====================
+
+1. Build durchführen
+2. TypeScript Fehler beheben
+3. Mit Testdaten prüfen
+4. Sicherstellen, dass fehlende Werte keinen Absturz verursachen
