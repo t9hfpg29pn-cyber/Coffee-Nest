@@ -47,6 +47,144 @@ run("npx", [
   "web-dist",
 ]);
 
+// ---------------------------------------------------------------------------
+// Relocate exported assets out of any `node_modules/` path.
+//
+// Expo hashes vendored assets (icon fonts, Google Fonts) into
+// `web-dist/assets/node_modules/...`. That path is a deployment landmine:
+// .gitignore (and many CDN / deploy ignore rules) match `node_modules/` at any
+// depth, so those font files never reach GitHub/Cloudflare → icons render as
+// empty squares in production. We rename the directory to `assets/_packages`
+// and rewrite every reference in the JS bundles and HTML so the output is
+// completely free of `node_modules` path segments.
+// ---------------------------------------------------------------------------
+console.log("==> Relocating vendored assets out of node_modules/ path");
+const NM_DIR = path.join(OUT, "assets", "node_modules");
+const PKG_DIR = path.join(OUT, "assets", "_packages");
+const FROM_TOKEN = "assets/node_modules/";
+const TO_TOKEN = "assets/_packages/";
+
+if (fs.existsSync(NM_DIR)) {
+  if (fs.existsSync(PKG_DIR)) {
+    fs.rmSync(PKG_DIR, { recursive: true, force: true });
+  }
+  fs.renameSync(NM_DIR, PKG_DIR);
+
+  // Rewrite references in every text asset (JS bundles, HTML, CSS, JSON, map).
+  const exts = new Set([".js", ".html", ".css", ".json", ".map"]);
+  let rewritten = 0;
+  const modifiedStatic = [];
+  const STATIC_DIR = path.join(OUT, "_expo", "static");
+  const walk = (dir) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(full);
+      } else if (exts.has(path.extname(entry.name))) {
+        const before = fs.readFileSync(full, "utf-8");
+        if (before.includes(FROM_TOKEN)) {
+          fs.writeFileSync(full, before.split(FROM_TOKEN).join(TO_TOKEN));
+          rewritten++;
+          // Track hash-named, immutable-cached bundles we mutated so we can
+          // rename them (cache-bust) below.
+          const ext = path.extname(entry.name);
+          if (full.startsWith(STATIC_DIR + path.sep) && (ext === ".js" || ext === ".css")) {
+            modifiedStatic.push(full);
+          }
+        }
+      }
+    }
+  };
+  walk(OUT);
+  console.log(`   moved assets/node_modules → assets/_packages, rewrote ${rewritten} file(s)`);
+
+  // Hard fail if any node_modules reference survived in a text asset.
+  let leaks = 0;
+  const checkLeaks = (dir) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        checkLeaks(full);
+      } else if (exts.has(path.extname(entry.name))) {
+        if (fs.readFileSync(full, "utf-8").includes(FROM_TOKEN)) {
+          console.error(`   ! leftover '${FROM_TOKEN}' reference in ${path.relative(OUT, full)}`);
+          leaks++;
+        }
+      }
+    }
+  };
+  checkLeaks(OUT);
+  if (leaks > 0) {
+    console.error("Post-build check failed: node_modules asset references remain.");
+    process.exit(1);
+  }
+
+  // -------------------------------------------------------------------------
+  // Cache-bust the bundles whose CONTENT we just changed.
+  //
+  // Expo derives a hashed filename from the source modules, NOT from the final
+  // emitted bytes — so our rewrite leaves the filename unchanged. Combined with
+  // `Cache-Control: immutable` (see web-pwa/_headers), returning visitors who
+  // already cached the broken bundle (with node_modules URLs) would keep
+  // serving it forever. Rename each mutated bundle with a fresh content hash
+  // and rewrite every reference to it so old immutable cache entries are bypassed.
+  // -------------------------------------------------------------------------
+  if (modifiedStatic.length > 0) {
+    const crypto = require("crypto");
+    const tokenMap = new Map(); // oldBasename -> newBasename
+    for (const full of modifiedStatic) {
+      const buf = fs.readFileSync(full);
+      const hash8 = crypto.createHash("md5").update(buf).digest("hex").slice(0, 8);
+      const ext = path.extname(full);
+      const oldBase = path.basename(full);
+      const newBase = oldBase.replace(new RegExp(`\\${ext}$`), `-c${hash8}${ext}`);
+      const newFull = path.join(path.dirname(full), newBase);
+      fs.renameSync(full, newFull);
+      tokenMap.set(oldBase, newBase);
+      // Keep a sibling sourcemap consistent with the renamed bundle.
+      const oldMap = full + ".map";
+      if (fs.existsSync(oldMap)) {
+        fs.renameSync(oldMap, newFull + ".map");
+      }
+    }
+
+    // Replace every reference to the old basenames across all text assets.
+    let refRewrites = 0;
+    const rewriteRefs = (dir) => {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          rewriteRefs(full);
+        } else if (exts.has(path.extname(entry.name))) {
+          let content = fs.readFileSync(full, "utf-8");
+          let changed = false;
+          for (const [oldBase, newBase] of tokenMap) {
+            if (content.includes(oldBase)) {
+              content = content.split(oldBase).join(newBase);
+              changed = true;
+            }
+          }
+          if (changed) {
+            fs.writeFileSync(full, content);
+            refRewrites++;
+          }
+        }
+      }
+    };
+    rewriteRefs(OUT);
+    console.log(`   cache-busted ${tokenMap.size} bundle(s), updated refs in ${refRewrites} file(s)`);
+
+    // Verify index.html no longer points at any pre-rename bundle name.
+    const idx = fs.readFileSync(path.join(OUT, "index.html"), "utf-8");
+    for (const oldBase of tokenMap.keys()) {
+      if (idx.includes(oldBase)) {
+        console.error(`Post-build check failed: index.html still references stale bundle ${oldBase}`);
+        process.exit(1);
+      }
+    }
+  }
+}
+
 console.log("==> 2/3  Copying PWA assets from web-pwa/");
 if (!fs.existsSync(PWA_SRC)) {
   console.error(`Missing source folder: ${PWA_SRC}`);
