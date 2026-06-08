@@ -1,0 +1,168 @@
+Erweitere die Coffee Nest App um ein erstes Entdeckungssystem.
+
+WICHTIG:
+
+Keine neue Tab-Bar einführen.
+Keine Änderung der bestehenden Navigation.
+Die neue Funktion soll sich nahtlos in den aktuellen Aufbau einfügen.
+
+====================
+STARTSEITE
+====================
+
+Auf der Rösterei-Übersicht soll oberhalb der ersten Rösterei-Karte eine neue Karte erscheinen.
+
+Titel:
+
+ENTDECKUNGEN
+
+Darstellung:
+
+☕ X Kaffees
+
+🏭 X Röstereien
+
+🌍 X Herkunftsländer
+
+Die Werte werden dynamisch berechnet.
+
+Kaffees:
+Anzahl aller Kaffees.
+
+Röstereien:
+Anzahl aller Röstereien.
+
+Herkunftsländer:
+Anzahl eindeutiger Länder aus allen Coffee Origins.
+
+Verwende hierfür die bereits vorhandenen Funktionen:
+
+getUniqueCountries()
+
+getCountryCounts()
+
+====================
+LETZTE ENTDECKUNG
+====================
+
+Unter den Zählern anzeigen:
+
+Zuletzt entdeckt:
+
+[Ländername]
+
+Dabei soll das zuletzt erstmals hinzugekommene Herkunftsland angezeigt werden.
+
+Falls dies noch nicht ermittelt werden kann:
+
+Einfach das zuletzt hinzugefügte Herkunftsland anzeigen.
+
+====================
+ENTDECKUNGSSEITE
+====================
+
+Die Entdeckungskarte soll anklickbar sein.
+
+Neue Seite:
+
+/discoveries
+
+Layout analog zu den übrigen Seiten.
+
+Überschrift:
+
+Entdeckungen
+
+====================
+ABSCHNITT HERKUNFTSLÄNDER
+====================
+
+Titel:
+
+Herkunftsländer
+
+Darunter:
+
+X Länder entdeckt
+
+Liste aller bisher entdeckten Länder.
+
+Beispiel:
+
+🇧🇷 Brasilien
+
+🇪🇹 Äthiopien
+
+🇨🇴 Kolumbien
+
+Alphabetisch sortieren.
+
+====================
+FORTSCHRITT
+====================
+
+Oberhalb der Liste anzeigen:
+
+Fortschritt
+
+X von Y Ländern entdeckt
+
+Y entspricht der Anzahl der aktuell im Länderdropdown vorhandenen Länder
+(ohne "Sonstiges").
+
+Zusätzlich einen Fortschrittsbalken anzeigen.
+
+Noch keine Karte darstellen.
+
+====================
+DESIGN
+====================
+
+Die Entdeckungskarte und die Entdeckungsseite müssen den bestehenden Low-Poly Stil übernehmen.
+
+Verwende:
+
+- bestehende Karten
+- bestehende Farben
+- bestehende Typografie
+- bestehende Polygon-Elemente
+
+Keine neuen Farben einführen.
+
+====================
+TECHNIK
+====================
+
+Neue Utility-Funktion erstellen:
+
+getDiscoveryStats()
+
+Rückgabe:
+
+{
+  coffeeCount,
+  roasteryCount,
+  countryCount,
+  countries
+}
+
+Diese Funktion soll später für:
+
+- Weltkarte
+- Erkenntnisse
+- Statistiken
+
+weiterverwendet werden.
+
+====================
+ABSCHLUSS
+====================
+
+Nach Umsetzung:
+
+1. Anwendung bauen
+2. TypeScript Fehler beheben
+3. Navigation testen
+4. Entdeckungszähler testen
+5. Fortschrittsanzeige testen
+6. Bestehende Datenmigration prüfen

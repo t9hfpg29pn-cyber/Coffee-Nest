@@ -180,3 +180,36 @@ export async function getCountryCounts(): Promise<Record<string, number>> {
   }
   return counts;
 }
+
+export interface DiscoveryStats {
+  coffeeCount: number;
+  roasteryCount: number;
+  countryCount: number;
+  countries: string[];
+  lastDiscoveredCountry: string | null;
+}
+
+export async function getDiscoveryStats(): Promise<DiscoveryStats> {
+  const [coffees, roasteries] = await Promise.all([getAllCoffees(), getRoasteries()]);
+  const countryFirstSeen: Record<string, string> = {};
+  for (const c of coffees) {
+    for (const o of c.origins ?? []) {
+      if (o.country) {
+        const current = countryFirstSeen[o.country];
+        if (!current || c.createdAt < current) {
+          countryFirstSeen[o.country] = c.createdAt;
+        }
+      }
+    }
+  }
+  const countries = Object.keys(countryFirstSeen).sort();
+  const sorted = Object.entries(countryFirstSeen).sort((a, b) => b[1].localeCompare(a[1]));
+  const lastDiscoveredCountry = sorted.length > 0 ? sorted[0][0] : null;
+  return {
+    coffeeCount: coffees.length,
+    roasteryCount: roasteries.length,
+    countryCount: countries.length,
+    countries,
+    lastDiscoveredCountry,
+  };
+}

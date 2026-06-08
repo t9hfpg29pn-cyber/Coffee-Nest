@@ -56,6 +56,7 @@ function RootLayoutNav() {
       <Stack.Screen name="roastery/[id]" />
       <Stack.Screen name="coffee/[id]" />
       <Stack.Screen name="settings" />
+      <Stack.Screen name="discoveries" />
     </Stack>
   );
 }

@@ -16,7 +16,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useFocusEffect } from "expo-router";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { getRoasteries, saveRoastery, deleteRoastery, getCoffees, Roastery } from "@/lib/storage";
+import { getRoasteries, saveRoastery, deleteRoastery, getCoffees, Roastery, getDiscoveryStats, DiscoveryStats } from "@/lib/storage";
 import { useUserNames } from "@/context/UserNamesContext";
 import { useThemeColors, useCardExtras } from "@/context/ThemeContext";
 import { PolyBackground, PolyCornerCut, PolyActionButton } from "@/components/PolyBackground";
@@ -38,6 +38,7 @@ export default function RoasteriesScreen() {
   const [newName, setNewName] = useState("");
   const [newLocation, setNewLocation] = useState("");
   const [loading, setLoading] = useState(true);
+  const [discoveryStats, setDiscoveryStats] = useState<DiscoveryStats | null>(null);
 
   const cities = useMemo(() => {
     const seen = new Set<string>();
@@ -53,6 +54,7 @@ export default function RoasteriesScreen() {
   }, [roasteries, selectedCity]);
 
   const load = useCallback(async () => {
+    getDiscoveryStats().then(setDiscoveryStats);
     const data = await getRoasteries();
     const counts: Record<string, number> = {};
     const avgs: Record<string, { hase: number | null; dodo: number | null } | null> = {};
@@ -307,6 +309,77 @@ export default function RoasteriesScreen() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ padding: 20, paddingBottom: bottomPad + 20 }}
           ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+          ListHeaderComponent={() => (
+            <Pressable
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                router.push("/discoveries");
+              }}
+              style={({ pressed }) => [
+                styles.discoveryCard,
+                cardExtras.shadow,
+                {
+                  backgroundColor: colors.surfaceElevated,
+                  borderColor: colors.border,
+                  borderTopColor: cardExtras.topHighlight,
+                  borderRadius: cardExtras.cardRadius,
+                  opacity: pressed ? 0.92 : 1,
+                  transform: [{ scale: pressed ? 0.985 : 1 }],
+                  overflow: "hidden" as const,
+                  marginBottom: 12,
+                },
+              ]}
+            >
+              <PolyCornerCut />
+              <View style={styles.discoveryHeader}>
+                <Text style={[styles.discoveryLabel, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
+                  ENTDECKUNGEN
+                </Text>
+                <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
+              </View>
+              <View style={[styles.discoveryStats, { borderTopColor: colors.border }]}>
+                <View style={styles.discoveryStat}>
+                  <Text style={styles.discoveryStatEmoji}>☕</Text>
+                  <Text style={[styles.discoveryStatValue, { color: colors.text, fontFamily: "Inter_700Bold" }]}>
+                    {discoveryStats?.coffeeCount ?? 0}
+                  </Text>
+                  <Text style={[styles.discoveryStatLabel, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                    Kaffees
+                  </Text>
+                </View>
+                <View style={[styles.discoveryStatDivider, { backgroundColor: colors.border }]} />
+                <View style={styles.discoveryStat}>
+                  <Text style={styles.discoveryStatEmoji}>🏭</Text>
+                  <Text style={[styles.discoveryStatValue, { color: colors.text, fontFamily: "Inter_700Bold" }]}>
+                    {discoveryStats?.roasteryCount ?? 0}
+                  </Text>
+                  <Text style={[styles.discoveryStatLabel, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                    Röstereien
+                  </Text>
+                </View>
+                <View style={[styles.discoveryStatDivider, { backgroundColor: colors.border }]} />
+                <View style={styles.discoveryStat}>
+                  <Text style={styles.discoveryStatEmoji}>🌍</Text>
+                  <Text style={[styles.discoveryStatValue, { color: colors.text, fontFamily: "Inter_700Bold" }]}>
+                    {discoveryStats?.countryCount ?? 0}
+                  </Text>
+                  <Text style={[styles.discoveryStatLabel, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                    Herkunftsländer
+                  </Text>
+                </View>
+              </View>
+              {discoveryStats?.lastDiscoveredCountry ? (
+                <View style={[styles.discoveryFooter, { borderTopColor: colors.border }]}>
+                  <Text style={[styles.discoveryFooterLabel, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                    Zuletzt entdeckt:
+                  </Text>
+                  <Text style={[styles.discoveryFooterValue, { color: colors.tint, fontFamily: "Inter_600SemiBold" }]}>
+                    {discoveryStats.lastDiscoveredCountry}
+                  </Text>
+                </View>
+              ) : null}
+            </Pressable>
+          )}
           renderItem={({ item }) => (
             <Pressable
               onPress={() => {
@@ -647,6 +720,65 @@ const styles = StyleSheet.create({
   avgDivider: {
     width: 1,
     height: 12,
+  },
+  discoveryCard: {
+    borderWidth: 1,
+    borderTopWidth: 2,
+    padding: 0,
+  },
+  discoveryHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  discoveryLabel: {
+    fontSize: 11,
+    letterSpacing: 1.5,
+  },
+  discoveryStats: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderTopWidth: 1,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+  },
+  discoveryStat: {
+    flex: 1,
+    alignItems: "center",
+    gap: 3,
+  },
+  discoveryStatEmoji: {
+    fontSize: 20,
+    lineHeight: 26,
+  },
+  discoveryStatValue: {
+    fontSize: 22,
+    lineHeight: 26,
+  },
+  discoveryStatLabel: {
+    fontSize: 11,
+    textAlign: "center",
+  },
+  discoveryStatDivider: {
+    width: 1,
+    height: 40,
+    marginHorizontal: 8,
+  },
+  discoveryFooter: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderTopWidth: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    gap: 6,
+  },
+  discoveryFooterLabel: {
+    fontSize: 12,
+  },
+  discoveryFooterValue: {
+    fontSize: 13,
   },
   modalOverlay: {
     flex: 1,
