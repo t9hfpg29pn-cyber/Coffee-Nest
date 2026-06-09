@@ -336,12 +336,14 @@ const PROCESSING_METHODS = [
   { value: "decaf",         label: "Decaf"        },
 ] as const;
 
+// Displayed dark → light so it visually aligns with the Aroma scale above.
+// Stored values are unchanged; only the on-screen order is reversed.
 const ROAST_LEVELS = [
-  { value: "light",        label: "Hell"         },
-  { value: "medium-light", label: "Mittel-\nHell"   },
-  { value: "medium",       label: "Mittel"       },
-  { value: "medium-dark",  label: "Mittel-\nDunkel" },
   { value: "dark",         label: "Dunkel"       },
+  { value: "medium-dark",  label: "Mittel-\nDunkel" },
+  { value: "medium",       label: "Mittel"       },
+  { value: "medium-light", label: "Mittel-\nHell"   },
+  { value: "light",        label: "Hell"         },
 ] as const;
 
 const ROAST_LEVEL_LABELS: Record<string, string> = {
@@ -612,11 +614,16 @@ function RoastLevelPicker({
   const isLowpoly = design === "lowpoly";
   return (
     <View style={{ gap: 10 }}>
-      {!!value && (
-        <Text style={{ color: textColor, fontFamily: "Inter_400Regular", fontSize: 12, opacity: 0.55, textAlign: "right" }}>
-          {ROAST_LEVEL_LABELS[value]}
+      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+        <Text style={{ color: textColor, fontFamily: "Inter_600SemiBold", fontSize: 15 }}>
+          Röstgrad
         </Text>
-      )}
+        {!!value && (
+          <Text style={{ color: textColor, fontFamily: "Inter_400Regular", fontSize: 12, opacity: 0.55 }}>
+            {ROAST_LEVEL_LABELS[value]}
+          </Text>
+        )}
+      </View>
       <View style={{ flexDirection: "row", gap: isLowpoly ? 5 : 8 }}>
         {ROAST_LEVELS.map(({ value: v, label }) => {
           const active = value === v;
@@ -1103,6 +1110,15 @@ export default function CoffeeDetailScreen() {
               surfaceColor={colors.surface}
               aromaIcons
             />
+            <View style={{ height: 1, backgroundColor: colors.border }} />
+            <RoastLevelPicker
+              value={roastLevel}
+              onChange={(v) => { setRoastLevel(v); markChanged(); }}
+              color={colors.tint}
+              textColor={colors.text}
+              borderColor={colors.border}
+              surfaceColor={colors.surface}
+            />
           </View>
         </View>
 
@@ -1175,21 +1191,6 @@ export default function CoffeeDetailScreen() {
             <ProcessingPicker
               value={processingMethod}
               onChange={(v) => { setProcessingMethod(v); markChanged(); }}
-              color={colors.tint}
-              textColor={colors.text}
-              borderColor={colors.border}
-              surfaceColor={colors.surface}
-            />
-          </View>
-        </View>
-
-        {/* ── RÖSTGRAD ──────────────────────────────────────────────────── */}
-        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight, borderRadius: cardExtras.cardRadius }]}>
-          <SectionHeader title="RÖSTGRAD" color={colors.textSecondary} />
-          <View style={{ marginTop: 8 }}>
-            <RoastLevelPicker
-              value={roastLevel}
-              onChange={(v) => { setRoastLevel(v); markChanged(); }}
               color={colors.tint}
               textColor={colors.text}
               borderColor={colors.border}
