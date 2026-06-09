@@ -1156,7 +1156,10 @@ export default function CoffeeDetailScreen() {
           ) : (
             <Text style={{ color: colors.text, fontFamily: "Inter_500Medium", fontSize: 15, lineHeight: 24, marginTop: 8 }}>
               {filledOrigins
-                .map((o) => originNameOf(o) + (o.percentageText ? ` ${o.percentageText}%` : ""))
+                .map((o) => {
+                  const pct = o.percentageText || (filledOrigins.length === 1 ? "100" : "");
+                  return originNameOf(o) + (pct ? ` ${pct}%` : "");
+                })
                 .join("   |   ")}
             </Text>
           )}
