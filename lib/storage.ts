@@ -579,46 +579,63 @@ export async function getFavoriteCountriesByUser(): Promise<FavoriteCountriesByU
 }
 
 export interface TopCoffeeByUser {
-  hase: { name: string; rating: number } | null;
-  dodo: { name: string; rating: number } | null;
+  hase: { name: string; roasteryName: string; rating: number } | null;
+  dodo: { name: string; roasteryName: string; rating: number } | null;
 }
 
 /** Single highest-rated coffee for each user, computed independently. */
 export async function getTopCoffeeByUser(): Promise<TopCoffeeByUser> {
-  const coffees = await getAllCoffees();
-  let hase: TopCoffeeByUser["hase"] = null;
-  let dodo: TopCoffeeByUser["dodo"] = null;
+  const [coffees, roasteries] = await Promise.all([getAllCoffees(), getRoasteries()]);
+  const roMap = new Map(roasteries.map((r) => [r.id, r.name]));
+  let haseC: Coffee | null = null;
+  let dodoC: Coffee | null = null;
   for (const c of coffees) {
-    if (c.haseRating !== null && (hase === null || c.haseRating > hase.rating)) {
-      hase = { name: c.name, rating: c.haseRating };
+    if (c.haseRating !== null && (haseC === null || c.haseRating > (haseC.haseRating ?? -1))) {
+      haseC = c;
     }
-    if (c.dodoRating !== null && (dodo === null || c.dodoRating > dodo.rating)) {
-      dodo = { name: c.name, rating: c.dodoRating };
+    if (c.dodoRating !== null && (dodoC === null || c.dodoRating > (dodoC.dodoRating ?? -1))) {
+      dodoC = c;
     }
   }
-  return { hase, dodo };
+  return {
+    hase: haseC
+      ? { name: haseC.name, roasteryName: roMap.get(haseC.roasteryId) ?? "", rating: haseC.haseRating as number }
+      : null,
+    dodo: dodoC
+      ? { name: dodoC.name, roasteryName: roMap.get(dodoC.roasteryId) ?? "", rating: dodoC.dodoRating as number }
+      : null,
+  };
 }
 
 export interface SharedFavoriteCoffee {
   name: string;
+  roasteryName: string;
   haseRating: number;
   dodoRating: number;
 }
 
 /** The only combined metric: coffee with the highest (Hase + Dodo) / 2. */
 export async function getSharedFavoriteCoffee(): Promise<SharedFavoriteCoffee | null> {
-  const coffees = await getAllCoffees();
-  let best: SharedFavoriteCoffee | null = null;
+  const [coffees, roasteries] = await Promise.all([getAllCoffees(), getRoasteries()]);
+  const roMap = new Map(roasteries.map((r) => [r.id, r.name]));
+  let best: Coffee | null = null;
   let bestAvg = -1;
   for (const c of coffees) {
     if (c.haseRating === null || c.dodoRating === null) continue;
     const avg = (c.haseRating + c.dodoRating) / 2;
     if (avg > bestAvg) {
       bestAvg = avg;
-      best = { name: c.name, haseRating: c.haseRating, dodoRating: c.dodoRating };
+      best = c;
     }
   }
-  return best;
+  return best
+    ? {
+        name: best.name,
+        roasteryName: roMap.get(best.roasteryId) ?? "",
+        haseRating: best.haseRating as number,
+        dodoRating: best.dodoRating as number,
+      }
+    : null;
 }
 
 export interface CategoryCoffeeRef {

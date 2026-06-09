@@ -92,11 +92,12 @@ function RatingInline({
 
 // ─── Profile two-column (Hase | Dodo) block ──────────────────────────────────
 function DuoColumn({
-  iconNode, name, primary, secondaryNode, colors,
+  iconNode, name, primary, roastery, secondaryNode, colors,
 }: {
   iconNode: React.ReactNode;
   name: string;
   primary: string;
+  roastery?: string;
   secondaryNode?: React.ReactNode;
   colors: ThemeColors;
 }) {
@@ -111,6 +112,11 @@ function DuoColumn({
       <Text style={[styles.duoPrimary, { color: colors.text, fontFamily: "Inter_600SemiBold" }]} numberOfLines={1}>
         {primary}
       </Text>
+      {roastery ? (
+        <Text style={[styles.duoRoastery, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]} numberOfLines={1}>
+          {roastery}
+        </Text>
+      ) : null}
       {secondaryNode}
     </View>
   );
@@ -268,7 +274,6 @@ export default function DiscoveriesScreen() {
     (c) => KNOWN_COUNTRIES.includes(c as typeof KNOWN_COUNTRIES[number])
   );
   const totalDiscovered = discoveredCountries.length;
-  const progress = Math.min(totalDiscovered / TOTAL_KNOWN, 1);
   const lastDiscovered =
     stats?.lastDiscoveredCountry ??
     (discoveredCountries.length > 0
@@ -294,6 +299,19 @@ export default function DiscoveriesScreen() {
     favCountries?.hase ||
     topByUser?.hase ||
     (user2active && (favCountries?.dodo || topByUser?.dodo || sharedFav))
+  );
+
+  // Smart per-user comparisons: collapse identical Hase/Dodo results into a
+  // single shared insight, otherwise show both side by side.
+  const haseCountry = favCountries?.hase ?? null;
+  const dodoCountry = user2active ? (favCountries?.dodo ?? null) : null;
+  const sameCountry = !!(user2active && haseCountry && dodoCountry && haseCountry === dodoCountry);
+
+  const haseTop = topByUser?.hase ?? null;
+  const dodoTop = user2active ? (topByUser?.dodo ?? null) : null;
+  const sameTop = !!(
+    user2active && haseTop && dodoTop &&
+    haseTop.name === dodoTop.name && haseTop.roasteryName === dodoTop.roasteryName
   );
 
   const cardStyle = [
@@ -337,7 +355,7 @@ export default function DiscoveriesScreen() {
         contentContainerStyle={{ padding: 20, paddingBottom: bottomPad + 32, gap: 16 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* ── HERKUNFTSLÄNDER ───────────────────────────────────────── */}
+        {/* ── HERKUNFTSLÄNDER (reduzierte Übersicht) ─────────────────── */}
         <View style={cardStyle}>
           <PolyCornerCut />
           <View style={styles.sectionHeader}>
@@ -345,33 +363,7 @@ export default function DiscoveriesScreen() {
               HERKUNFTSLÄNDER
             </Text>
             <Text style={[styles.sectionCount, { color: colors.tint, fontFamily: "Inter_700Bold" }]}>
-              {totalDiscovered} {totalDiscovered === 1 ? "Land" : "Länder"} entdeckt
-            </Text>
-          </View>
-
-          <View style={[styles.progressSection, { borderTopColor: colors.border }]}>
-            <View style={styles.progressHeader}>
-              <Text style={[styles.progressLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
-                Fortschritt
-              </Text>
-              <Text style={[styles.progressValue, { color: colors.text, fontFamily: "Inter_600SemiBold" }]}>
-                {totalDiscovered} von {TOTAL_KNOWN} Ländern
-              </Text>
-            </View>
-            <View style={[styles.progressTrack, { backgroundColor: colors.surface }]}>
-              <View
-                style={[
-                  styles.progressFill,
-                  {
-                    width: `${Math.round(progress * 100)}%` as any,
-                    backgroundColor: colors.tint,
-                    borderRadius: isLowpoly ? 2 : 4,
-                  },
-                ]}
-              />
-            </View>
-            <Text style={[styles.progressPct, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
-              {Math.round(progress * 100)} %
+              {mapDiscoveredCount} von {TOTAL_KNOWN}
             </Text>
           </View>
 
@@ -439,7 +431,7 @@ export default function DiscoveriesScreen() {
               favoriteDodo={user2active ? (favCountries?.dodo ?? null) : null}
               onSelectCountry={openCountry}
               colors={mapColors}
-              height={300}
+              height={360}
               highlightCountry={highlightCountry}
               onHighlightComplete={() => setHighlightCountry(null)}
             />
@@ -499,105 +491,190 @@ export default function DiscoveriesScreen() {
             </View>
           ) : (
             <View style={{ borderTopWidth: 1, borderTopColor: colors.border }}>
-              {/* LIEBLINGSLÄNDER */}
-              <View style={styles.profileBlock}>
-                <Text style={[styles.blockLabel, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
-                  LIEBLINGSLÄNDER
-                </Text>
-                <View style={styles.duoRow}>
-                  <DuoColumn
-                    iconNode={<HaseIcon size={18} color={colors.tint} />}
-                    name={name1}
-                    primary={favCountries?.hase ?? "—"}
-                    colors={colors}
-                  />
-                  {user2active && (
-                    <>
-                      <View style={[styles.duoDivider, { backgroundColor: colors.border }]} />
-                      <DuoColumn
-                        iconNode={<DodoIcon size={18} color={colors.tint} />}
-                        name={name2}
-                        primary={favCountries?.dodo ?? "—"}
-                        colors={colors}
-                      />
-                    </>
-                  )}
-                </View>
-              </View>
-
-              {/* SPITZENREITER */}
-              <View style={[styles.profileBlock, { borderTopWidth: 1, borderTopColor: colors.border }]}>
-                <Text style={[styles.blockLabel, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
-                  SPITZENREITER
-                </Text>
-                <View style={styles.duoRow}>
-                  <DuoColumn
-                    iconNode={<HaseIcon size={18} color={colors.tint} />}
-                    name={name1}
-                    primary={topByUser?.hase?.name ?? "—"}
-                    colors={colors}
-                    secondaryNode={
-                      topByUser?.hase ? (
-                        <Text style={[styles.duoSecondary, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
-                          Wertung{" "}
-                          <Text style={{ color: colors.tint, fontFamily: "Inter_700Bold" }}>
-                            {topByUser.hase.rating}
-                          </Text>
-                        </Text>
-                      ) : undefined
-                    }
-                  />
-                  {user2active && (
-                    <>
-                      <View style={[styles.duoDivider, { backgroundColor: colors.border }]} />
-                      <DuoColumn
-                        iconNode={<DodoIcon size={18} color={colors.tint} />}
-                        name={name2}
-                        primary={topByUser?.dodo?.name ?? "—"}
-                        colors={colors}
-                        secondaryNode={
-                          topByUser?.dodo ? (
-                            <Text style={[styles.duoSecondary, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
-                              Wertung{" "}
-                              <Text style={{ color: colors.tint, fontFamily: "Inter_700Bold" }}>
-                                {topByUser.dodo.rating}
-                              </Text>
-                            </Text>
-                          ) : undefined
-                        }
-                      />
-                    </>
-                  )}
-                </View>
-              </View>
-
-              {/* GEMEINSAMER FAVORIT */}
+              {/* GEMEINSAMER FAVORIT — Mittelpunkt des Profils */}
               {user2active && sharedFav && (
-                <View style={[styles.profileBlock, { borderTopWidth: 1, borderTopColor: colors.border }]}>
-                  <Text style={[styles.blockLabel, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
-                    GEMEINSAMER FAVORIT
-                  </Text>
-                  <Text style={[styles.sharedName, { color: colors.text, fontFamily: "Inter_700Bold" }]} numberOfLines={1}>
-                    {sharedFav.name}
-                  </Text>
-                  <View style={styles.sharedRatings}>
-                    <View style={styles.sharedRatingItem}>
-                      <HaseIcon size={16} color={colors.tint} />
-                      <Text style={[styles.ratingText, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
-                        {name1}{" "}
-                        <Text style={{ color: colors.tint, fontFamily: "Inter_700Bold" }}>{sharedFav.haseRating}</Text>
+                <View style={styles.heroWrap}>
+                  <View
+                    style={[
+                      styles.heroCard,
+                      {
+                        backgroundColor: colors.surface,
+                        borderColor: colors.tint,
+                        borderRadius: isLowpoly ? 4 : 14,
+                      },
+                    ]}
+                  >
+                    <Text style={[styles.heroLabel, { color: colors.tint, fontFamily: "Inter_700Bold" }]}>
+                      GEMEINSAMER FAVORIT
+                    </Text>
+                    <Text style={[styles.heroName, { color: colors.text, fontFamily: "Inter_700Bold" }]} numberOfLines={2}>
+                      {sharedFav.name}
+                    </Text>
+                    {sharedFav.roasteryName ? (
+                      <Text style={[styles.heroRoastery, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]} numberOfLines={1}>
+                        {sharedFav.roasteryName}
                       </Text>
-                    </View>
-                    <View style={styles.sharedRatingItem}>
-                      <DodoIcon size={16} color={colors.tint} />
-                      <Text style={[styles.ratingText, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
-                        {name2}{" "}
-                        <Text style={{ color: colors.tint, fontFamily: "Inter_700Bold" }}>{sharedFav.dodoRating}</Text>
-                      </Text>
+                    ) : null}
+                    <View style={styles.heroRatings}>
+                      <View style={styles.heroRatingItem}>
+                        <HaseIcon size={18} color={colors.tint} />
+                        <Text style={[styles.heroRatingText, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                          {name1}{" "}
+                          <Text style={{ color: colors.tint, fontFamily: "Inter_700Bold" }}>{sharedFav.haseRating}</Text>
+                        </Text>
+                      </View>
+                      <View style={styles.heroRatingItem}>
+                        <DodoIcon size={18} color={colors.tint} />
+                        <Text style={[styles.heroRatingText, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                          {name2}{" "}
+                          <Text style={{ color: colors.tint, fontFamily: "Inter_700Bold" }}>{sharedFav.dodoRating}</Text>
+                        </Text>
+                      </View>
                     </View>
                   </View>
                 </View>
               )}
+
+              {/* LIEBLINGSLAND / LIEBLINGSLÄNDER */}
+              <View
+                style={[
+                  styles.profileBlock,
+                  user2active && sharedFav ? { borderTopWidth: 1, borderTopColor: colors.border } : null,
+                ]}
+              >
+                {sameCountry ? (
+                  <View style={styles.centerInsight}>
+                    <Text style={[styles.blockLabelCenter, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
+                      GEMEINSAMES LIEBLINGSLAND
+                    </Text>
+                    <View style={styles.centerIcons}>
+                      <HaseIcon size={18} color={colors.tint} />
+                      <DodoIcon size={18} color={colors.tint} />
+                    </View>
+                    <Text style={[styles.centerPrimary, { color: colors.text, fontFamily: "Inter_600SemiBold" }]} numberOfLines={1}>
+                      {haseCountry}
+                    </Text>
+                  </View>
+                ) : !user2active ? (
+                  <View style={styles.centerInsight}>
+                    <Text style={[styles.blockLabelCenter, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
+                      LIEBLINGSLAND
+                    </Text>
+                    <Text style={[styles.centerPrimary, { color: colors.text, fontFamily: "Inter_600SemiBold" }]} numberOfLines={1}>
+                      {haseCountry ?? "—"}
+                    </Text>
+                  </View>
+                ) : (
+                  <>
+                    <Text style={[styles.blockLabel, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
+                      LIEBLINGSLÄNDER
+                    </Text>
+                    <View style={styles.duoRow}>
+                      <DuoColumn
+                        iconNode={<HaseIcon size={18} color={colors.tint} />}
+                        name={name1}
+                        primary={haseCountry ?? "—"}
+                        colors={colors}
+                      />
+                      <View style={[styles.duoDivider, { backgroundColor: colors.border }]} />
+                      <DuoColumn
+                        iconNode={<DodoIcon size={18} color={colors.tint} />}
+                        name={name2}
+                        primary={dodoCountry ?? "—"}
+                        colors={colors}
+                      />
+                    </View>
+                  </>
+                )}
+              </View>
+
+              {/* SPITZENREITER */}
+              <View style={[styles.profileBlock, { borderTopWidth: 1, borderTopColor: colors.border }]}>
+                {sameTop && haseTop && dodoTop ? (
+                  <View style={styles.centerInsight}>
+                    <Text style={[styles.blockLabelCenter, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
+                      GEMEINSAMER SPITZENREITER
+                    </Text>
+                    <Text style={[styles.centerPrimary, { color: colors.text, fontFamily: "Inter_600SemiBold" }]} numberOfLines={2}>
+                      {haseTop.name}
+                    </Text>
+                    {haseTop.roasteryName ? (
+                      <Text style={[styles.centerRoastery, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]} numberOfLines={1}>
+                        {haseTop.roasteryName}
+                      </Text>
+                    ) : null}
+                    <View style={styles.centerRatings}>
+                      <Text style={[styles.heroRatingText, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                        {name1}{" "}
+                        <Text style={{ color: colors.tint, fontFamily: "Inter_700Bold" }}>{haseTop.rating}</Text>
+                      </Text>
+                      <Text style={[styles.heroRatingText, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                        {name2}{" "}
+                        <Text style={{ color: colors.tint, fontFamily: "Inter_700Bold" }}>{dodoTop.rating}</Text>
+                      </Text>
+                    </View>
+                  </View>
+                ) : !user2active ? (
+                  <View style={styles.centerInsight}>
+                    <Text style={[styles.blockLabelCenter, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
+                      SPITZENREITER
+                    </Text>
+                    <Text style={[styles.centerPrimary, { color: colors.text, fontFamily: "Inter_600SemiBold" }]} numberOfLines={2}>
+                      {haseTop?.name ?? "—"}
+                    </Text>
+                    {haseTop?.roasteryName ? (
+                      <Text style={[styles.centerRoastery, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]} numberOfLines={1}>
+                        {haseTop.roasteryName}
+                      </Text>
+                    ) : null}
+                    {haseTop ? (
+                      <Text style={[styles.centerSecondary, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                        Wertung{" "}
+                        <Text style={{ color: colors.tint, fontFamily: "Inter_700Bold" }}>{haseTop.rating}</Text>
+                      </Text>
+                    ) : null}
+                  </View>
+                ) : (
+                  <>
+                    <Text style={[styles.blockLabel, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
+                      SPITZENREITER
+                    </Text>
+                    <View style={styles.duoRow}>
+                      <DuoColumn
+                        iconNode={<HaseIcon size={18} color={colors.tint} />}
+                        name={name1}
+                        primary={haseTop?.name ?? "—"}
+                        roastery={haseTop?.roasteryName}
+                        colors={colors}
+                        secondaryNode={
+                          haseTop ? (
+                            <Text style={[styles.duoSecondary, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                              Wertung{" "}
+                              <Text style={{ color: colors.tint, fontFamily: "Inter_700Bold" }}>{haseTop.rating}</Text>
+                            </Text>
+                          ) : undefined
+                        }
+                      />
+                      <View style={[styles.duoDivider, { backgroundColor: colors.border }]} />
+                      <DuoColumn
+                        iconNode={<DodoIcon size={18} color={colors.tint} />}
+                        name={name2}
+                        primary={dodoTop?.name ?? "—"}
+                        roastery={dodoTop?.roasteryName}
+                        colors={colors}
+                        secondaryNode={
+                          dodoTop ? (
+                            <Text style={[styles.duoSecondary, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                              Wertung{" "}
+                              <Text style={{ color: colors.tint, fontFamily: "Inter_700Bold" }}>{dodoTop.rating}</Text>
+                            </Text>
+                          ) : undefined
+                        }
+                      />
+                    </View>
+                  </>
+                )}
+              </View>
             </View>
           )}
         </View>
@@ -902,23 +979,8 @@ const styles = StyleSheet.create({
   sectionLabel: { fontSize: 11, letterSpacing: 1.5 },
   sectionCount: { fontSize: 15 },
   sectionSubtitle: { fontSize: 13, marginTop: 3 },
-  progressSection: {
-    borderTopWidth: 1,
-    paddingHorizontal: 16,
-    paddingTop: 14,
-    paddingBottom: 16,
-    gap: 8,
-  },
-  progressHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  progressLabel: { fontSize: 12, letterSpacing: 0.4 },
-  progressValue: { fontSize: 13 },
   progressTrack: { height: 8, borderRadius: 4, overflow: "hidden" },
   progressFill: { height: "100%" },
-  progressPct: { fontSize: 12, textAlign: "right" },
   emptyRow: {
     borderTopWidth: 1,
     paddingHorizontal: 16,
@@ -946,11 +1008,34 @@ const styles = StyleSheet.create({
   duoName: { fontSize: 12, letterSpacing: 0.3, flexShrink: 1 },
   duoPrimary: { fontSize: 17 },
   duoSecondary: { fontSize: 12, marginTop: 1 },
+  duoRoastery: { fontSize: 12, marginTop: 1 },
   duoDivider: { width: 1, marginHorizontal: 14 },
-  sharedName: { fontSize: 20, marginBottom: 10 },
-  sharedRatings: { flexDirection: "row", alignItems: "center", gap: 18 },
-  sharedRatingItem: { flexDirection: "row", alignItems: "center", gap: 6 },
-  ratingText: { fontSize: 13 },
+
+  // Gemeinsamer Favorit — hero
+  heroWrap: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 2 },
+  heroCard: {
+    borderWidth: 1.5,
+    borderTopWidth: 2,
+    alignItems: "center",
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+    gap: 5,
+  },
+  heroLabel: { fontSize: 11, letterSpacing: 1.5, textAlign: "center", marginBottom: 2 },
+  heroName: { fontSize: 24, lineHeight: 30, textAlign: "center" },
+  heroRoastery: { fontSize: 14, textAlign: "center" },
+  heroRatings: { flexDirection: "row", alignItems: "center", gap: 24, marginTop: 10 },
+  heroRatingItem: { flexDirection: "row", alignItems: "center", gap: 6 },
+  heroRatingText: { fontSize: 14 },
+
+  // Merged / single insight (centered)
+  centerInsight: { alignItems: "center", gap: 5 },
+  blockLabelCenter: { fontSize: 11, letterSpacing: 1.5, textAlign: "center", marginBottom: 2 },
+  centerIcons: { flexDirection: "row", alignItems: "center", gap: 8 },
+  centerPrimary: { fontSize: 19, textAlign: "center" },
+  centerRoastery: { fontSize: 13, textAlign: "center" },
+  centerSecondary: { fontSize: 13, textAlign: "center", marginTop: 2 },
+  centerRatings: { flexDirection: "row", alignItems: "center", gap: 20, marginTop: 4 },
 
   // AROMEN / AUFBEREITUNGEN grid
   categoryGrid: {

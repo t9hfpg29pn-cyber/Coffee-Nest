@@ -1,0 +1,234 @@
+Verfeinere die Entdeckungsseite von Coffee Nest.
+
+WICHTIG:
+
+Keine neuen Funktionen hinzufügen.
+
+Keine neuen Seiten hinzufügen.
+
+Keine Änderungen am Datenmodell.
+
+Ziel:
+
+Redundanzen reduzieren.
+
+Wichtige Informationen stärker hervorheben.
+
+Die Seite soll sich mehr wie ein persönliches Kaffee-Journal und weniger wie ein Dashboard anfühlen.
+
+==================================================
+
+1. HERKUNFTSLÄNDER + KAFFEEWELT ZUSAMMENFASSEN
+   ==================================================
+
+Aktuell zeigen beide Bereiche ähnliche Informationen:
+
+* Anzahl entdeckter Länder
+* Fortschritt
+* letzte Entdeckung
+
+Dadurch entsteht Redundanz.
+
+---
+
+Neues Ziel:
+
+KAFFEEWELT wird zum Hauptbereich.
+
+Der obere Bereich HERKUNFTSLÄNDER soll deutlich reduziert werden.
+
+Darstellen:
+
+* X von 20 Herkunftsländern entdeckt
+* Zuletzt entdeckt: [Land]
+
+Keine eigene Fortschrittsanzeige mehr.
+
+Kein doppelter Prozentwert.
+
+Kein zweiter Fortschrittsbalken.
+
+---
+
+Die Fortschrittsanzeige soll ausschließlich im Bereich KAFFEEWELT erscheinen.
+
+KAFFEEWELT wird damit die zentrale Visualisierung der Entdeckungen.
+
+==================================================
+2. KAFFEEWELT STÄRKER GEWICHTEN
+===============================
+
+Die Karte ist der wichtigste Bestandteil der Entdeckungsseite.
+
+---
+
+Karte visuell stärker hervorheben:
+
+* etwas mehr Höhe
+* etwas mehr Innenabstand
+* Fokus auf die Länder
+
+---
+
+Die Karte soll sich wie ein persönlicher Entdecker-Atlas anfühlen.
+
+==================================================
+3. GEMEINSAMER FAVORIT HERVORHEBEN
+==================================
+
+Aktuell wird der gemeinsame Favorit ähnlich behandelt wie andere Informationen.
+
+---
+
+Der gemeinsame Favorit soll der visuelle Mittelpunkt des Kaffeeprofils werden.
+
+Darstellung:
+
+GEMEINSAMER FAVORIT
+
+Yirgacheffe
+Roestbar
+
+Hase 9
+Dodo 6
+
+---
+
+Inhalt zentriert darstellen.
+
+Nicht linksbündig.
+
+Die Karte darf größer sein als die übrigen Profilkarten.
+
+---
+
+Ziel:
+
+Die Übereinstimmung zwischen Hase und Dodo soll sichtbar gefeiert werden.
+
+==================================================
+4. RÖSTEREI IMMER ANZEIGEN
+==========================
+
+Aktuell ist der Kaffeename allein nicht immer eindeutig.
+
+Beispiel:
+
+Yirgacheffe
+
+kann bei mehreren Röstereien vorkommen.
+
+---
+
+Bei folgenden Bereichen zusätzlich immer die Rösterei anzeigen:
+
+* Gemeinsamer Favorit
+* Hases Spitzenreiter
+* Dodos Spitzenreiter
+
+Beispiel:
+
+Yirgacheffe
+
+Roestbar
+
+Hase 9
+
+---
+
+Die Rösterei visuell kleiner darstellen als den Kaffeenamen.
+
+Sekundäre Information.
+
+==================================================
+5. IDENTISCHE ERGEBNISSE INTELLIGENT DARSTELLEN
+===============================================
+
+Bei realen Daten kann Hase und Dodo unterschiedliche Favoriten haben.
+
+Falls jedoch dieselben Ergebnisse auftreten:
+
+Beispiel:
+
+Lieblingsland
+
+Hase: Äthiopien
+Dodo: Äthiopien
+
+---
+
+Dann keine zwei identischen Werte nebeneinander anzeigen.
+
+Stattdessen:
+
+Gemeinsames Lieblingsland
+
+Äthiopien
+
+---
+
+Nur wenn die Ergebnisse unterschiedlich sind:
+
+Hase | Dodo
+
+Äthiopien | Brasilien
+
+anzeigen.
+
+==================================================
+6. PROFIL VON STATISTIK ZU ERKENNTNIS
+=====================================
+
+Ziel:
+
+Das Kaffeeprofil soll keine Datentabelle sein.
+
+---
+
+Jede Karte soll eine kleine Erkenntnis vermitteln.
+
+Beispiele:
+
+Gemeinsamer Favorit
+
+Gemeinsames Lieblingsland
+
+Hases Favorit
+
+Dodos Favorit
+
+---
+
+Weniger Kennzahlen.
+
+Mehr Bedeutung.
+
+==================================================
+7. DESIGN
+=========
+
+Beibehalten:
+
+* Low-Poly Stil
+* bestehende Farben
+* bestehende Icons
+* bestehende Typografie
+
+Keine Emojis.
+
+Keine Tabellenoptik.
+
+Keine zusätzlichen Statistik-Widgets.
+
+==================================================
+ABSCHLUSS
+=========
+
+1. Build durchführen
+2. TypeScript Fehler beheben
+3. Mobile Ansicht prüfen
+4. iPhone-PWA prüfen
+5. Profil mit identischen und unterschiedlichen Favoriten testen
+6. Darstellung mit realen Datenbeständen (20+ Kaffees) prüfen
+7. Sicherstellen, dass die Seite weniger redundant wirkt als vorher
+8. Sicherstellen, dass der gemeinsame Favorit sofort ins Auge fällt
