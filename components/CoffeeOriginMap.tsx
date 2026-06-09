@@ -11,6 +11,7 @@ import Animated, {
   runOnJS,
 } from "react-native-reanimated";
 import type { MapRegionData } from "@/constants/coffeeMap";
+import { HaseGlyph, DodoGlyph } from "@/components/CoffeeIcons";
 
 const AnimatedG = Animated.createAnimatedComponent(G);
 
@@ -21,30 +22,21 @@ const DOUBLE_TAP_ZOOM = 2.4;
 export interface CoffeeOriginMapColors {
   discovered: string;
   undiscovered: string;
-  favorite: string;
   stroke: string;
   labelOnDiscovered: string;
   labelOnUndiscovered: string;
-  star: string;
+  marker: string;
   regionBg: string;
   regionLabel: string;
-}
-
-/** Five-point star polygon points centred at (cx, cy). */
-function starPoints(cx: number, cy: number, r: number): string {
-  const pts: string[] = [];
-  for (let i = 0; i < 10; i++) {
-    const radius = i % 2 === 0 ? r : r * 0.42;
-    const a = (Math.PI / 180) * (36 * i - 90);
-    pts.push(`${(cx + radius * Math.cos(a)).toFixed(1)},${(cy + radius * Math.sin(a)).toFixed(1)}`);
-  }
-  return pts.join(" ");
 }
 
 interface Props {
   data: MapRegionData;
   discovered: Set<string>;
-  favorite: string | null;
+  /** Country (id) that is the Hase favourite — gets a small rabbit marker. */
+  favoriteHase: string | null;
+  /** Country (id) that is the Dodo favourite — gets a small dodo marker. */
+  favoriteDodo: string | null;
   onSelectCountry: (country: string) => void;
   colors: CoffeeOriginMapColors;
   height?: number;
@@ -61,7 +53,8 @@ function clamp(v: number, min: number, max: number): number {
 export function CoffeeOriginMap({
   data,
   discovered,
-  favorite,
+  favoriteHase,
+  favoriteDodo,
   onSelectCountry,
   colors,
   height = 300,
@@ -201,12 +194,7 @@ export function CoffeeOriginMap({
 
             {data.countries.map((c) => {
               const isDiscovered = discovered.has(c.id);
-              const isFavorite = favorite === c.id;
-              const fill = isFavorite
-                ? colors.favorite
-                : isDiscovered
-                ? colors.discovered
-                : colors.undiscovered;
+              const fill = isDiscovered ? colors.discovered : colors.undiscovered;
               const labelColor = isDiscovered
                 ? colors.labelOnDiscovered
                 : colors.labelOnUndiscovered;
@@ -216,12 +204,12 @@ export function CoffeeOriginMap({
                     points={c.points}
                     fill={fill}
                     stroke={colors.stroke}
-                    strokeWidth={isFavorite ? 2.5 : 1.5}
+                    strokeWidth={1.5}
                     strokeLinejoin="round"
                   />
                   <SvgText
                     x={c.labelX}
-                    y={c.labelY + (isFavorite ? 6 : 4)}
+                    y={c.labelY + 4}
                     fill={labelColor}
                     fontSize={c.small ? 14 : 17}
                     fontWeight="700"
@@ -229,15 +217,6 @@ export function CoffeeOriginMap({
                   >
                     {c.name}
                   </SvgText>
-                  {isFavorite && (
-                    <Polygon
-                      points={starPoints(c.labelX, c.labelY - (c.small ? 16 : 20), c.small ? 8 : 10)}
-                      fill={colors.star}
-                      stroke={colors.star}
-                      strokeWidth={1}
-                      strokeLinejoin="round"
-                    />
-                  )}
                 </G>
               );
             })}
@@ -258,16 +237,44 @@ export function CoffeeOriginMap({
               </SvgText>
             ))}
 
+            {data.countries.map((c) => {
+              const isHase = favoriteHase === c.id;
+              const isDodo = favoriteDodo === c.id;
+              if (!isHase && !isDodo) return null;
+              const sz = c.small ? 16 : 19;
+              const my = c.labelY - (c.small ? 19 : 24);
+              const place = (px: number) =>
+                `translate(${(px - sz / 2).toFixed(1)} ${(my - sz / 2).toFixed(1)}) scale(${(sz / 28).toFixed(3)})`;
+              return (
+                <G key={`marker-${c.id}`} pointerEvents="none">
+                  {isHase && isDodo ? (
+                    <>
+                      <G transform={place(c.labelX - sz / 2 - 1)}>
+                        <HaseGlyph color={colors.marker} />
+                      </G>
+                      <G transform={place(c.labelX + sz / 2 + 1)}>
+                        <DodoGlyph color={colors.marker} />
+                      </G>
+                    </>
+                  ) : isHase ? (
+                    <G transform={place(c.labelX)}>
+                      <HaseGlyph color={colors.marker} />
+                    </G>
+                  ) : (
+                    <G transform={place(c.labelX)}>
+                      <DodoGlyph color={colors.marker} />
+                    </G>
+                  )}
+                </G>
+              );
+            })}
+
             {highlightData && (
               <AnimatedG animatedProps={highlightProps} pointerEvents="none">
                 <Polygon
                   points={highlightData.points}
-                  fill={
-                    favorite === highlightData.id
-                      ? colors.favorite
-                      : colors.discovered
-                  }
-                  stroke={colors.star}
+                  fill={colors.discovered}
+                  stroke={colors.marker}
                   strokeWidth={2.5}
                   strokeLinejoin="round"
                 />

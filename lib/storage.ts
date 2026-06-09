@@ -537,6 +537,154 @@ export async function getCoffeeInsights(): Promise<CoffeeInsights> {
   return { favoriteCountry, favoriteAroma, favoriteRoastLevel, favoriteGrinder, topCoffee };
 }
 
+// ─── Per-user discovery analytics (Hase / Dodo) ──────────────────────────────
+// These keep the two raters strictly separate — no shared averaging — except for
+// getSharedFavoriteCoffee(), which is the single intentional combined metric.
+
+export interface FavoriteCountriesByUser {
+  hase: string | null;
+  dodo: string | null;
+}
+
+/** Country with the highest average Hase-score / Dodo-score, computed per user. */
+export async function getFavoriteCountriesByUser(): Promise<FavoriteCountriesByUser> {
+  const coffees = await getAllCoffees();
+  const haseScores: Record<string, { total: number; count: number }> = {};
+  const dodoScores: Record<string, { total: number; count: number }> = {};
+  for (const c of coffees) {
+    for (const o of c.origins ?? []) {
+      if (!o.country) continue;
+      if (c.haseRating !== null) {
+        if (!haseScores[o.country]) haseScores[o.country] = { total: 0, count: 0 };
+        haseScores[o.country].total += c.haseRating;
+        haseScores[o.country].count += 1;
+      }
+      if (c.dodoRating !== null) {
+        if (!dodoScores[o.country]) dodoScores[o.country] = { total: 0, count: 0 };
+        dodoScores[o.country].total += c.dodoRating;
+        dodoScores[o.country].count += 1;
+      }
+    }
+  }
+  const best = (scores: Record<string, { total: number; count: number }>): string | null => {
+    let bestCountry: string | null = null;
+    let bestAvg = -1;
+    for (const [country, { total, count }] of Object.entries(scores)) {
+      const avg = total / count;
+      if (avg > bestAvg) { bestAvg = avg; bestCountry = country; }
+    }
+    return bestCountry;
+  };
+  return { hase: best(haseScores), dodo: best(dodoScores) };
+}
+
+export interface TopCoffeeByUser {
+  hase: { name: string; rating: number } | null;
+  dodo: { name: string; rating: number } | null;
+}
+
+/** Single highest-rated coffee for each user, computed independently. */
+export async function getTopCoffeeByUser(): Promise<TopCoffeeByUser> {
+  const coffees = await getAllCoffees();
+  let hase: TopCoffeeByUser["hase"] = null;
+  let dodo: TopCoffeeByUser["dodo"] = null;
+  for (const c of coffees) {
+    if (c.haseRating !== null && (hase === null || c.haseRating > hase.rating)) {
+      hase = { name: c.name, rating: c.haseRating };
+    }
+    if (c.dodoRating !== null && (dodo === null || c.dodoRating > dodo.rating)) {
+      dodo = { name: c.name, rating: c.dodoRating };
+    }
+  }
+  return { hase, dodo };
+}
+
+export interface SharedFavoriteCoffee {
+  name: string;
+  haseRating: number;
+  dodoRating: number;
+}
+
+/** The only combined metric: coffee with the highest (Hase + Dodo) / 2. */
+export async function getSharedFavoriteCoffee(): Promise<SharedFavoriteCoffee | null> {
+  const coffees = await getAllCoffees();
+  let best: SharedFavoriteCoffee | null = null;
+  let bestAvg = -1;
+  for (const c of coffees) {
+    if (c.haseRating === null || c.dodoRating === null) continue;
+    const avg = (c.haseRating + c.dodoRating) / 2;
+    if (avg > bestAvg) {
+      bestAvg = avg;
+      best = { name: c.name, haseRating: c.haseRating, dodoRating: c.dodoRating };
+    }
+  }
+  return best;
+}
+
+export interface CategoryCoffeeRef {
+  id: string;
+  name: string;
+  haseRating: number | null;
+  dodoRating: number | null;
+}
+
+export interface CategoryDiscovery {
+  key: string;
+  label: string;
+  count: number;
+  bestCoffee: CategoryCoffeeRef | null;
+  coffees: CategoryCoffeeRef[];
+}
+
+const AROMA_CATEGORIES: { value: number; label: string }[] = [
+  { value: 1, label: "Schokoladig" },
+  { value: 2, label: "Nussig" },
+  { value: 3, label: "Klassisch" },
+  { value: 4, label: "Beerig" },
+  { value: 5, label: "Zitrisch" },
+];
+
+const PROCESSING_CATEGORIES: { value: string; label: string }[] = [
+  { value: "washed",       label: "Washed" },
+  { value: "natural",      label: "Natural" },
+  { value: "honey",        label: "Honey" },
+  { value: "anaerobic",    label: "Anaerobic" },
+  { value: "experimental", label: "Experimental" },
+];
+
+// "Best" is ranked by the single highest individual rating (max of Hase/Dodo),
+// never a combined average — (Hase + Dodo) / 2 lives only in
+// getSharedFavoriteCoffee().
+function buildCategoryDiscovery(key: string, label: string, matching: Coffee[]): CategoryDiscovery {
+  const scored = matching.map((c) => {
+    const vals = [c.haseRating, c.dodoRating].filter((v): v is number => v !== null);
+    const score = vals.length ? Math.max(...vals) : -1;
+    const ref: CategoryCoffeeRef = {
+      id: c.id, name: c.name, haseRating: c.haseRating, dodoRating: c.dodoRating,
+    };
+    return { ref, score };
+  });
+  scored.sort((a, b) => b.score - a.score);
+  const bestCoffee = scored.length > 0 && scored[0].score >= 0 ? scored[0].ref : null;
+  return { key, label, count: matching.length, bestCoffee, coffees: scored.map((s) => s.ref) };
+}
+
+/** Discovery stats for each of the five aroma categories (always all five). */
+export async function getAromaDiscoveryStats(): Promise<CategoryDiscovery[]> {
+  const coffees = await getAllCoffees();
+  return AROMA_CATEGORIES.map(({ value, label }) =>
+    buildCategoryDiscovery(String(value), label, coffees.filter((c) => c.aroma === value))
+  );
+}
+
+/** Discovery stats for each of the five processing categories (always all five). */
+export async function getProcessingDiscoveryStats(): Promise<CategoryDiscovery[]> {
+  const coffees = await getAllCoffees();
+  return PROCESSING_CATEGORIES.map(({ value, label }) =>
+    buildCategoryDiscovery(value, label, coffees.filter((c) => c.processingMethod === value))
+  );
+}
+
 export interface DiscoveryStats {
   coffeeCount: number;
   roasteryCount: number;

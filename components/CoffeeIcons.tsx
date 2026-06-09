@@ -1,5 +1,5 @@
 import React from "react";
-import Svg, { Path, Circle, Line, Rect, G, Polygon, ClipPath, Defs } from "react-native-svg";
+import Svg, { Path, Circle, Line, Rect, G, Polygon, Ellipse, ClipPath, Defs } from "react-native-svg";
 
 /**
  * Coffee Nest icon family.
@@ -343,6 +343,48 @@ export function OriginPinIcon({ size = 26, color }: IconProps) {
       <Path d="M14,3 C9,3 5.5,6.5 5.5,11.5 C5.5,17 14,25 14,25 C14,25 22.5,17 22.5,11.5 C22.5,6.5 19,3 14,3 Z" {...p} />
       {/* little bean inside */}
       <Path d="M14,8 C16.3,8 17,10 17,11.8 C17,13.6 16.3,15.5 14,15.5 C11.7,15.5 11,13.6 11,11.8 C11,10 11.7,8 14,8 Z" {...pt} />
+    </Svg>
+  );
+}
+
+// ─── Hase / Dodo (the two raters) ────────────────────────────────────────────
+// Minimal filled silhouettes so they stay legible as small map markers.
+// `*Glyph` returns bare SVG nodes (0..28 space) for embedding inside another
+// <Svg> (e.g. the world map); `*Icon` wraps the glyph in its own <Svg>.
+
+export function HaseGlyph({ color }: { color: string }) {
+  return (
+    <G fill={color} stroke="none">
+      <Ellipse cx="10.3" cy="8" rx="2.5" ry="6.2" transform="rotate(-13 10.3 8)" />
+      <Ellipse cx="17.7" cy="8" rx="2.5" ry="6.2" transform="rotate(13 17.7 8)" />
+      <Circle cx="14" cy="18" r="6.9" />
+    </G>
+  );
+}
+
+export function DodoGlyph({ color }: { color: string }) {
+  return (
+    <G fill={color} stroke="none">
+      <Ellipse cx="15.5" cy="18" rx="6.9" ry="6.1" />
+      <Circle cx="10.4" cy="9.6" r="4.3" />
+      <Polygon points="7,8.4 1.9,10.6 7,12.2" />
+      <Polygon points="20.5,14.5 25.5,11.5 23,17" />
+    </G>
+  );
+}
+
+export function HaseIcon({ size = 26, color }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 28 28">
+      <HaseGlyph color={color} />
+    </Svg>
+  );
+}
+
+export function DodoIcon({ size = 26, color }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 28 28">
+      <DodoGlyph color={color} />
     </Svg>
   );
 }

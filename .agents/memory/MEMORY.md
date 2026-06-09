@@ -1,2 +1,3 @@
 - [Verifying Expo web builds](expo-web-verify.md) — screenshot proxy often down; curl the expo-router entry.bundle to confirm a clean 200 build; browser-console errors can be stale.
 - [Grinder data model](grinder-model.md) — grinders are `{name,design}[]` but relations key off grinder NAME string; use `grinders[0].name`, normalize on import.
+- [Hase/Dodo separation](hase-dodo-separation.md) — never average the two raters except getSharedFavoriteCoffee(); gate all user2 data+UI by user2active.

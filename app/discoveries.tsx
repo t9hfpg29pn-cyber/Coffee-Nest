@@ -14,26 +14,33 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import {
   getDiscoveryStats,
-  getCoffeeInsights,
   getCountryDetails,
   getCelebratedCountries,
   setCelebratedCountries,
+  getFavoriteCountriesByUser,
+  getTopCoffeeByUser,
+  getSharedFavoriteCoffee,
+  getAromaDiscoveryStats,
+  getProcessingDiscoveryStats,
   DiscoveryStats,
-  CoffeeInsights,
   CountryDetails,
+  FavoriteCountriesByUser,
+  TopCoffeeByUser,
+  SharedFavoriteCoffee,
+  CategoryDiscovery,
+  CategoryCoffeeRef,
 } from "@/lib/storage";
 import { useThemeColors, useCardExtras, useTheme } from "@/context/ThemeContext";
+import { useUserNames } from "@/context/UserNamesContext";
 import { PolyBackground, PolyCornerCut } from "@/components/PolyBackground";
 import { CoffeeOriginMap } from "@/components/CoffeeOriginMap";
 import { COFFEE_WORLD_MAP } from "@/constants/coffeeMap";
 import {
   AromaIcon,
-  RoastIcon,
-  GlobeIcon,
-  MillIcon,
-  TrophyIcon,
-  StarIcon,
+  ProcessingIcon,
   OriginPinIcon,
+  HaseIcon,
+  DodoIcon,
 } from "@/components/CoffeeIcons";
 import Colors from "@/constants/colors";
 
@@ -46,44 +53,98 @@ const KNOWN_COUNTRIES = [
 
 const TOTAL_KNOWN = KNOWN_COUNTRIES.length;
 
+type ThemeColors = ReturnType<typeof useThemeColors>;
 
-const ROAST_LEVEL_KEY: Record<string, string> = {
-  "Hell": "light",
-  "Mittel-Hell": "medium-light",
-  "Mittel": "medium",
-  "Mittel-Dunkel": "medium-dark",
-  "Dunkel": "dark",
-};
-
-function InsightCard({
-  icon,
-  label,
-  value,
-  valueNode,
-  colors,
-  isLowpoly,
-}: {
-  icon: React.ReactNode;
+type SelectedCategory = {
   label: string;
-  value?: string;
-  valueNode?: React.ReactNode;
-  colors: ReturnType<typeof useThemeColors>;
-  isLowpoly: boolean;
+  icon: React.ReactNode;
+  count: number;
+  coffees: CategoryCoffeeRef[];
+} | null;
+
+// ─── Shared inline Hase/Dodo rating display ──────────────────────────────────
+function RatingInline({
+  name1, name2, hase, dodo, user2active, colors, size = 11,
+}: {
+  name1: string;
+  name2: string;
+  hase: number | null;
+  dodo: number | null;
+  user2active: boolean;
+  colors: ThemeColors;
+  size?: number;
 }) {
   return (
-    <View
-      style={[
-        insightCardStyles.card,
+    <View style={styles.ratingInline}>
+      <Text style={[styles.ratingChip, { fontSize: size, color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+        {name1}{" "}
+        <Text style={{ color: colors.tint, fontFamily: "Inter_700Bold" }}>{hase ?? "–"}</Text>
+      </Text>
+      {user2active && (
+        <Text style={[styles.ratingChip, { fontSize: size, color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+          {name2}{" "}
+          <Text style={{ color: colors.tint, fontFamily: "Inter_700Bold" }}>{dodo ?? "–"}</Text>
+        </Text>
+      )}
+    </View>
+  );
+}
+
+// ─── Profile two-column (Hase | Dodo) block ──────────────────────────────────
+function DuoColumn({
+  iconNode, name, primary, secondaryNode, colors,
+}: {
+  iconNode: React.ReactNode;
+  name: string;
+  primary: string;
+  secondaryNode?: React.ReactNode;
+  colors: ThemeColors;
+}) {
+  return (
+    <View style={styles.duoCol}>
+      <View style={styles.duoHead}>
+        {iconNode}
+        <Text style={[styles.duoName, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]} numberOfLines={1}>
+          {name}
+        </Text>
+      </View>
+      <Text style={[styles.duoPrimary, { color: colors.text, fontFamily: "Inter_600SemiBold" }]} numberOfLines={1}>
+        {primary}
+      </Text>
+      {secondaryNode}
+    </View>
+  );
+}
+
+// ─── Aroma / Aufbereitung collection card ────────────────────────────────────
+function CategoryCard({
+  icon, cat, name1, name2, user2active, colors, isLowpoly, onPress,
+}: {
+  icon: React.ReactNode;
+  cat: CategoryDiscovery;
+  name1: string;
+  name2: string;
+  user2active: boolean;
+  colors: ThemeColors;
+  isLowpoly: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.categoryCard,
         {
           backgroundColor: colors.surface,
           borderColor: colors.border,
           borderRadius: isLowpoly ? 4 : 12,
+          opacity: pressed ? 0.7 : 1,
         },
       ]}
     >
       <View
         style={[
-          insightCardStyles.iconWrap,
+          styles.categoryIconWrap,
           {
             backgroundColor: colors.surfaceElevated,
             borderColor: colors.border,
@@ -93,40 +154,39 @@ function InsightCard({
       >
         {icon}
       </View>
-      <View style={insightCardStyles.textWrap}>
-        <Text style={[insightCardStyles.label, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
-          {label}
-        </Text>
-        {valueNode ?? (
-          <Text style={[insightCardStyles.value, { color: colors.text, fontFamily: "Inter_600SemiBold" }]}>
-            {value}
+      <Text style={[styles.categoryName, { color: colors.text, fontFamily: "Inter_600SemiBold" }]} numberOfLines={1}>
+        {cat.label}
+      </Text>
+      <Text style={[styles.categoryCount, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+        {cat.count} {cat.count === 1 ? "Kaffee" : "Kaffees"}
+      </Text>
+      <View style={[styles.categoryBest, { borderTopColor: colors.border }]}>
+        {cat.bestCoffee ? (
+          <>
+            <Text style={[styles.categoryBestLabel, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
+              BESTER
+            </Text>
+            <Text style={[styles.categoryBestName, { color: colors.text, fontFamily: "Inter_500Medium" }]} numberOfLines={1}>
+              {cat.bestCoffee.name}
+            </Text>
+            <RatingInline
+              name1={name1}
+              name2={name2}
+              hase={cat.bestCoffee.haseRating}
+              dodo={cat.bestCoffee.dodoRating}
+              user2active={user2active}
+              colors={colors}
+            />
+          </>
+        ) : (
+          <Text style={[styles.categoryEmptyText, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+            Noch nicht entdeckt
           </Text>
         )}
       </View>
-    </View>
+    </Pressable>
   );
 }
-
-const insightCardStyles = StyleSheet.create({
-  card: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    gap: 14,
-  },
-  iconWrap: {
-    width: 44,
-    height: 44,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-  },
-  textWrap: { flex: 1, gap: 2 },
-  label: { fontSize: 12, letterSpacing: 0.3 },
-  value: { fontSize: 16 },
-});
 
 export default function DiscoveriesScreen() {
   const insets = useSafeAreaInsets();
@@ -134,11 +194,17 @@ export default function DiscoveriesScreen() {
   const cardExtras = useCardExtras();
   const { design } = useTheme();
   const isLowpoly = design === "lowpoly";
+  const { name1, name2, user2active } = useUserNames();
 
   const [stats, setStats] = useState<DiscoveryStats | null>(null);
-  const [insights, setInsights] = useState<CoffeeInsights | null>(null);
+  const [favCountries, setFavCountries] = useState<FavoriteCountriesByUser | null>(null);
+  const [topByUser, setTopByUser] = useState<TopCoffeeByUser | null>(null);
+  const [sharedFav, setSharedFav] = useState<SharedFavoriteCoffee | null>(null);
+  const [aromaStats, setAromaStats] = useState<CategoryDiscovery[]>([]);
+  const [processingStats, setProcessingStats] = useState<CategoryDiscovery[]>([]);
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
   const [countryDetails, setCountryDetails] = useState<CountryDetails | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<SelectedCategory>(null);
   const [highlightCountry, setHighlightCountry] = useState<string | null>(null);
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
@@ -167,12 +233,14 @@ export default function DiscoveriesScreen() {
         }
         await setCelebratedCountries(onMap);
       })();
-      getCoffeeInsights().then((i) => {
-        if (active) setInsights(i);
-      });
-      return () => {
-        active = false;
-      };
+
+      getFavoriteCountriesByUser().then((f) => { if (active) setFavCountries(f); });
+      getTopCoffeeByUser().then((t) => { if (active) setTopByUser(t); });
+      getSharedFavoriteCoffee().then((sf) => { if (active) setSharedFav(sf); });
+      getAromaDiscoveryStats().then((a) => { if (active) setAromaStats(a); });
+      getProcessingDiscoveryStats().then((p) => { if (active) setProcessingStats(p); });
+
+      return () => { active = false; };
     }, [])
   );
 
@@ -187,6 +255,13 @@ export default function DiscoveriesScreen() {
     setSelectedCountry(null);
     setCountryDetails(null);
   }, []);
+
+  const openCategory = useCallback((label: string, icon: React.ReactNode, cat: CategoryDiscovery) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    setSelectedCategory({ label, icon, count: cat.count, coffees: cat.coffees });
+  }, []);
+
+  const closeCategory = useCallback(() => setSelectedCategory(null), []);
 
   const discoveredCountries = (stats?.countries ?? []).slice().sort();
   const knownDiscovered = discoveredCountries.filter(
@@ -203,27 +278,23 @@ export default function DiscoveriesScreen() {
   const discoveredSet = new Set(discoveredCountries);
   const mapDiscoveredCount = knownDiscovered.length;
   const mapProgress = Math.min(mapDiscoveredCount / TOTAL_KNOWN, 1);
-  const favoriteCountry = insights?.favoriteCountry ?? null;
 
   const mapColors = {
     discovered: colors.tint,
     undiscovered: colors.surface,
-    favorite: colors.tint,
     stroke: colors.background,
     labelOnDiscovered: Colors.espresso,
     labelOnUndiscovered: colors.text,
-    star: colors.tint,
+    marker: Colors.espresso,
     regionBg: isLowpoly ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)",
     regionLabel: colors.textSecondary,
   };
 
-  const hasInsights =
-    insights !== null &&
-    (insights.favoriteCountry !== null ||
-      insights.topCoffee !== null ||
-      insights.favoriteAroma !== null ||
-      insights.favoriteRoastLevel !== null ||
-      insights.favoriteGrinder !== null);
+  const hasProfile = !!(
+    favCountries?.hase ||
+    topByUser?.hase ||
+    (user2active && (favCountries?.dodo || topByUser?.dodo || sharedFav))
+  );
 
   const cardStyle = [
     styles.section,
@@ -364,7 +435,8 @@ export default function DiscoveriesScreen() {
             <CoffeeOriginMap
               data={COFFEE_WORLD_MAP}
               discovered={discoveredSet}
-              favorite={favoriteCountry}
+              favoriteHase={favCountries?.hase ?? null}
+              favoriteDodo={user2active ? (favCountries?.dodo ?? null) : null}
               onSelectCountry={openCountry}
               colors={mapColors}
               height={300}
@@ -394,11 +466,19 @@ export default function DiscoveriesScreen() {
               </Text>
             </View>
             <View style={styles.legendItem}>
-              <StarIcon size={15} color={colors.tint} />
+              <HaseIcon size={16} color={colors.tint} />
               <Text style={[styles.legendText, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
-                Lieblingsland
+                {name1}s Lieblingsland
               </Text>
             </View>
+            {user2active && (
+              <View style={styles.legendItem}>
+                <DodoIcon size={16} color={colors.tint} />
+                <Text style={[styles.legendText, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                  {name2}s Lieblingsland
+                </Text>
+              </View>
+            )}
           </View>
         </View>
 
@@ -411,99 +491,183 @@ export default function DiscoveriesScreen() {
             </Text>
           </View>
 
-          {!hasInsights ? (
+          {!hasProfile ? (
             <View style={[styles.emptyRow, { borderTopColor: colors.border }]}>
               <Text style={[styles.emptyText, { color: colors.textSecondary, fontFamily: "Inter_400Regular", textAlign: "center" }]}>
-                Mehr Kaffees entdecken, um Erkenntnisse zu erhalten.
+                Mehr Kaffees bewerten, um euer Profil zu füllen.
               </Text>
             </View>
           ) : (
-            <View style={[styles.profileCards, { borderTopColor: colors.border }]}>
-              {insights?.favoriteCountry && (
-                <InsightCard
-                  icon={<GlobeIcon size={24} color={colors.tint} />}
-                  label="Lieblingsherkunft"
-                  value={insights.favoriteCountry}
-                  colors={colors}
-                  isLowpoly={isLowpoly}
-                />
-              )}
-              {insights?.favoriteAroma && (
-                <InsightCard
-                  icon={<AromaIcon step={insights.favoriteAroma.value} size={24} color={colors.tint} />}
-                  label="Lieblingsaroma"
-                  value={insights.favoriteAroma.label}
-                  colors={colors}
-                  isLowpoly={isLowpoly}
-                />
-              )}
-              {insights?.favoriteRoastLevel && (
-                <InsightCard
-                  icon={
-                    <RoastIcon
-                      level={ROAST_LEVEL_KEY[insights.favoriteRoastLevel] ?? "medium"}
-                      size={24}
-                      color={colors.tint}
-                    />
-                  }
-                  label="Lieblingsröstgrad"
-                  value={insights.favoriteRoastLevel}
-                  colors={colors}
-                  isLowpoly={isLowpoly}
-                />
-              )}
-              {insights?.favoriteGrinder && (
-                <InsightCard
-                  icon={<MillIcon size={24} color={colors.tint} />}
-                  label="Lieblingsmühle"
-                  value={insights.favoriteGrinder}
-                  colors={colors}
-                  isLowpoly={isLowpoly}
-                />
-              )}
-              {insights?.topCoffee && (
-                <InsightCard
-                  icon={<TrophyIcon size={24} color={colors.tint} />}
-                  label="Spitzenreiter"
-                  colors={colors}
-                  isLowpoly={isLowpoly}
-                  valueNode={
+            <View style={{ borderTopWidth: 1, borderTopColor: colors.border }}>
+              {/* LIEBLINGSLÄNDER */}
+              <View style={styles.profileBlock}>
+                <Text style={[styles.blockLabel, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
+                  LIEBLINGSLÄNDER
+                </Text>
+                <View style={styles.duoRow}>
+                  <DuoColumn
+                    iconNode={<HaseIcon size={18} color={colors.tint} />}
+                    name={name1}
+                    primary={favCountries?.hase ?? "—"}
+                    colors={colors}
+                  />
+                  {user2active && (
                     <>
-                      <Text style={[insightCardStyles.value, { color: colors.text, fontFamily: "Inter_600SemiBold" }]}>
-                        {insights.topCoffee.name}
-                      </Text>
-                      <View style={styles.topCoffeeRatings}>
-                        {insights.topCoffee.haseRating !== null && (
-                          <Text style={[styles.topCoffeeRating, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
-                            Hase{" "}
-                            <Text style={{ color: colors.tint, fontFamily: "Inter_700Bold" }}>
-                              {insights.topCoffee.haseRating}
-                            </Text>
-                          </Text>
-                        )}
-                        {insights.topCoffee.haseRating !== null && insights.topCoffee.dodoRating !== null && (
-                          <Text style={[styles.topCoffeeRating, { color: colors.border, fontFamily: "Inter_400Regular" }]}>
-                            {" "}|{" "}
-                          </Text>
-                        )}
-                        {insights.topCoffee.dodoRating !== null && (
-                          <Text style={[styles.topCoffeeRating, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
-                            Dodo{" "}
-                            <Text style={{ color: colors.tint, fontFamily: "Inter_700Bold" }}>
-                              {insights.topCoffee.dodoRating}
-                            </Text>
-                          </Text>
-                        )}
-                      </View>
+                      <View style={[styles.duoDivider, { backgroundColor: colors.border }]} />
+                      <DuoColumn
+                        iconNode={<DodoIcon size={18} color={colors.tint} />}
+                        name={name2}
+                        primary={favCountries?.dodo ?? "—"}
+                        colors={colors}
+                      />
                     </>
-                  }
-                />
+                  )}
+                </View>
+              </View>
+
+              {/* SPITZENREITER */}
+              <View style={[styles.profileBlock, { borderTopWidth: 1, borderTopColor: colors.border }]}>
+                <Text style={[styles.blockLabel, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
+                  SPITZENREITER
+                </Text>
+                <View style={styles.duoRow}>
+                  <DuoColumn
+                    iconNode={<HaseIcon size={18} color={colors.tint} />}
+                    name={name1}
+                    primary={topByUser?.hase?.name ?? "—"}
+                    colors={colors}
+                    secondaryNode={
+                      topByUser?.hase ? (
+                        <Text style={[styles.duoSecondary, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                          Wertung{" "}
+                          <Text style={{ color: colors.tint, fontFamily: "Inter_700Bold" }}>
+                            {topByUser.hase.rating}
+                          </Text>
+                        </Text>
+                      ) : undefined
+                    }
+                  />
+                  {user2active && (
+                    <>
+                      <View style={[styles.duoDivider, { backgroundColor: colors.border }]} />
+                      <DuoColumn
+                        iconNode={<DodoIcon size={18} color={colors.tint} />}
+                        name={name2}
+                        primary={topByUser?.dodo?.name ?? "—"}
+                        colors={colors}
+                        secondaryNode={
+                          topByUser?.dodo ? (
+                            <Text style={[styles.duoSecondary, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                              Wertung{" "}
+                              <Text style={{ color: colors.tint, fontFamily: "Inter_700Bold" }}>
+                                {topByUser.dodo.rating}
+                              </Text>
+                            </Text>
+                          ) : undefined
+                        }
+                      />
+                    </>
+                  )}
+                </View>
+              </View>
+
+              {/* GEMEINSAMER FAVORIT */}
+              {user2active && sharedFav && (
+                <View style={[styles.profileBlock, { borderTopWidth: 1, borderTopColor: colors.border }]}>
+                  <Text style={[styles.blockLabel, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
+                    GEMEINSAMER FAVORIT
+                  </Text>
+                  <Text style={[styles.sharedName, { color: colors.text, fontFamily: "Inter_700Bold" }]} numberOfLines={1}>
+                    {sharedFav.name}
+                  </Text>
+                  <View style={styles.sharedRatings}>
+                    <View style={styles.sharedRatingItem}>
+                      <HaseIcon size={16} color={colors.tint} />
+                      <Text style={[styles.ratingText, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                        {name1}{" "}
+                        <Text style={{ color: colors.tint, fontFamily: "Inter_700Bold" }}>{sharedFav.haseRating}</Text>
+                      </Text>
+                    </View>
+                    <View style={styles.sharedRatingItem}>
+                      <DodoIcon size={16} color={colors.tint} />
+                      <Text style={[styles.ratingText, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                        {name2}{" "}
+                        <Text style={{ color: colors.tint, fontFamily: "Inter_700Bold" }}>{sharedFav.dodoRating}</Text>
+                      </Text>
+                    </View>
+                  </View>
+                </View>
               )}
             </View>
           )}
         </View>
+
+        {/* ── AROMEN ────────────────────────────────────────────────── */}
+        <View style={cardStyle}>
+          <PolyCornerCut />
+          <View style={styles.sectionHeader}>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.sectionLabel, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
+                AROMEN
+              </Text>
+              <Text style={[styles.sectionSubtitle, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                Entdeckte Geschmackswelten
+              </Text>
+            </View>
+          </View>
+          <View style={[styles.categoryGrid, { borderTopColor: colors.border }]}>
+            {aromaStats.map((cat) => (
+              <CategoryCard
+                key={cat.key}
+                icon={<AromaIcon step={Number(cat.key)} size={26} color={colors.tint} />}
+                cat={cat}
+                name1={name1}
+                name2={name2}
+                user2active={user2active}
+                colors={colors}
+                isLowpoly={isLowpoly}
+                onPress={() =>
+                  openCategory(cat.label, <AromaIcon step={Number(cat.key)} size={30} color={colors.tint} />, cat)
+                }
+              />
+            ))}
+          </View>
+        </View>
+
+        {/* ── AUFBEREITUNGEN ────────────────────────────────────────── */}
+        <View style={cardStyle}>
+          <PolyCornerCut />
+          <View style={styles.sectionHeader}>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.sectionLabel, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
+                AUFBEREITUNGEN
+              </Text>
+              <Text style={[styles.sectionSubtitle, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                Entdeckte Verarbeitungsmethoden
+              </Text>
+            </View>
+          </View>
+          <View style={[styles.categoryGrid, { borderTopColor: colors.border }]}>
+            {processingStats.map((cat) => (
+              <CategoryCard
+                key={cat.key}
+                icon={<ProcessingIcon method={cat.key} size={26} color={colors.tint} />}
+                cat={cat}
+                name1={name1}
+                name2={name2}
+                user2active={user2active}
+                colors={colors}
+                isLowpoly={isLowpoly}
+                onPress={() =>
+                  openCategory(cat.label, <ProcessingIcon method={cat.key} size={30} color={colors.tint} />, cat)
+                }
+              />
+            ))}
+          </View>
+        </View>
       </ScrollView>
 
+      {/* ── Country detail sheet ──────────────────────────────────────── */}
       <Modal
         visible={selectedCountry !== null}
         transparent
@@ -564,21 +728,25 @@ export default function DiscoveriesScreen() {
                 <View style={[styles.sheetRatings, { borderTopColor: colors.border }]}>
                   <View style={styles.sheetRatingBox}>
                     <Text style={[styles.sheetRatingLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
-                      Ø Hase
+                      Ø {name1}
                     </Text>
                     <Text style={[styles.sheetRatingValue, { color: colors.tint, fontFamily: "Inter_700Bold" }]}>
                       {countryDetails.averageRabbitRating ?? "–"}
                     </Text>
                   </View>
-                  <View style={[styles.sheetRatingDivider, { backgroundColor: colors.border }]} />
-                  <View style={styles.sheetRatingBox}>
-                    <Text style={[styles.sheetRatingLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
-                      Ø Dodo
-                    </Text>
-                    <Text style={[styles.sheetRatingValue, { color: colors.tint, fontFamily: "Inter_700Bold" }]}>
-                      {countryDetails.averageDodoRating ?? "–"}
-                    </Text>
-                  </View>
+                  {user2active && (
+                    <>
+                      <View style={[styles.sheetRatingDivider, { backgroundColor: colors.border }]} />
+                      <View style={styles.sheetRatingBox}>
+                        <Text style={[styles.sheetRatingLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
+                          Ø {name2}
+                        </Text>
+                        <Text style={[styles.sheetRatingValue, { color: colors.tint, fontFamily: "Inter_700Bold" }]}>
+                          {countryDetails.averageDodoRating ?? "–"}
+                        </Text>
+                      </View>
+                    </>
+                  )}
                 </View>
 
                 {countryDetails.regions.length > 0 && (
@@ -619,6 +787,93 @@ export default function DiscoveriesScreen() {
           </Pressable>
         </Pressable>
       </Modal>
+
+      {/* ── Aroma / Aufbereitung detail sheet ─────────────────────────── */}
+      <Modal
+        visible={selectedCategory !== null}
+        transparent
+        animationType="fade"
+        presentationStyle="overFullScreen"
+        onRequestClose={closeCategory}
+      >
+        <Pressable style={styles.sheetBackdrop} onPress={closeCategory}>
+          <Pressable
+            style={[
+              styles.sheet,
+              cardExtras.shadow,
+              {
+                backgroundColor: colors.surfaceElevated,
+                borderColor: colors.border,
+                borderTopColor: cardExtras.topHighlight,
+                borderRadius: cardExtras.cardRadius,
+                paddingBottom: bottomPad + 20,
+              },
+            ]}
+            onPress={(e) => e.stopPropagation()}
+          >
+            <View style={[styles.sheetHandle, { backgroundColor: colors.border }]} />
+
+            <View style={styles.sheetHeader}>
+              <View style={styles.sheetIcon}>{selectedCategory?.icon}</View>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.sheetTitle, { color: colors.text, fontFamily: "Inter_700Bold" }]}>
+                  {selectedCategory?.label.toUpperCase()}
+                </Text>
+                <Text style={[styles.sheetCount, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                  {(selectedCategory?.count ?? 0) === 0
+                    ? "Noch nicht entdeckt"
+                    : `${selectedCategory?.count} ${selectedCategory?.count === 1 ? "Kaffee" : "Kaffees"} entdeckt`}
+                </Text>
+              </View>
+              <Pressable onPress={closeCategory} hitSlop={10} style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}>
+                <Ionicons name="close" size={24} color={colors.textSecondary} />
+              </Pressable>
+            </View>
+
+            {(selectedCategory?.coffees.length ?? 0) === 0 ? (
+              <View style={[styles.sheetEmpty, { borderTopColor: colors.border }]}>
+                <Text style={[styles.sheetEmptyText, { color: colors.textSecondary, fontFamily: "Inter_400Regular", textAlign: "center" }]}>
+                  Noch keinen Kaffee in dieser Kategorie eingetragen.
+                </Text>
+              </View>
+            ) : (
+              <ScrollView style={{ maxHeight: 360 }} showsVerticalScrollIndicator={false}>
+                <View style={[styles.sheetBlock, { borderTopColor: colors.border }]}>
+                  <Text style={[styles.sheetBlockLabel, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
+                    KAFFEES
+                  </Text>
+                  {selectedCategory?.coffees.map((cf) => (
+                    <Pressable
+                      key={cf.id}
+                      onPress={() => {
+                        closeCategory();
+                        router.push(`/coffee/${cf.id}`);
+                      }}
+                      style={({ pressed }) => [styles.sheetCategoryRow, { opacity: pressed ? 0.6 : 1 }]}
+                    >
+                      <View style={{ flex: 1 }}>
+                        <Text style={[styles.sheetListItem, { color: colors.text, fontFamily: "Inter_500Medium" }]} numberOfLines={1}>
+                          {cf.name}
+                        </Text>
+                        <RatingInline
+                          name1={name1}
+                          name2={name2}
+                          hase={cf.haseRating}
+                          dodo={cf.dodoRating}
+                          user2active={user2active}
+                          colors={colors}
+                          size={12}
+                        />
+                      </View>
+                      <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
+                    </Pressable>
+                  ))}
+                </View>
+              </ScrollView>
+            )}
+          </Pressable>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
@@ -646,6 +901,7 @@ const styles = StyleSheet.create({
   },
   sectionLabel: { fontSize: 11, letterSpacing: 1.5 },
   sectionCount: { fontSize: 15 },
+  sectionSubtitle: { fontSize: 13, marginTop: 3 },
   progressSection: {
     borderTopWidth: 1,
     paddingHorizontal: 16,
@@ -680,16 +936,60 @@ const styles = StyleSheet.create({
   },
   lastDiscoveredLabel: { fontSize: 13 },
   lastDiscoveredValue: { fontSize: 15, flex: 1 },
-  profileCards: {
+
+  // KAFFEEPROFIL
+  profileBlock: { paddingHorizontal: 16, paddingVertical: 16 },
+  blockLabel: { fontSize: 11, letterSpacing: 1.5, marginBottom: 12 },
+  duoRow: { flexDirection: "row", alignItems: "stretch" },
+  duoCol: { flex: 1, gap: 3 },
+  duoHead: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 1 },
+  duoName: { fontSize: 12, letterSpacing: 0.3, flexShrink: 1 },
+  duoPrimary: { fontSize: 17 },
+  duoSecondary: { fontSize: 12, marginTop: 1 },
+  duoDivider: { width: 1, marginHorizontal: 14 },
+  sharedName: { fontSize: 20, marginBottom: 10 },
+  sharedRatings: { flexDirection: "row", alignItems: "center", gap: 18 },
+  sharedRatingItem: { flexDirection: "row", alignItems: "center", gap: 6 },
+  ratingText: { fontSize: 13 },
+
+  // AROMEN / AUFBEREITUNGEN grid
+  categoryGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
     borderTopWidth: 1,
     padding: 16,
     gap: 10,
   },
-  topCoffeeRatings: { flexDirection: "row", alignItems: "center", marginTop: 2 },
-  topCoffeeRating: { fontSize: 12 },
+  categoryCard: {
+    flexBasis: "47%",
+    flexGrow: 1,
+    borderWidth: 1,
+    padding: 14,
+    gap: 5,
+  },
+  categoryIconWrap: {
+    width: 42,
+    height: 42,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    marginBottom: 2,
+  },
+  categoryName: { fontSize: 15 },
+  categoryCount: { fontSize: 12 },
+  categoryBest: {
+    borderTopWidth: 1,
+    paddingTop: 8,
+    marginTop: 4,
+    gap: 3,
+  },
+  categoryBestLabel: { fontSize: 10, letterSpacing: 1 },
+  categoryBestName: { fontSize: 13 },
+  categoryEmptyText: { fontSize: 12 },
+  ratingInline: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 10 },
+  ratingChip: {},
 
-  // KAFFEEWELT
-  sectionSubtitle: { fontSize: 13, marginTop: 3 },
+  // KAFFEEWELT map
   mapProgressRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -777,5 +1077,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+  },
+  sheetCategoryRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 6,
+    gap: 8,
   },
 });

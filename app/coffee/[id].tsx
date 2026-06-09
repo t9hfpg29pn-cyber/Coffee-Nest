@@ -428,6 +428,7 @@ function OriginEditor({
   const br = isLowpoly ? 4 : 10;
 
   const multiple = origins.length > 1;
+  const [expandedRegions, setExpandedRegions] = useState<Set<string>>(new Set());
 
   return (
     <View style={{ gap: 12 }}>
@@ -492,13 +493,36 @@ function OriginEditor({
             />
           )}
 
-          <TextInput
-            style={{ borderWidth: 1.5, borderColor: colors.border, borderRadius: br, paddingHorizontal: 14, paddingVertical: 10, color: colors.text, fontFamily: "Inter_400Regular", fontSize: 15, backgroundColor: colors.surface }}
-            placeholder="Noch nicht angegeben"
-            placeholderTextColor={colors.textSecondary}
-            value={o.region}
-            onChangeText={(v) => onUpdate(o.key, "region", v)}
-          />
+          {(o.region.trim() !== "" || expandedRegions.has(o.key)) ? (
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+              <Text style={{ color: colors.textSecondary, fontFamily: "Inter_500Medium", fontSize: 13, width: 56 }}>
+                Region
+              </Text>
+              <TextInput
+                style={{ flex: 1, borderWidth: 1.5, borderColor: colors.border, borderRadius: br, paddingHorizontal: 12, paddingVertical: 8, color: colors.text, fontFamily: "Inter_400Regular", fontSize: 14, backgroundColor: colors.surface }}
+                placeholder="z. B. Yirgacheffe (optional)"
+                placeholderTextColor={colors.textSecondary}
+                value={o.region}
+                onChangeText={(v) => onUpdate(o.key, "region", v)}
+              />
+            </View>
+          ) : (
+            <Pressable
+              onPress={() => {
+                Haptics.selectionAsync();
+                setExpandedRegions((prev) => new Set(prev).add(o.key));
+              }}
+              style={({ pressed }) => ({
+                flexDirection: "row", alignItems: "center", gap: 6,
+                paddingVertical: 4, opacity: pressed ? 0.6 : 1,
+              })}
+            >
+              <Ionicons name="add" size={16} color={colors.tint} />
+              <Text style={{ color: colors.tint, fontFamily: "Inter_600SemiBold", fontSize: 13 }}>
+                Region ergänzen
+              </Text>
+            </Pressable>
+          )}
 
           {multiple && (
             <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>

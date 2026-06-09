@@ -1,0 +1,399 @@
+Überarbeite die Entdeckungsseite und das Kaffeeprofil von Coffee Nest.
+
+WICHTIG:
+
+Keine neuen Seiten erstellen.
+
+Keine neue Navigation einführen.
+
+Die Änderungen sollen ausschließlich innerhalb der bestehenden Seite:
+
+/discoveries
+
+stattfinden.
+
+Ziel:
+
+Die Entdeckungsseite soll weniger generische Statistik und mehr persönliche Entdeckung bieten.
+
+Die Besonderheit von Coffee Nest ist die getrennte Bewertung durch Hase und Dodo.
+
+Diese Besonderheit soll künftig stärker sichtbar werden als allgemeine Durchschnittswerte.
+
+==================================================
+
+1. KAFFEEPROFIL NEU STRUKTURIEREN
+   ==================================================
+
+Aktuell:
+
+* Lieblingsaroma
+* Lieblingsröstgrad
+* Lieblingsmühle
+* Spitzenreiter
+
+Diese Informationen liefern nur begrenzten Mehrwert.
+
+---
+
+Entfernen:
+
+* Lieblingsröstgrad
+* Lieblingsmühle
+
+---
+
+Lieblingsaroma entfernen.
+
+Die Informationen sollen später im Aroma-Bereich der Entdeckungen dargestellt werden.
+
+==================================================
+2. LIEBLINGSLAND HASE / DODO
+============================
+
+Neue Karte:
+
+LIEBLINGSLÄNDER
+
+Darstellung:
+
+Hase | Dodo
+
+Äthiopien | Brasilien
+
+---
+
+Berechnung:
+
+Für jeden Nutzer separat.
+
+Hase:
+
+Land mit dem höchsten durchschnittlichen Hasen-Score.
+
+Dodo:
+
+Land mit dem höchsten durchschnittlichen Dodo-Score.
+
+---
+
+Keine gemeinsame Durchschnittsbildung.
+
+Keine Vermischung der beiden Bewertungen.
+
+==================================================
+3. SPITZENREITER HASE / DODO
+============================
+
+Neue Karte:
+
+SPITZENREITER
+
+Darstellung:
+
+Hase | Dodo
+
+Yirgacheffe | Maxbean Espresso
+
+---
+
+Berechnung:
+
+Hase:
+
+Kaffee mit höchstem Hasen-Score.
+
+Dodo:
+
+Kaffee mit höchstem Dodo-Score.
+
+==================================================
+4. GEMEINSAMER FAVORIT
+======================
+
+Neue Karte:
+
+GEMEINSAMER FAVORIT
+
+Berechnung:
+
+Kaffee mit höchstem Durchschnitt:
+
+(Hase + Dodo) / 2
+
+Darstellung:
+
+Yirgacheffe
+
+Hase 9
+Dodo 6
+
+---
+
+WICHTIG:
+
+Dies ist die einzige Stelle, an der ein gemeinsamer Durchschnitt verwendet wird.
+
+==================================================
+5. LIEBLINGSLÄNDER AUF DER KARTE MARKIEREN
+==========================================
+
+Die Coffee World Map erweitern.
+
+---
+
+Lieblingsland Hase:
+
+kleines Hase-Icon auf dem Land.
+
+---
+
+Lieblingsland Dodo:
+
+kleines Dodo-Icon auf dem Land.
+
+---
+
+Falls beide dasselbe Land bevorzugen:
+
+beide Icons darstellen.
+
+---
+
+Keine Emojis verwenden.
+
+Verwende die vorhandenen Coffee-Nest-Hase- und Dodo-Symbole.
+
+Die Marker müssen klein und dezent bleiben.
+
+==================================================
+6. HERKUNFT-BEREICH ANPASSEN
+============================
+
+Region bleibt erhalten.
+
+---
+
+Region bleibt optional.
+
+---
+
+Standardansicht:
+
+Land sichtbar.
+
+Region eingeklappt.
+
+Beispiel:
+
+Äthiopien
+
+* Region ergänzen
+
+---
+
+Falls eine Region vorhanden ist:
+
+Äthiopien
+
+Region:
+Yirgacheffe
+
+---
+
+Ziel:
+
+Regionen bleiben nutzbar.
+
+Die Eingabemaske wird jedoch deutlich kompakter.
+
+==================================================
+7. AROMEN ALS ENTDECKUNGEN
+==========================
+
+Neuer Bereich auf /discoveries:
+
+AROMEN
+
+Keine neue Seite.
+
+---
+
+Zeige alle vorhandenen Aromakategorien:
+
+* Schokoladig
+* Nussig
+* Klassisch
+* Beerig
+* Zitrisch
+
+mit den bestehenden Aroma-Icons.
+
+---
+
+Jede Aromakarte zeigt:
+
+* Icon
+* Name
+* Anzahl Kaffees
+
+Beispiel:
+
+Schokoladig
+
+12 Kaffees
+
+---
+
+Zusätzlich:
+
+Bester Kaffee dieser Kategorie
+
+Beispiel:
+
+Yirgacheffe
+
+Hase 9
+Dodo 6
+
+---
+
+Bei Klick:
+
+Bottom Sheet öffnen.
+
+Darin:
+
+* Anzahl Kaffees
+* Liste aller Kaffees
+* Bewertungen
+
+Analog zum bestehenden Länder-Detail.
+
+==================================================
+8. AUFBEREITUNGEN ALS ENTDECKUNGEN
+==================================
+
+Neuer Bereich auf /discoveries:
+
+AUFBEREITUNGEN
+
+Keine neue Seite.
+
+---
+
+Zeige:
+
+* Washed
+* Natural
+* Honey
+* Anaerobic
+* Experimental
+
+mit den neuen Coffee-Nest-Icons.
+
+---
+
+Jede Karte zeigt:
+
+* Icon
+* Name
+* Anzahl Kaffees
+
+---
+
+Zusätzlich:
+
+Bester Kaffee dieser Kategorie
+
+---
+
+Bei Klick:
+
+Bottom Sheet öffnen.
+
+Analog zum Länder-Detail.
+
+Darin:
+
+* Anzahl Kaffees
+* Liste aller Kaffees
+* Bewertungen
+
+==================================================
+9. ENTDECKUNGSSEITE HIERARCHIE
+==============================
+
+Neue Reihenfolge:
+
+HERKUNFTSLÄNDER
+
+KAFFEEWELT
+
+KAFFEEPROFIL
+
+* Lieblingsländer
+* Spitzenreiter
+* Gemeinsamer Favorit
+
+AROMEN
+
+AUFBEREITUNGEN
+
+==================================================
+10. DESIGN
+==========
+
+Alle neuen Bereiche müssen den bestehenden Coffee-Nest-Stil übernehmen.
+
+Verwenden:
+
+* bestehende Karten
+* bestehende Farben
+* bestehende Typografie
+* bestehende Icon-Familie
+
+Keine Emojis.
+
+Keine Tabellenoptik.
+
+Mehr Entdeckungscharakter.
+
+Mehr Sammlungscharakter.
+
+Weniger Dashboard.
+
+==================================================
+11. TECHNIK
+===========
+
+Neue Utility-Funktionen erstellen:
+
+getFavoriteCountriesByUser()
+
+getTopCoffeeByUser()
+
+getSharedFavoriteCoffee()
+
+getAromaDiscoveryStats()
+
+getProcessingDiscoveryStats()
+
+Diese sollen später wiederverwendbar sein.
+
+==================================================
+ABSCHLUSS
+=========
+
+Nach Umsetzung:
+
+1. Build durchführen
+2. TypeScript Fehler beheben
+3. iPhone-PWA testen
+4. Karten-Layout testen
+5. Hase-/Dodo-Marker auf Karte prüfen
+6. Aroma-Details testen
+7. Aufbereitungs-Details testen
+8. Bottom Sheets testen
+9. Sicherstellen, dass keine Emojis verwendet werden
+10. Sicherstellen, dass alle neuen Bereiche auch mit wenigen Datensätzen sinnvoll aussehen
