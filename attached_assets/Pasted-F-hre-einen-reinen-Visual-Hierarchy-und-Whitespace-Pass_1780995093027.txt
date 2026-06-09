@@ -1,0 +1,257 @@
+Führe einen reinen Visual-Hierarchy- und Whitespace-Pass auf Coffee Nest durch.
+
+WICHTIG:
+
+Keine Funktionen ändern.
+
+Keine Daten ändern.
+
+Keine Navigation ändern.
+
+Keine neuen Bereiche hinzufügen.
+
+Keine neuen Karten hinzufügen.
+
+Keine neue Logik.
+
+Ausschließlich visuelle Optimierung.
+
+Ziel:
+
+Die App soll ruhiger, hochwertiger und weniger dashboardartig wirken.
+
+==================================================
+
+1. WENIGER LINIEN
+   ==================================================
+
+Aktuell werden viele Bereiche durch Linien getrennt.
+
+Prüfen:
+
+* Wo können Divider entfernt werden?
+* Wo reicht Abstand statt Linie?
+
+Ziel:
+
+Visuelle Trennung primär durch Whitespace.
+
+Nicht durch Rahmen und Linien.
+
+---
+
+Besonders prüfen:
+
+* Kaffeeprofil
+* Aroma-Karten
+* Aufbereitungs-Karten
+* Legendenbereiche
+
+==================================================
+2. WENIGER BOXEN
+================
+
+Aktuell sind fast alle Informationen in eigenen Boxen.
+
+Ziel:
+
+Mehr Informationen dürfen innerhalb derselben Fläche leben.
+
+---
+
+Beispiel:
+
+Kaffeeprofil soll sich eher wie ein zusammenhängender Bereich anfühlen.
+
+Nicht wie mehrere gestapelte Mini-Karten.
+
+---
+
+Gemeinsamer Favorit bleibt als Hero-Karte bestehen.
+
+Die darunterliegenden Erkenntnisse dürfen deutlich zurückhaltender werden.
+
+==================================================
+3. TYPOGRAFIE-HIERARCHIE VERBESSERN
+===================================
+
+Der Nutzer soll sofort erkennen:
+
+Ebene 1:
+wichtigste Information
+
+Ebene 2:
+sekundäre Information
+
+Ebene 3:
+Kontext
+
+---
+
+Beispiel:
+
+Yirgacheffe
+
+größte Schrift
+
+---
+
+Roestbar
+
+kleiner
+
+weniger Kontrast
+
+---
+
+Hase 9 | Dodo 6
+
+kleinste Ebene
+
+---
+
+Die Hierarchie soll ohne zusätzliche Farben funktionieren.
+
+==================================================
+4. HERO-KARTE STÄRKEN
+=====================
+
+Gemeinsamer Favorit ist die wichtigste Information.
+
+---
+
+Diese Karte darf:
+
+* mehr Höhe erhalten
+* mehr Innenabstand erhalten
+* größere Typografie erhalten
+
+---
+
+Der Nutzer soll sie zuerst wahrnehmen.
+
+==================================================
+5. SEKTIONEN MEHR LUFT GEBEN
+============================
+
+Zwischen Hauptbereichen:
+
+* Kaffeewelt
+* Kaffeeprofil
+* Aromen
+* Aufbereitungen
+
+mehr vertikalen Abstand schaffen.
+
+---
+
+Ziel:
+
+Jeder Bereich bekommt mehr Eigenständigkeit.
+
+==================================================
+6. KAFFEEWELT BERUHIGEN
+=======================
+
+Die Karte ist inzwischen verständlich.
+
+Nun visuell beruhigen.
+
+---
+
+Prüfen:
+
+* weniger Rahmen
+* weniger visuelle Trennungen
+* mehr Fokus auf Länder
+
+---
+
+Legende optisch zurücknehmen.
+
+Sie soll unterstützen.
+
+Nicht konkurrieren.
+
+==================================================
+7. AROMEN- UND AUFBEREITUNGSKARTEN
+==================================
+
+Aktuell wirken sie etwas technisch.
+
+---
+
+Mehr Fokus auf:
+
+* Icon
+* Name
+
+---
+
+Weniger Fokus auf:
+
+* Linien
+* Trennstriche
+* Rahmen
+
+---
+
+Der Blick soll zuerst auf:
+
+Schokoladig
+Nussig
+Beerig
+
+fallen.
+
+Nicht auf Kartengrenzen.
+
+==================================================
+8. WHITESPACE-REGELN
+====================
+
+Erhöhe gezielt:
+
+* Innenabstände
+* Abstände zwischen Elementgruppen
+* Abstände zwischen Überschrift und Inhalt
+
+um etwa 15–25 %.
+
+Nicht pauschal alles vergrößern.
+
+Nur dort, wo mehr Ruhe entsteht.
+
+==================================================
+9. KONSISTENZ
+=============
+
+Beibehalten:
+
+* Farben
+* Low-Poly-Stil
+* Icon-System
+* Typografie-Familie
+
+Keine Design-Revolution.
+
+Keine neue Designsprache.
+
+Nur Veredelung.
+
+==================================================
+ABSCHLUSS
+=========
+
+Nach Umsetzung:
+
+1. Build durchführen
+2. Mobile Ansicht prüfen
+3. iPhone-PWA prüfen
+4. Lesbarkeit prüfen
+5. Whitespace prüfen
+6. Sicherstellen, dass die Seite ruhiger wirkt
+7. Sicherstellen, dass die Hero-Karte sofort ins Auge fällt
+8. Sicherstellen, dass weniger Linien und Boxen sichtbar sind
+9. Keine funktionalen Änderungen einführen
+10. Fokus auf Wertigkeit statt Funktionsumfang

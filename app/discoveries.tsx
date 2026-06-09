@@ -142,7 +142,6 @@ function CategoryCard({
         styles.categoryCard,
         {
           backgroundColor: colors.surface,
-          borderColor: colors.border,
           borderRadius: isLowpoly ? 4 : 12,
           opacity: pressed ? 0.7 : 1,
         },
@@ -153,7 +152,6 @@ function CategoryCard({
           styles.categoryIconWrap,
           {
             backgroundColor: colors.surfaceElevated,
-            borderColor: colors.border,
             borderRadius: isLowpoly ? 4 : 10,
           },
         ]}
@@ -166,7 +164,7 @@ function CategoryCard({
       <Text style={[styles.categoryCount, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
         {cat.count} {cat.count === 1 ? "Kaffee" : "Kaffees"}
       </Text>
-      <View style={[styles.categoryBest, { borderTopColor: colors.border }]}>
+      <View style={styles.categoryBest}>
         {cat.bestCoffee ? (
           <>
             <Text style={[styles.categoryBestLabel, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
@@ -352,7 +350,7 @@ export default function DiscoveriesScreen() {
       </View>
 
       <ScrollView
-        contentContainerStyle={{ padding: 20, paddingBottom: bottomPad + 32, gap: 16 }}
+        contentContainerStyle={{ padding: 20, paddingBottom: bottomPad + 32, gap: 22 }}
         showsVerticalScrollIndicator={false}
       >
         {/* ── KAFFEEWELT ────────────────────────────────────────────── */}
@@ -369,7 +367,7 @@ export default function DiscoveriesScreen() {
             </View>
           </View>
 
-          <View style={[styles.mapProgressRow, { borderTopColor: colors.border }]}>
+          <View style={styles.mapProgressRow}>
             <Text style={[styles.mapProgressText, { color: colors.text, fontFamily: "Inter_600SemiBold" }]}>
               {mapDiscoveredCount} von {TOTAL_KNOWN} Herkunftsländern entdeckt
             </Text>
@@ -392,7 +390,7 @@ export default function DiscoveriesScreen() {
             </View>
           </View>
 
-          <View style={[styles.mapWrap, { backgroundColor: colors.background, borderColor: colors.border }]}>
+          <View style={[styles.mapWrap, { backgroundColor: colors.background }]}>
             <CoffeeOriginMap
               data={COFFEE_WORLD_MAP}
               discovered={discoveredSet}
@@ -413,7 +411,7 @@ export default function DiscoveriesScreen() {
           )}
 
           {/* Legend */}
-          <View style={[styles.legend, { borderTopColor: colors.border }]}>
+          <View style={styles.legend}>
             <View style={styles.legendItem}>
               <View style={[styles.legendSwatch, { backgroundColor: colors.tint, borderRadius: isLowpoly ? 1 : 4 }]} />
               <Text style={[styles.legendText, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
@@ -465,13 +463,13 @@ export default function DiscoveriesScreen() {
           </View>
 
           {!hasProfile ? (
-            <View style={[styles.emptyRow, { borderTopColor: colors.border }]}>
+            <View style={styles.emptyRow}>
               <Text style={[styles.emptyText, { color: colors.textSecondary, fontFamily: "Inter_400Regular", textAlign: "center" }]}>
                 Mehr Kaffees bewerten, um euer Profil zu füllen.
               </Text>
             </View>
           ) : (
-            <View style={{ borderTopWidth: 1, borderTopColor: colors.border }}>
+            <View>
               {/* GEMEINSAMER FAVORIT — Mittelpunkt des Profils */}
               {user2active && sharedFav && (
                 <View style={styles.heroWrap}>
@@ -517,12 +515,7 @@ export default function DiscoveriesScreen() {
               )}
 
               {/* LIEBLINGSLAND / LIEBLINGSLÄNDER */}
-              <View
-                style={[
-                  styles.profileBlock,
-                  user2active && sharedFav ? { borderTopWidth: 1, borderTopColor: colors.border } : null,
-                ]}
-              >
+              <View style={styles.profileBlock}>
                 {sameCountry ? (
                   <View style={styles.centerInsight}>
                     <Text style={[styles.blockLabelCenter, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
@@ -570,7 +563,7 @@ export default function DiscoveriesScreen() {
               </View>
 
               {/* SPITZENREITER */}
-              <View style={[styles.profileBlock, { borderTopWidth: 1, borderTopColor: colors.border }]}>
+              <View style={styles.profileBlock}>
                 {sameTop && haseTop && dodoTop ? (
                   <View style={styles.centerInsight}>
                     <Text style={[styles.blockLabelCenter, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
@@ -673,7 +666,7 @@ export default function DiscoveriesScreen() {
               </Text>
             </View>
           </View>
-          <View style={[styles.categoryGrid, { borderTopColor: colors.border }]}>
+          <View style={styles.categoryGrid}>
             {aromaStats.map((cat) => (
               <CategoryCard
                 key={cat.key}
@@ -705,7 +698,7 @@ export default function DiscoveriesScreen() {
               </Text>
             </View>
           </View>
-          <View style={[styles.categoryGrid, { borderTopColor: colors.border }]}>
+          <View style={styles.categoryGrid}>
             {processingStats.map((cat) => (
               <CategoryCard
                 key={cat.key}
@@ -955,7 +948,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingVertical: 16,
   },
   sectionLabel: { fontSize: 11, letterSpacing: 1.5 },
   sectionCount: { fontSize: 15 },
@@ -963,9 +956,8 @@ const styles = StyleSheet.create({
   progressTrack: { height: 8, borderRadius: 4, overflow: "hidden" },
   progressFill: { height: "100%" },
   emptyRow: {
-    borderTopWidth: 1,
     paddingHorizontal: 16,
-    paddingVertical: 20,
+    paddingVertical: 24,
     alignItems: "center",
   },
   emptyText: { fontSize: 14 },
@@ -981,8 +973,8 @@ const styles = StyleSheet.create({
   lastDiscoveredValue: { fontSize: 15, flex: 1 },
 
   // KAFFEEPROFIL
-  profileBlock: { paddingHorizontal: 16, paddingVertical: 16 },
-  blockLabel: { fontSize: 11, letterSpacing: 1.5, marginBottom: 12 },
+  profileBlock: { paddingHorizontal: 20, paddingVertical: 18 },
+  blockLabel: { fontSize: 11, letterSpacing: 1.5, marginBottom: 14 },
   duoRow: { flexDirection: "row", alignItems: "stretch" },
   duoCol: { flex: 1, gap: 3 },
   duoHead: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 1 },
@@ -993,19 +985,19 @@ const styles = StyleSheet.create({
   duoDivider: { width: 1, marginHorizontal: 14 },
 
   // Gemeinsamer Favorit — hero
-  heroWrap: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 2 },
+  heroWrap: { paddingHorizontal: 16, paddingTop: 20, paddingBottom: 10 },
   heroCard: {
     borderWidth: 1.5,
     borderTopWidth: 2,
     alignItems: "center",
-    paddingVertical: 20,
-    paddingHorizontal: 16,
-    gap: 5,
+    paddingVertical: 28,
+    paddingHorizontal: 22,
+    gap: 6,
   },
-  heroLabel: { fontSize: 11, letterSpacing: 1.5, textAlign: "center", marginBottom: 2 },
-  heroName: { fontSize: 24, lineHeight: 30, textAlign: "center" },
-  heroRoastery: { fontSize: 14, textAlign: "center" },
-  heroRatings: { flexDirection: "row", alignItems: "center", gap: 24, marginTop: 10 },
+  heroLabel: { fontSize: 11, letterSpacing: 1.5, textAlign: "center", marginBottom: 4 },
+  heroName: { fontSize: 30, lineHeight: 36, textAlign: "center" },
+  heroRoastery: { fontSize: 15, textAlign: "center" },
+  heroRatings: { flexDirection: "row", alignItems: "center", gap: 28, marginTop: 16 },
   heroRatingItem: { flexDirection: "row", alignItems: "center", gap: 6 },
   heroRatingText: { fontSize: 14 },
 
@@ -1022,31 +1014,27 @@ const styles = StyleSheet.create({
   categoryGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    borderTopWidth: 1,
-    padding: 16,
-    gap: 10,
+    padding: 18,
+    gap: 12,
   },
   categoryCard: {
     flexBasis: "47%",
     flexGrow: 1,
-    borderWidth: 1,
-    padding: 14,
-    gap: 5,
+    padding: 16,
+    gap: 6,
   },
   categoryIconWrap: {
-    width: 42,
-    height: 42,
+    width: 44,
+    height: 44,
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 1,
-    marginBottom: 2,
+    marginBottom: 4,
   },
-  categoryName: { fontSize: 15 },
+  categoryName: { fontSize: 16 },
   categoryCount: { fontSize: 12 },
   categoryBest: {
-    borderTopWidth: 1,
-    paddingTop: 8,
-    marginTop: 4,
+    paddingTop: 10,
+    marginTop: 6,
     gap: 3,
   },
   categoryBestLabel: { fontSize: 10, letterSpacing: 1 },
@@ -1060,9 +1048,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    borderTopWidth: 1,
     paddingHorizontal: 16,
-    paddingTop: 14,
+    paddingTop: 16,
     paddingBottom: 8,
     gap: 12,
   },
@@ -1070,8 +1057,7 @@ const styles = StyleSheet.create({
   mapProgressPct: { fontSize: 14 },
   mapProgressTrackWrap: { paddingHorizontal: 16, paddingBottom: 14 },
   mapWrap: {
-    marginHorizontal: 12,
-    borderWidth: 1,
+    marginHorizontal: 16,
     borderRadius: 8,
     overflow: "hidden",
   },
@@ -1084,11 +1070,10 @@ const styles = StyleSheet.create({
   legend: {
     flexDirection: "row",
     flexWrap: "wrap",
-    borderTopWidth: 1,
-    marginTop: 16,
+    marginTop: 20,
     paddingHorizontal: 16,
-    paddingVertical: 14,
-    gap: 16,
+    paddingVertical: 16,
+    gap: 18,
   },
   legendItem: { flexDirection: "row", alignItems: "center", gap: 6 },
   legendSwatch: { width: 14, height: 14 },
