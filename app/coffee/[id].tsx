@@ -809,6 +809,7 @@ export default function CoffeeDetailScreen() {
   const [processingMethod, setProcessingMethod] = useState("");
   const [roastLevel, setRoastLevel] = useState("");
   const [originPickerKey, setOriginPickerKey] = useState<string | null>(null);
+  const [originEditing, setOriginEditing] = useState(false);
 
   const toastyAnim = useRef(new Animated.Value(0)).current;
   const toastyTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -1105,31 +1106,63 @@ export default function CoffeeDetailScreen() {
         </View>
 
         {/* ── HERKUNFT ──────────────────────────────────────────────────── */}
+        {(() => {
+          const originNameOf = (o: OriginDraft) =>
+            (o.country === "Sonstiges" ? o.customCountry.trim() : o.country).trim();
+          const filledOrigins = origins.filter((o) => originNameOf(o));
+          const hasOrigin = filledOrigins.length > 0;
+          const showEditor = originEditing || !hasOrigin;
+          return (
         <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight, borderRadius: cardExtras.cardRadius }]}>
-          <SectionHeader title="HERKUNFT" color={colors.textSecondary} />
-          <View style={{ marginTop: 8 }}>
-            <OriginEditor
-              origins={origins}
-              onAdd={() => {
-                setOrigins((prev) => [...prev, { key: makeOriginKey(), country: "", customCountry: "", region: "", percentageText: "" }]);
-                markChanged();
-              }}
-              onUpdate={(key, field, value) => {
-                setOrigins((prev) => prev.map((o) => o.key === key ? { ...o, [field]: value } : o));
-                markChanged();
-              }}
-              onRemove={(key) => {
-                setOrigins((prev) => prev.filter((o) => o.key !== key));
-                markChanged();
-              }}
-              openPickerKey={originPickerKey}
-              onOpenPicker={(key) => setOriginPickerKey(key)}
-              onClosePicker={() => setOriginPickerKey(null)}
-              colors={colors}
-              design={design}
-            />
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+            <SectionHeader title="HERKUNFT" color={colors.textSecondary} />
+            {hasOrigin && (
+              <Pressable
+                onPress={() => { Haptics.selectionAsync(); setOriginEditing((e) => !e); }}
+                hitSlop={10}
+                accessibilityRole="button"
+                accessibilityLabel={showEditor ? "Herkunft kompakt anzeigen" : "Herkunft bearbeiten"}
+                style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1, padding: 4 })}
+              >
+                <Ionicons name={showEditor ? "checkmark" : "pencil"} size={18} color={colors.tint} />
+              </Pressable>
+            )}
           </View>
+          {showEditor ? (
+            <View style={{ marginTop: 8 }}>
+              <OriginEditor
+                origins={origins}
+                onAdd={() => {
+                  setOrigins((prev) => [...prev, { key: makeOriginKey(), country: "", customCountry: "", region: "", percentageText: "" }]);
+                  setOriginEditing(true);
+                  markChanged();
+                }}
+                onUpdate={(key, field, value) => {
+                  setOrigins((prev) => prev.map((o) => o.key === key ? { ...o, [field]: value } : o));
+                  setOriginEditing(true);
+                  markChanged();
+                }}
+                onRemove={(key) => {
+                  setOrigins((prev) => prev.filter((o) => o.key !== key));
+                  markChanged();
+                }}
+                openPickerKey={originPickerKey}
+                onOpenPicker={(key) => setOriginPickerKey(key)}
+                onClosePicker={() => setOriginPickerKey(null)}
+                colors={colors}
+                design={design}
+              />
+            </View>
+          ) : (
+            <Text style={{ color: colors.text, fontFamily: "Inter_500Medium", fontSize: 15, lineHeight: 24, marginTop: 8 }}>
+              {filledOrigins
+                .map((o) => originNameOf(o) + (o.percentageText ? ` ${o.percentageText}%` : ""))
+                .join("   |   ")}
+            </Text>
+          )}
         </View>
+          );
+        })()}
 
         {/* ── AUFBEREITUNG ──────────────────────────────────────────────── */}
         <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight, borderRadius: cardExtras.cardRadius }]}>
