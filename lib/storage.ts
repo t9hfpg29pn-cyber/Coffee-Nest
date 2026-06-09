@@ -342,7 +342,7 @@ const FACT_GENERATORS: FactGenerator[] = [
     }
     const LABELS: Record<string, string> = {
       washed: "Washed", natural: "Natural", honey: "Honey",
-      anaerobic: "Anaerobic", experimental: "Experimental",
+      anaerobic: "Anaerobic", experimental: "Experimental", decaf: "Decaf",
     };
     const sorted = Object.entries(processingCounts).sort((a, b) => b[1] - a[1]);
     if (!sorted.length) return null;
@@ -667,6 +667,7 @@ const PROCESSING_CATEGORIES: { value: string; label: string }[] = [
   { value: "honey",        label: "Honey" },
   { value: "anaerobic",    label: "Anaerobic" },
   { value: "experimental", label: "Experimental" },
+  { value: "decaf",        label: "Decaf" },
 ];
 
 // "Best" is ranked by the single highest individual rating (max of Hase/Dodo),
@@ -694,7 +695,7 @@ export async function getAromaDiscoveryStats(): Promise<CategoryDiscovery[]> {
   );
 }
 
-/** Discovery stats for each of the five processing categories (always all five). */
+/** Discovery stats for each of the six processing categories (always all six). */
 export async function getProcessingDiscoveryStats(): Promise<CategoryDiscovery[]> {
   const coffees = await getAllCoffees();
   return PROCESSING_CATEGORIES.map(({ value, label }) =>

@@ -333,6 +333,7 @@ const PROCESSING_METHODS = [
   { value: "honey",         label: "Honey"        },
   { value: "anaerobic",     label: "Anaerobic"    },
   { value: "experimental",  label: "Experimental" },
+  { value: "decaf",         label: "Decaf"        },
 ] as const;
 
 const ROAST_LEVELS = [

@@ -103,6 +103,7 @@ const PROCESS_STEPS: Record<string, number> = {
   honey: 3,
   anaerobic: 4,
   experimental: 5,
+  decaf: 6,
 };
 
 export function ProcessingIcon({ method, size = 26, color }: { method: string; size?: number; color: string }) {
@@ -151,6 +152,14 @@ export function ProcessingIcon({ method, size = 26, color }: { method: string; s
           <Path d="M8.2,17 L19.8,17" {...pt} />
           <Circle cx="12" cy="20.5" r="1.1" {...pt} />
           <Circle cx="16" cy="21.5" r="0.9" {...pt} />
+        </Svg>
+      );
+    case 6: // Decaf — coffee bean with a slash (no caffeine)
+      return (
+        <Svg width={size} height={size} viewBox="0 0 28 28">
+          <Path d="M14,4 C19,4 20,9 20,14 C20,19 19,24 14,24 C9,24 8,19 8,14 C8,9 9,4 14,4 Z" {...p} />
+          <Path d="M14,6 C16,9.5 12,13.5 14,17.5 C15,20.5 14,22 14,22" {...pt} />
+          <Line x1="6.5" y1="6.5" x2="21.5" y2="21.5" {...p} />
         </Svg>
       );
     default:
