@@ -355,37 +355,6 @@ export default function DiscoveriesScreen() {
         contentContainerStyle={{ padding: 20, paddingBottom: bottomPad + 32, gap: 16 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* ── HERKUNFTSLÄNDER (reduzierte Übersicht) ─────────────────── */}
-        <View style={cardStyle}>
-          <PolyCornerCut />
-          <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionLabel, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
-              HERKUNFTSLÄNDER
-            </Text>
-            <Text style={[styles.sectionCount, { color: colors.tint, fontFamily: "Inter_700Bold" }]}>
-              {mapDiscoveredCount} von {TOTAL_KNOWN}
-            </Text>
-          </View>
-
-          {totalDiscovered === 0 ? (
-            <View style={[styles.emptyRow, { borderTopColor: colors.border }]}>
-              <Text style={[styles.emptyText, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
-                Noch keine Herkünfte eingetragen
-              </Text>
-            </View>
-          ) : lastDiscovered ? (
-            <View style={[styles.lastDiscoveredRow, { borderTopColor: colors.border }]}>
-              <OriginPinIcon size={18} color={colors.tint} />
-              <Text style={[styles.lastDiscoveredLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
-                Zuletzt entdeckt:
-              </Text>
-              <Text style={[styles.lastDiscoveredValue, { color: colors.text, fontFamily: "Inter_600SemiBold" }]}>
-                {lastDiscovered}
-              </Text>
-            </View>
-          ) : null}
-        </View>
-
         {/* ── KAFFEEWELT ────────────────────────────────────────────── */}
         <View style={cardStyle}>
           <PolyCornerCut />
@@ -472,6 +441,18 @@ export default function DiscoveriesScreen() {
               </View>
             )}
           </View>
+
+          {lastDiscovered ? (
+            <View style={[styles.lastDiscoveredRow, { borderTopColor: colors.border }]}>
+              <OriginPinIcon size={18} color={colors.tint} />
+              <Text style={[styles.lastDiscoveredLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
+                Zuletzt entdeckt:
+              </Text>
+              <Text style={[styles.lastDiscoveredValue, { color: colors.text, fontFamily: "Inter_600SemiBold" }]}>
+                {lastDiscovered}
+              </Text>
+            </View>
+          ) : null}
         </View>
 
         {/* ── DEIN KAFFEEPROFIL ─────────────────────────────────────── */}

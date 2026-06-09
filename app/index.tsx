@@ -436,16 +436,6 @@ export default function RoasteriesScreen() {
                   </Text>
                 </View>
               </View>
-              {discoveryStats?.lastDiscoveredCountry ? (
-                <View style={[styles.discoveryFooter, { borderTopColor: colors.border }]}>
-                  <Text style={[styles.discoveryFooterLabel, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
-                    Zuletzt entdeckt:
-                  </Text>
-                  <Text style={[styles.discoveryFooterValue, { color: colors.tint, fontFamily: "Inter_600SemiBold" }]}>
-                    {discoveryStats.lastDiscoveredCountry}
-                  </Text>
-                </View>
-              ) : null}
               </Pressable>
             </View>
           )}
@@ -830,20 +820,6 @@ const styles = StyleSheet.create({
     width: 1,
     height: 40,
     marginHorizontal: 8,
-  },
-  discoveryFooter: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderTopWidth: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    gap: 6,
-  },
-  discoveryFooterLabel: {
-    fontSize: 12,
-  },
-  discoveryFooterValue: {
-    fontSize: 13,
   },
   todayCard: {
     borderWidth: 1,
