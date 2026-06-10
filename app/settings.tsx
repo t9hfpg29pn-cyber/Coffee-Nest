@@ -25,8 +25,8 @@ import { getRoasteries, getAllCoffees, getGrinders, saveGrinders, normalizeGrind
 import { useTheme, useThemeColors, useCardExtras, DesignMode } from "@/context/ThemeContext";
 import { CupIcon, GemIcon, GrinderIcon } from "@/components/CoffeeIcons";
 
-const SERIF_BLACK = "PlayfairDisplay_800ExtraBold";
-const SERIF_BOLD = "PlayfairDisplay_700Bold";
+const SERIF_BLACK = "Fraunces_700Bold";
+const SERIF_BOLD = "Fraunces_600SemiBold";
 
 const DANGER = "#E05252";
 
@@ -275,7 +275,7 @@ export default function SettingsScreen() {
             <Ionicons name="chevron-back" size={26} color={colors.ink} />
           </Pressable>
           <View style={styles.headerLeft}>
-            <Text style={[styles.kicker, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
+            <Text style={[styles.kicker, { color: colors.inkFaint, fontFamily: "Inter_500Medium" }]}>
               COFFEE NEST
             </Text>
             <Text style={[styles.title, { color: colors.ink, fontFamily: SERIF_BLACK }]}>

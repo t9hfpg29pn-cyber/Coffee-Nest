@@ -34,9 +34,9 @@ import { TornDefs, TornSheet, TornBox, IconStamp, Grain } from "@/components/Tor
 import { CupIcon } from "@/components/CoffeeIcons";
 import { useThemeColors, useCardExtras } from "@/context/ThemeContext";
 
-const SERIF_BLACK = "PlayfairDisplay_800ExtraBold";
-const SERIF_BOLD = "PlayfairDisplay_700Bold";
-const SERIF_MED = "PlayfairDisplay_500Medium";
+const SERIF_BLACK = "Fraunces_700Bold";
+const SERIF_BOLD = "Fraunces_600SemiBold";
+const SERIF_MED = "Inter_400Regular";
 
 // Varied torn seeds so adjacent coffee sheets never share a silhouette.
 const LIST_SEEDS = [2, 5, 8, 12, 15, 7, 9, 13, 16, 3];
@@ -411,11 +411,11 @@ export default function RoasteryScreen() {
                           {name1}
                         </Text>
                         {item.haseRating !== null ? (
-                          <Text style={[styles.scoreValue, { color: colors.gold, fontFamily: SERIF_BOLD }]}>
+                          <Text style={[styles.scoreValue, { color: colors.gold, fontFamily: "Inter_700Bold" }]}>
                             {item.haseRating}
                           </Text>
                         ) : (
-                          <Text style={[styles.scoreValue, { color: colors.inkFaint, fontFamily: SERIF_BOLD, opacity: 0.5 }]}>
+                          <Text style={[styles.scoreValue, { color: colors.inkFaint, fontFamily: "Inter_700Bold", opacity: 0.5 }]}>
                             –
                           </Text>
                         )}
@@ -426,11 +426,11 @@ export default function RoasteryScreen() {
                             {name2}
                           </Text>
                           {item.dodoRating !== null ? (
-                            <Text style={[styles.scoreValue, { color: colors.gold, fontFamily: SERIF_BOLD }]}>
+                            <Text style={[styles.scoreValue, { color: colors.gold, fontFamily: "Inter_700Bold" }]}>
                               {item.dodoRating}
                             </Text>
                           ) : (
-                            <Text style={[styles.scoreValue, { color: colors.inkFaint, fontFamily: SERIF_BOLD, opacity: 0.5 }]}>
+                            <Text style={[styles.scoreValue, { color: colors.inkFaint, fontFamily: "Inter_700Bold", opacity: 0.5 }]}>
                               –
                             </Text>
                           )}

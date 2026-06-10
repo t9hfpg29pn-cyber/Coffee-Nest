@@ -26,9 +26,9 @@ import { useThemeColors, useCardExtras, useTheme } from "@/context/ThemeContext"
 import { PolyBackground, PolyActionButton } from "@/components/PolyBackground";
 import { TornDefs, TornSheet, TornBox, Grain, Hairline } from "@/components/TornPaper";
 
-const SERIF_BLACK = "PlayfairDisplay_800ExtraBold";
-const SERIF_BOLD = "PlayfairDisplay_700Bold";
-const SERIF_MED = "PlayfairDisplay_500Medium";
+const SERIF_BLACK = "Fraunces_700Bold";
+const SERIF_BOLD = "Fraunces_600SemiBold";
+const SERIF_MED = "Inter_400Regular";
 
 const SECTION_SEEDS = [2, 5, 8, 12, 15, 7, 9];
 

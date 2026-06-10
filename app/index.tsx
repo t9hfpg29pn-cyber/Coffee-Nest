@@ -23,9 +23,9 @@ import { PolyBackground, PolyActionButton } from "@/components/PolyBackground";
 import { TornDefs, TornSheet, TornBox, IconStamp, Grain } from "@/components/TornPaper";
 import { CupIcon, RoasteryIcon, GlobeIcon, CompassIcon } from "@/components/CoffeeIcons";
 
-const SERIF_BLACK = "PlayfairDisplay_800ExtraBold";
-const SERIF_BOLD = "PlayfairDisplay_700Bold";
-const SERIF_MED = "PlayfairDisplay_500Medium";
+const SERIF_BLACK = "Fraunces_700Bold";
+const SERIF_BOLD = "Fraunces_600SemiBold";
+const SERIF_MED = "Inter_400Regular";
 
 // Varied torn seeds so adjacent roastery sheets never share a silhouette.
 const LIST_SEEDS = [2, 5, 8, 12, 15, 7, 9, 13, 16, 3];
@@ -149,7 +149,7 @@ export default function RoasteriesScreen() {
           <Text style={[styles.scoreName, { color: colors.inkSoft, fontFamily: "Inter_500Medium" }]}>
             {name1}
           </Text>
-          <Text style={[styles.scoreValue, { color: colors.gold, fontFamily: SERIF_BOLD }]}>
+          <Text style={[styles.scoreValue, { color: colors.gold, fontFamily: "Inter_700Bold" }]}>
             {avg.hase!.toFixed(1)}
           </Text>
         </View>
@@ -159,7 +159,7 @@ export default function RoasteriesScreen() {
           <Text style={[styles.scoreName, { color: colors.inkSoft, fontFamily: "Inter_500Medium" }]}>
             {name2}
           </Text>
-          <Text style={[styles.scoreValue, { color: colors.gold, fontFamily: SERIF_BOLD }]}>
+          <Text style={[styles.scoreValue, { color: colors.gold, fontFamily: "Inter_700Bold" }]}>
             {avg.dodo!.toFixed(1)}
           </Text>
         </View>
@@ -184,7 +184,7 @@ export default function RoasteriesScreen() {
       >
         <View style={styles.headerRow}>
           <View style={styles.headerLeft}>
-            <Text style={[styles.kicker, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
+            <Text style={[styles.kicker, { color: colors.inkFaint, fontFamily: "Inter_500Medium" }]}>
               COFFEE NEST
             </Text>
             <Text style={[styles.title, { color: colors.ink, fontFamily: SERIF_BLACK }]}>
@@ -414,7 +414,7 @@ export default function RoasteriesScreen() {
                     ].map((s) => (
                       <View key={s.l} style={styles.discoveryStat}>
                         <s.Icon size={26} color={colors.gold} />
-                        <Text style={[styles.discoveryStatValue, { color: colors.ink, fontFamily: SERIF_BLACK }]}>
+                        <Text style={[styles.discoveryStatValue, { color: colors.ink, fontFamily: "Inter_700Bold" }]}>
                           {s.v}
                         </Text>
                         <Text style={[styles.discoveryStatLabel, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>

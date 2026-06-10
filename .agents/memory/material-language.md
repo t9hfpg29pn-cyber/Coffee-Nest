@@ -19,7 +19,7 @@ canonical, approved translation — copy its composition for any classic-theme s
   backing + slight per-item rotation + light/cream contrast + a soft drop-shadow in the face
   filter — NEVER from boxed cards/box-shadows. Content/stats sit DIRECTLY on a cream sheet (no
   inner cards, stat tiles, full-border boxes, cards-in-cards). List rows = kraft `IconStamp` + big
-  Playfair serif name.
+  Fraunces serif name.
 - **Failure mode 2 — "medieval parchment on old tiles":** caused by (a) making `background` a
   DARK espresso table + near-black espresso planes (looks aged, not a high-end journal), and
   (b) the grain/texture on hard rectangles. Fixes: keep the table LIGHT beige; `PolyBackground`
@@ -74,6 +74,24 @@ canonical, approved translation — copy its composition for any classic-theme s
   `onPress` is set it is wrapped in a bare `Pressable` (no flex). For a flex-grid item, wrap the
   TornSheet in an outer `<View style={{flexBasis:"44%",flexGrow:1}}>` — putting flexBasis on the
   TornSheet itself does NOT size the grid item.
+
+**Typography = "Vintage-Röster" (Fraunces serif + Inter), user-specified roles:**
+- Headlines use `@expo-google-fonts/fraunces` (loaded in `app/_layout.tsx`: `Fraunces_500Medium`,
+  `_600SemiBold`, `_700Bold`). Per-screen constants: `SERIF_BLACK="Fraunces_700Bold"`,
+  `SERIF_BOLD="Fraunces_600SemiBold"`, `SERIF_MED="Inter_400Regular"`. (Playfair Display was fully
+  removed — do not reintroduce.)
+- Role map the user explicitly dictated: app-name kicker "COFFEE NEST" = `Inter_500Medium` uppercase
+  letterspaced; page titles (Seitenüberschriften) = Fraunces Bold; entity/card titles (Kartentitel,
+  e.g. roastery/coffee/grinder/aroma name) = Fraunces Semibold; section labels = `Inter_600SemiBold`
+  uppercase letterspaced; everything else — Fließtext, Metadaten, AND ALL NUMBERS/scores/stats/% —
+  = Inter (`Inter_700Bold` for emphasized figures, `_600SemiBold`/`_500Medium`/`_400Regular` for body).
+- **Why:** user said serif belongs ONLY on page headers + card titles; numbers are Metadaten → Inter.
+  An earlier pass wrongly left score/stat/rating numbers in serif (`SERIF_BOLD`) and was flagged.
+- **How to apply:** the `SERIF_*` constants are overloaded, so DON'T assume `SERIF_BOLD` means "serif
+  everywhere" — at each usage decide by ROLE: a real entity/card title or display heading keeps serif;
+  any numeric/insight-readout value (scoreValue, discoveryStatValue, ratings, mapProgressPct,
+  duoPrimary/centerPrimary insight values) must be an explicit `"Inter_*"`. Monogram stamp initials
+  stay serif (decorative).
 
 **CoffeeIcons.tsx prop gotcha (caused 2 build failures):**
 - Some exports are SCALE/STATE glyphs with a REQUIRED non-size prop, not generic icons:

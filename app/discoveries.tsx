@@ -45,9 +45,9 @@ import {
 } from "@/components/CoffeeIcons";
 import Colors from "@/constants/colors";
 
-const SERIF_BLACK = "PlayfairDisplay_800ExtraBold";
-const SERIF_BOLD = "PlayfairDisplay_700Bold";
-const SERIF_MED = "PlayfairDisplay_500Medium";
+const SERIF_BLACK = "Fraunces_700Bold";
+const SERIF_BOLD = "Fraunces_600SemiBold";
+const SERIF_MED = "Inter_400Regular";
 
 const KNOWN_COUNTRIES = [
   "Äthiopien", "Brasilien", "Burundi", "Costa Rica", "El Salvador",
@@ -86,12 +86,12 @@ function RatingInline({
     <View style={styles.ratingInline}>
       <Text style={[styles.ratingChip, { fontSize: size, color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
         {name1}{" "}
-        <Text style={{ color: colors.gold, fontFamily: SERIF_BOLD, fontSize: size + 3 }}>{hase ?? "–"}</Text>
+        <Text style={{ color: colors.gold, fontFamily: "Inter_700Bold", fontSize: size + 3 }}>{hase ?? "–"}</Text>
       </Text>
       {user2active && (
         <Text style={[styles.ratingChip, { fontSize: size, color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
           {name2}{" "}
-          <Text style={{ color: colors.gold, fontFamily: SERIF_BOLD, fontSize: size + 3 }}>{dodo ?? "–"}</Text>
+          <Text style={{ color: colors.gold, fontFamily: "Inter_700Bold", fontSize: size + 3 }}>{dodo ?? "–"}</Text>
         </Text>
       )}
     </View>
@@ -117,7 +117,7 @@ function DuoColumn({
           {name}
         </Text>
       </View>
-      <Text style={[styles.duoPrimary, { color: colors.ink, fontFamily: SERIF_BOLD }]} numberOfLines={1}>
+      <Text style={[styles.duoPrimary, { color: colors.ink, fontFamily: "Inter_700Bold" }]} numberOfLines={1}>
         {primary}
       </Text>
       {roastery ? (
@@ -333,7 +333,7 @@ export default function DiscoveriesScreen() {
         >
           <Ionicons name="chevron-back" size={26} color={colors.ink} />
         </Pressable>
-        <Text style={[styles.kicker, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
+        <Text style={[styles.kicker, { color: colors.inkFaint, fontFamily: "Inter_500Medium" }]}>
           COFFEE NEST
         </Text>
         <Text style={[styles.title, { color: colors.ink, fontFamily: SERIF_BLACK }]}>
@@ -358,7 +358,7 @@ export default function DiscoveriesScreen() {
             <Text style={[styles.mapProgressText, { color: colors.ink, fontFamily: "Inter_500Medium" }]}>
               {mapDiscoveredCount} von {TOTAL_KNOWN} Herkunftsländern entdeckt
             </Text>
-            <Text style={[styles.mapProgressPct, { color: colors.gold, fontFamily: SERIF_BLACK }]}>
+            <Text style={[styles.mapProgressPct, { color: colors.gold, fontFamily: "Inter_700Bold" }]}>
               {Math.round(mapProgress * 100)} %
             </Text>
           </View>
@@ -437,7 +437,7 @@ export default function DiscoveriesScreen() {
                 <Text style={[styles.lastDiscoveredLabel, { color: colors.inkSoft, fontFamily: "Inter_500Medium" }]}>
                   Zuletzt entdeckt:
                 </Text>
-                <Text style={[styles.lastDiscoveredValue, { color: colors.ink, fontFamily: SERIF_BOLD }]}>
+                <Text style={[styles.lastDiscoveredValue, { color: colors.ink, fontFamily: "Inter_600SemiBold" }]}>
                   {lastDiscovered}
                 </Text>
               </View>
@@ -466,7 +466,7 @@ export default function DiscoveriesScreen() {
                     <Text style={[styles.heroLabel, { color: colors.goldLight, fontFamily: "Inter_600SemiBold" }]}>
                       GEMEINSAMER FAVORIT
                     </Text>
-                    <Text style={[styles.heroName, { color: colors.creamText, fontFamily: SERIF_BLACK }]} numberOfLines={2}>
+                    <Text style={[styles.heroName, { color: colors.creamText, fontFamily: SERIF_BOLD }]} numberOfLines={2}>
                       {sharedFav.name}
                     </Text>
                     {sharedFav.roasteryName ? (
@@ -479,7 +479,7 @@ export default function DiscoveriesScreen() {
                         <HaseIcon size={18} color={colors.goldLight} />
                         <Text style={[styles.heroRatingText, { color: colors.creamTextSoft, fontFamily: "Inter_400Regular" }]}>
                           {name1}{" "}
-                          <Text style={{ color: colors.goldLight, fontFamily: SERIF_BOLD, fontSize: 20 }}>{sharedFav.haseRating}</Text>
+                          <Text style={{ color: colors.goldLight, fontFamily: "Inter_700Bold", fontSize: 20 }}>{sharedFav.haseRating}</Text>
                         </Text>
                       </View>
                       <View style={[styles.heroDivider, { backgroundColor: colors.hairCream }]} />
@@ -487,7 +487,7 @@ export default function DiscoveriesScreen() {
                         <DodoIcon size={18} color={colors.goldLight} />
                         <Text style={[styles.heroRatingText, { color: colors.creamTextSoft, fontFamily: "Inter_400Regular" }]}>
                           {name2}{" "}
-                          <Text style={{ color: colors.goldLight, fontFamily: SERIF_BOLD, fontSize: 20 }}>{sharedFav.dodoRating}</Text>
+                          <Text style={{ color: colors.goldLight, fontFamily: "Inter_700Bold", fontSize: 20 }}>{sharedFav.dodoRating}</Text>
                         </Text>
                       </View>
                     </View>
@@ -506,7 +506,7 @@ export default function DiscoveriesScreen() {
                       <HaseIcon size={18} color={colors.gold} />
                       <DodoIcon size={18} color={colors.gold} />
                     </View>
-                    <Text style={[styles.centerPrimary, { color: colors.ink, fontFamily: SERIF_BOLD }]} numberOfLines={1}>
+                    <Text style={[styles.centerPrimary, { color: colors.ink, fontFamily: "Inter_700Bold" }]} numberOfLines={1}>
                       {haseCountry}
                     </Text>
                   </View>
@@ -515,7 +515,7 @@ export default function DiscoveriesScreen() {
                     <Text style={[styles.blockLabelCenter, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
                       LIEBLINGSLAND
                     </Text>
-                    <Text style={[styles.centerPrimary, { color: colors.ink, fontFamily: SERIF_BOLD }]} numberOfLines={1}>
+                    <Text style={[styles.centerPrimary, { color: colors.ink, fontFamily: "Inter_700Bold" }]} numberOfLines={1}>
                       {haseCountry ?? "—"}
                     </Text>
                   </View>
@@ -553,7 +553,7 @@ export default function DiscoveriesScreen() {
                     <Text style={[styles.blockLabelCenter, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
                       GEMEINSAMER SPITZENREITER
                     </Text>
-                    <Text style={[styles.centerPrimary, { color: colors.ink, fontFamily: SERIF_BOLD }]} numberOfLines={2}>
+                    <Text style={[styles.centerPrimary, { color: colors.ink, fontFamily: "Inter_700Bold" }]} numberOfLines={2}>
                       {haseTop.name}
                     </Text>
                     {haseTop.roasteryName ? (
@@ -564,11 +564,11 @@ export default function DiscoveriesScreen() {
                     <View style={styles.centerRatings}>
                       <Text style={[styles.heroRatingText, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
                         {name1}{" "}
-                        <Text style={{ color: colors.gold, fontFamily: SERIF_BOLD, fontSize: 16 }}>{haseTop.rating}</Text>
+                        <Text style={{ color: colors.gold, fontFamily: "Inter_700Bold", fontSize: 16 }}>{haseTop.rating}</Text>
                       </Text>
                       <Text style={[styles.heroRatingText, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
                         {name2}{" "}
-                        <Text style={{ color: colors.gold, fontFamily: SERIF_BOLD, fontSize: 16 }}>{dodoTop.rating}</Text>
+                        <Text style={{ color: colors.gold, fontFamily: "Inter_700Bold", fontSize: 16 }}>{dodoTop.rating}</Text>
                       </Text>
                     </View>
                   </View>
@@ -577,7 +577,7 @@ export default function DiscoveriesScreen() {
                     <Text style={[styles.blockLabelCenter, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
                       SPITZENREITER
                     </Text>
-                    <Text style={[styles.centerPrimary, { color: colors.ink, fontFamily: SERIF_BOLD }]} numberOfLines={2}>
+                    <Text style={[styles.centerPrimary, { color: colors.ink, fontFamily: "Inter_700Bold" }]} numberOfLines={2}>
                       {haseTop?.name ?? "—"}
                     </Text>
                     {haseTop?.roasteryName ? (
@@ -588,7 +588,7 @@ export default function DiscoveriesScreen() {
                     {haseTop ? (
                       <Text style={[styles.centerSecondary, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
                         Wertung{" "}
-                        <Text style={{ color: colors.gold, fontFamily: SERIF_BOLD, fontSize: 15 }}>{haseTop.rating}</Text>
+                        <Text style={{ color: colors.gold, fontFamily: "Inter_700Bold", fontSize: 15 }}>{haseTop.rating}</Text>
                       </Text>
                     ) : null}
                   </View>
@@ -608,7 +608,7 @@ export default function DiscoveriesScreen() {
                           haseTop ? (
                             <Text style={[styles.duoSecondary, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
                               Wertung{" "}
-                              <Text style={{ color: colors.gold, fontFamily: SERIF_BOLD, fontSize: 14 }}>{haseTop.rating}</Text>
+                              <Text style={{ color: colors.gold, fontFamily: "Inter_700Bold", fontSize: 14 }}>{haseTop.rating}</Text>
                             </Text>
                           ) : undefined
                         }
@@ -624,7 +624,7 @@ export default function DiscoveriesScreen() {
                           dodoTop ? (
                             <Text style={[styles.duoSecondary, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
                               Wertung{" "}
-                              <Text style={{ color: colors.gold, fontFamily: SERIF_BOLD, fontSize: 14 }}>{dodoTop.rating}</Text>
+                              <Text style={{ color: colors.gold, fontFamily: "Inter_700Bold", fontSize: 14 }}>{dodoTop.rating}</Text>
                             </Text>
                           ) : undefined
                         }
