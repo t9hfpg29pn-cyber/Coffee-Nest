@@ -9,34 +9,11 @@ import { useTheme } from "@/context/ThemeContext";
 export function PolyBackground() {
   const { design } = useTheme();
 
-  if (design === "classic") {
-    return (
-      <View style={StyleSheet.absoluteFill} pointerEvents="none">
-        <Svg
-          width="100%"
-          height="100%"
-          viewBox="0 0 375 812"
-          preserveAspectRatio="xMidYMid slice"
-        >
-          {/* A faint warm glow soaking through the top of the table */}
-          <Path
-            d="M0,0 H375 V236 C300,286 246,198 166,248 C88,296 40,216 0,260 Z"
-            fill="rgba(214,156,86,0.07)"
-          />
-          {/* A slightly warmer torn band through the middle */}
-          <Path
-            d="M0,250 C90,212 150,300 250,256 C322,226 360,282 375,252 V486 C300,524 228,442 148,490 C80,532 30,456 0,496 Z"
-            fill="rgba(176,122,46,0.05)"
-          />
-          {/* A deeper espresso soak settling toward the base */}
-          <Path
-            d="M0,486 C80,524 150,452 232,498 C300,536 350,470 375,500 V812 H0 Z"
-            fill="rgba(0,0,0,0.18)"
-          />
-        </Svg>
-      </View>
-    );
-  }
+  // Classic (Paper Layers V3): the "table" is a FLAT light warm-beige field set
+  // by the screen container's backgroundColor. No gradient/soak — a dark soak
+  // here is what made the journal read as aged parchment. The only texture is
+  // the subtle <Grain/> overlay from TornPaper.
+  if (design === "classic") return null;
 
   if (design !== "lowpoly") return null;
 

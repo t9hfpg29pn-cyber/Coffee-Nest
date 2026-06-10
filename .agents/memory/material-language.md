@@ -9,20 +9,29 @@ The classic ("light") theme is a torn-paper system implemented with `components/
 (`TornDefs`, `TornSheet`, `TornBox`, `IconStamp`, `Grain`, `Hairline`). `app/index.tsx` is the
 canonical, approved translation — copy its composition for any classic-theme screen.
 
-**The composition (and the failure mode to avoid):**
-- A redesign that puts paper *texture* on cards STILL READS AS A CARD UI and will be rejected.
-- The fix is a 3-plane contrast model: a DARK espresso "table" = `colors.background`; cream
-  paper "pages" = `<TornSheet tone="cream">`; dark espresso "glued notes" = `<TornSheet tone="espresso">`
-  used sparingly for hero/feature blocks. Depth comes from overlap + offset kraft backing +
-  slight per-item rotation + contrast — NEVER from boxed cards or box-shadows.
-- Content/stats sit DIRECTLY on a cream sheet: no inner cards, no stat tiles, no full-border
-  boxes, no cards-in-cards. List entries use a kraft `IconStamp` + big Playfair serif name.
-- **Why:** the user explicitly rejected the first attempt as "a card UI with paper texture";
-  the approved direction is "a surface BUILT FROM overlapping paper layers".
-- **How to apply:** never render primary text directly on `colors.background` (it is dark) —
-  always inside a cream sheet. Text on cream = ink/inkSoft/inkFaint; on espresso =
-  creamText/creamTextSoft/creamTextFaint. Bottom-sheet MODALS may keep a rounded elevated
-  surface (the canonical index add-modal does) — that exception is fine, it is not a page card.
+**The composition (and the TWO failure modes that got rejected):**
+- The palette is LIGHT and airy, NOT dark. `colors.background` (classic/light) is a flat warm
+  BEIGE table `#E9DDC9` (= `--paper-bg`); cream "pages" = `<TornSheet tone="cream">` (#F4EAD5);
+  kraft backing (#CBAB7B) peeks behind each torn sheet; espresso (a WARM milk-chocolate brown
+  `#6E4A2A`, NOT near-black) is for feature/hero planes only. ALL light-theme tokens mirror
+  `artifacts/mockup-sandbox/src/components/mockups/paper-layers/_group.css` 1:1 — copy them exactly.
+- **Failure mode 1 — "card UI with paper texture":** depth must come from overlap + offset kraft
+  backing + slight per-item rotation + light/cream contrast + a soft drop-shadow in the face
+  filter — NEVER from boxed cards/box-shadows. Content/stats sit DIRECTLY on a cream sheet (no
+  inner cards, stat tiles, full-border boxes, cards-in-cards). List rows = kraft `IconStamp` + big
+  Playfair serif name.
+- **Failure mode 2 — "medieval parchment on old tiles":** caused by (a) making `background` a
+  DARK espresso table + near-black espresso planes (looks aged, not a high-end journal), and
+  (b) the grain/texture on hard rectangles. Fixes: keep the table LIGHT beige; `PolyBackground`
+  returns null for classic (flat bg only, no dark soak); espresso is warm brown; and TornSheet/
+  TornBox now always apply a small web borderRadius so sheets never collapse to hard rectangles
+  if the torn SVG filter silently fails to apply on web.
+- **Why:** the user rejected a dark-table version as "parchment on tiles … not an organic,
+  high-quality coffee journal." The approved target is light, airy, organic.
+- **How to apply:** text on the beige background or on cream = ink/inkSoft/inkFaint; ONLY text
+  inside an espresso sheet uses creamText/creamTextSoft/creamTextFaint. After any dark→light
+  palette flip, audit every empty/loading state for cream-on-background text (it goes invisible).
+  Bottom-sheet MODALS may keep a rounded elevated surface — that exception is fine.
 
 **CoffeeIcons.tsx prop gotcha (caused 2 build failures):**
 - Some exports are SCALE/STATE glyphs with a REQUIRED non-size prop, not generic icons:

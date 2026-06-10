@@ -327,18 +327,18 @@ export default function RoasteriesScreen() {
         </View>
       ) : roasteries.length === 0 ? (
         <View style={styles.centerState}>
-          <Ionicons name="cafe-outline" size={52} color={colors.creamTextFaint} />
-          <Text style={[styles.emptyTitle, { color: colors.creamText, fontFamily: SERIF_BOLD }]}>
+          <Ionicons name="cafe-outline" size={52} color={colors.inkFaint} />
+          <Text style={[styles.emptyTitle, { color: colors.ink, fontFamily: SERIF_BOLD }]}>
             Noch keine Röstereien
           </Text>
-          <Text style={[styles.emptySubtitle, { color: colors.creamTextSoft, fontFamily: "Inter_400Regular" }]}>
+          <Text style={[styles.emptySubtitle, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
             Tippe auf + um deine erste Rösterei hinzuzufügen
           </Text>
         </View>
       ) : filteredRoasteries.length === 0 ? (
         <View style={styles.centerState}>
-          <Ionicons name="location-outline" size={52} color={colors.creamTextFaint} />
-          <Text style={[styles.emptyTitle, { color: colors.creamText, fontFamily: SERIF_BOLD }]}>
+          <Ionicons name="location-outline" size={52} color={colors.inkFaint} />
+          <Text style={[styles.emptyTitle, { color: colors.ink, fontFamily: SERIF_BOLD }]}>
             Keine Röstereien in {selectedCity}
           </Text>
         </View>

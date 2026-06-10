@@ -140,9 +140,11 @@ export function TornSheet({
   const backSeed = ((seed + 6) % SEED_COUNT) + 1;
   const underSeed = ((seed + 3) % SEED_COUNT) + 1;
 
-  // Native fallback: soft rounded corners so sheets still read as paper.
-  const faceRadius: ViewStyle = isWeb ? {} : { borderRadius: 14 };
-  const backRadius: ViewStyle = isWeb ? {} : { borderRadius: 16 };
+  // Soft rounded corners so sheets still read as paper even if the torn SVG
+  // filter fails to apply on web (otherwise they collapse to hard rectangles).
+  // When the filter IS applied the displacement tears these edges anyway.
+  const faceRadius: ViewStyle = { borderRadius: isWeb ? 8 : 14 };
+  const backRadius: ViewStyle = { borderRadius: isWeb ? 10 : 16 };
 
   const inner = (
     <View style={[styles.container, style]}>
@@ -224,7 +226,7 @@ export function TornBox({
   radius?: number;
   style?: StyleProp<ViewStyle>;
 }) {
-  const r: ViewStyle = isWeb ? {} : { borderRadius: radius };
+  const r: ViewStyle = { borderRadius: radius };
   return (
     <View style={style}>
       <View

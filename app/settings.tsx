@@ -354,7 +354,7 @@ export default function SettingsScreen() {
           </Text>
         </TornSheet>
 
-        <Text style={[styles.hint, { color: colors.creamTextSoft, fontFamily: "Inter_400Regular" }]}>
+        <Text style={[styles.hint, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
           Das Design wird sofort überall in der App angewendet.
         </Text>
 
@@ -479,7 +479,7 @@ export default function SettingsScreen() {
           )}
         </TornSheet>
 
-        <Text style={[styles.hint, { color: colors.creamTextSoft, fontFamily: "Inter_400Regular" }]}>
+        <Text style={[styles.hint, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
           Die Namen werden überall in der App verwendet und lokal gespeichert.
         </Text>
 
@@ -572,7 +572,7 @@ export default function SettingsScreen() {
           )}
         </TornSheet>
 
-        <Text style={[styles.hint, { color: colors.creamTextSoft, fontFamily: "Inter_400Regular" }]}>
+        <Text style={[styles.hint, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
           Wähle beim Kaffee die verwendete Mühle aus.
         </Text>
 
@@ -625,7 +625,7 @@ export default function SettingsScreen() {
           </Pressable>
         </TornSheet>
 
-        <Text style={[styles.hint, { color: colors.creamTextSoft, fontFamily: "Inter_400Regular", marginTop: 8 }]}>
+        <Text style={[styles.hint, { color: colors.inkSoft, fontFamily: "Inter_400Regular", marginTop: 8 }]}>
           Exportiere regelmäßig ein Backup um Datenverlust zu vermeiden.
         </Text>
 

@@ -15,44 +15,46 @@ const warmGray = "#8B7355";
 //     with their own darker backing + cream text, so they read as the top layer.
 //   • ink* — text tones on cream; creamText* — text tones on espresso.
 export default {
-  // Klassisch — cream paper "pages" laid on a deep espresso table. The strong
-  // dark-table → cream-page → espresso-note contrast is the whole point: text
-  // never sits directly on `background`, always on a cream `surface` sheet.
+  // Klassisch — Paper Layers V3. A LIGHT, airy warm-beige "table" (paper-bg)
+  // with cream paper sheets resting on it; depth comes from a kraft backing
+  // peeking behind each torn sheet + soft drop-shadow, NOT from a dark table.
+  // Espresso is a warm milk-chocolate brown used ONLY for feature planes.
+  // Tokens mirror artifacts/mockup-sandbox/.../paper-layers/_group.css exactly.
   light: {
-    background: "#241712",
-    backdrop: "#1A0F0A",
-    surface: "#F1E7D3",
-    surfaceElevated: "#F8F1E2",
-    text: "#3A2615",
-    textSecondary: "#7C6548",
-    tint: "#B07A2E",
-    accent: "#B07A2E",
-    border: "#D9C5A0",
+    background: "#E9DDC9",
+    backdrop: "#E2D4BC",
+    surface: "#F4EAD5",
+    surfaceElevated: "#FAF3E5",
+    text: "#3A2716",
+    textSecondary: "#7A6447",
+    tint: "#B07526",
+    accent: "#B07526",
+    border: "#D8C4A0",
     tabIconDefault: "#A38C70",
-    tabIconSelected: "#B07A2E",
-    heroSurface: "#2A1A0E",
-    heroBacking: "#19100A",
-    heroText: "#F4EAD6",
-    heroTextSub: "#D6C3A0",
-    heroBorder: "#3E2918",
-    heroTint: "#DC9E4C",
+    tabIconSelected: "#B07526",
+    heroSurface: "#6E4A2A",
+    heroBacking: "#5A3B20",
+    heroText: "#F6EEDD",
+    heroTextSub: "#E2D1B2",
+    heroBorder: "#815A36",
+    heroTint: "#E0A646",
     // Paper-layers tokens
-    paperBg2: "#E9DCC3",
-    kraft: "#C3A067",
-    kraftDeep: "#A6824B",
-    espresso: "#2A1A0E",
-    espresso2: "#180F09",
-    espresso3: "#3E2918",
-    gold: "#B07A2E",
-    goldLight: "#DC9E4C",
-    ink: "#3A2615",
-    inkSoft: "#7C6548",
-    inkFaint: "#A88F6E",
-    creamText: "#F4EAD6",
-    creamTextSoft: "#D6C3A0",
-    creamTextFaint: "#AB9067",
-    hair: "rgba(58, 38, 21, 0.16)",
-    hairCream: "rgba(244, 234, 214, 0.20)",
+    paperBg2: "#E2D4BC",
+    kraft: "#CBAB7B",
+    kraftDeep: "#B68F58",
+    espresso: "#6E4A2A",
+    espresso2: "#5A3B20",
+    espresso3: "#815A36",
+    gold: "#B07526",
+    goldLight: "#E0A646",
+    ink: "#3A2716",
+    inkSoft: "#7A6447",
+    inkFaint: "#A38C70",
+    creamText: "#F6EEDD",
+    creamTextSoft: "#E2D1B2",
+    creamTextFaint: "#C6AF8C",
+    hair: "rgba(58, 39, 22, 0.14)",
+    hairCream: "rgba(246, 238, 221, 0.22)",
   },
   // Klassisch dark — same cream paper, but on a near-black espresso table.
   dark: {
