@@ -9,7 +9,7 @@ import {
   Modal,
   Alert,
   Platform,
-  ImageBackground,
+  Image,
 } from "react-native";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -356,12 +356,12 @@ export default function RoasteriesScreen() {
                     },
                   ]}
                 >
-                  <ImageBackground
-                    source={paper02CardTexture}
-                    resizeMode="cover"
-                    style={styles.cardSurface}
-                    imageStyle={styles.cardSurfaceImage}
-                  >
+                  <View style={styles.cardSurface}>
+                    <Image
+                      source={paper02CardTexture}
+                      resizeMode="stretch"
+                      style={styles.cardTextureFill}
+                    />
                     <View style={[styles.cardIcon, { backgroundColor: colors.gold + "1F" }]}>
                       <RoasteryIcon size={28} color={colors.gold} />
                     </View>
@@ -375,7 +375,7 @@ export default function RoasteriesScreen() {
                       {avg ? renderScore(avg) : null}
                     </View>
                     <Ionicons name="chevron-forward" size={20} color={colors.inkFaint} />
-                  </ImageBackground>
+                  </View>
                 </Pressable>
               );
             })}
@@ -722,8 +722,10 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     overflow: "hidden",
   },
-  cardSurfaceImage: {
-    borderRadius: 20,
+  cardTextureFill: {
+    ...StyleSheet.absoluteFillObject,
+    width: "100%",
+    height: "100%",
   },
   cardIcon: {
     width: 56,

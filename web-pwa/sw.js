@@ -1,6 +1,6 @@
 // Bump CACHE whenever you ship breaking asset changes. Installed clients
 // will then drop the old cache on activate.
-const CACHE = "coffeenest-v7";
+const CACHE = "coffeenest-v8";
 
 const PRECACHE = [
   "/",
