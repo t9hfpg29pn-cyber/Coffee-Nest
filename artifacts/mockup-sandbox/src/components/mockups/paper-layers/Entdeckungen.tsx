@@ -56,8 +56,8 @@ function Sheet({
   const backing = tone === "cream" ? "var(--kraft)" : "var(--espresso-2)";
   const shadow =
     tone === "cream"
-      ? "drop-shadow(0 10px 16px rgba(40,24,12,0.20))"
-      : "drop-shadow(0 14px 22px rgba(15,8,4,0.42))";
+      ? "drop-shadow(0 10px 16px rgba(58,39,22,0.16))"
+      : "drop-shadow(0 12px 20px rgba(74,48,24,0.24))";
   const backSeed = ((seed + 6) % 16) + 1;
   return (
     <div className="relative" style={style}>
