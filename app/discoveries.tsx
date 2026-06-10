@@ -476,10 +476,11 @@ export default function DiscoveriesScreen() {
                   <View
                     style={[
                       styles.heroCard,
+                      cardExtras.elevatedShadow,
                       {
                         backgroundColor: colors.surface,
                         borderColor: colors.tint,
-                        borderRadius: isLowpoly ? 4 : 14,
+                        borderRadius: isLowpoly ? 8 : 14,
                       },
                     ]}
                   >

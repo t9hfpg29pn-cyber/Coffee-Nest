@@ -1,0 +1,366 @@
+Coffee Nest soll eine neue visuelle Material-Sprache erhalten.
+
+WICHTIG:
+
+Keine Funktionen ändern.
+
+Keine Navigation ändern.
+
+Keine Daten ändern.
+
+Keine Bereiche verschieben.
+
+Keine Informationsarchitektur ändern.
+
+Keine Karten entfernen.
+
+Keine Karten hinzufügen.
+
+Keine Änderungen an der Weltkarte selbst.
+
+Ausschließlich die visuelle Oberflächen-Sprache modernisieren.
+
+==================================================
+VISION
+
+Coffee Nest soll sich weniger wie ein Dashboard
+und mehr wie ein hochwertiges persönliches Kaffeejournal anfühlen.
+
+Die App soll folgende Gefühle vermitteln:
+
+* warm
+* ruhig
+* entschleunigt
+* hochwertig
+* beständig
+* handwerklich
+* gesammelt über viele Jahre
+* gemütlich
+* vertraut
+
+Der Nutzer soll das Gefühl haben:
+
+“Das ist mein persönliches Kaffeenest.”
+
+Nicht:
+
+“Das ist eine Datenbank.”
+
+==================================================
+INSPIRATION
+
+Nicht:
+
+* Business Dashboard
+* technische Software
+* Material Design Standardkomponenten
+* Admin-Oberfläche
+* Gaming UI
+
+Sondern:
+
+* hochwertiges Notizbuch
+* persönliches Journal
+* Coffee Table Book
+* handwerkliche Kaffee-Kultur
+* Chemex
+* Papier
+* Druckerzeugnisse
+* hochwertige Kartenwerke
+* Moleskine
+* Field Notes
+
+==================================================
+MATERIALITÄT
+
+Die bestehende Farbpalette bleibt erhalten.
+
+Farben NICHT neu definieren.
+
+Stattdessen die Materialwirkung verändern.
+
+==================================================
+PAPIER-GEFÜHL
+
+Die Oberflächen sollen wirken,
+als wären sie aus hochwertigem strukturiertem Papier gefertigt.
+
+Inspiration:
+
+* hochwertige Naturpapier-Oberflächen
+* leicht raue Papierstruktur
+* die angenehme Haptik eines E-Ink-Geräts mit strukturierter Oberfläche
+* Papier, das man gerne berührt
+
+WICHTIG:
+
+Keine sichtbaren Papierfotos.
+
+Keine aufdringlichen Texturen.
+
+Keine künstlichen Noise-Overlays.
+
+Die Materialität soll subtil und hochwertig wirken.
+
+Man soll sie eher fühlen als sehen.
+
+==================================================
+CHEMEX-INSPIRATION
+
+Die Materialsprache darf sich an der Wirkung eines Chemex-Filters orientieren.
+
+Nicht als direkte Darstellung.
+
+Sondern als Stimmung.
+
+Gedankenbilder:
+
+* dickes Filterpapier
+* warme Papierfasern
+* natürliche Materialien
+* handwerkliche Zubereitung
+
+Besonders interessant:
+
+Der Moment des Bloomings.
+
+Wenn heißes Wasser den Kaffee durchdringt.
+
+Wenn sich warme Brauntöne langsam im Papier ausbreiten.
+
+Diese Wärme und Sättigung darf subtil in die Flächenhierarchie einfließen.
+
+Nicht bunt.
+
+Nicht kontrastreich.
+
+Sondern ruhig und organisch.
+
+==================================================
+LAYERING
+
+Die Oberfläche soll wirken,
+als bestünde sie aus mehreren weichen Papierlagen.
+
+Nicht geometrisch.
+
+Nicht technisch.
+
+Nicht hartkantig.
+
+==================================================
+
+Vorstellung:
+
+Mehrere Papierlagen liegen übereinander.
+
+Jede Ebene hebt sich minimal von der darunterliegenden ab.
+
+==================================================
+
+WICHTIG:
+
+Keine starken Schatten.
+
+Keine Karten, die schweben.
+
+Keine 3D-Effekte.
+
+Keine Glassmorphism-Effekte.
+
+==================================================
+
+Stattdessen:
+
+* sanfte Tiefenwirkung
+* weiche Übergänge
+* minimale Höhenunterschiede
+* dezente Materialgrenzen
+
+Fast haptisch.
+
+Aber ruhig.
+
+==================================================
+KARTEN
+
+Aktuell wirken viele Bereiche wie klassische UI-Karten.
+
+Die Karten sollen sich eher wie ausgeschnittene Papierflächen anfühlen.
+
+==================================================
+
+Weniger:
+
+* Rahmen
+* Boxen
+* Container
+
+Mehr:
+
+* Flächen
+* Ebenen
+* Material
+
+==================================================
+TIEFENHIERARCHIE
+
+Definiere drei Materialebenen:
+
+Ebene 1:
+Grundfläche
+
+Ebene 2:
+normale Inhalte
+
+Ebene 3:
+wichtige Inhalte
+
+==================================================
+
+Beispiel:
+
+Gemeinsamer Favorit
+
+darf eine leicht höhere Materialebene erhalten.
+
+Nicht durch stärkere Farben.
+
+Nicht durch Effekte.
+
+Sondern durch subtil andere Materialwirkung.
+
+==================================================
+TYPOGRAFIE
+
+Typografie bleibt grundsätzlich erhalten.
+
+Aber die visuelle Hierarchie soll stärker an ein Journal erinnern.
+
+==================================================
+
+Wichtig:
+
+Kaffeenamen
+
+Röstereien
+
+persönliche Erkenntnisse
+
+==================================================
+
+Weniger wichtig:
+
+Labels
+
+Metadaten
+
+Hilfstexte
+
+==================================================
+
+Der Blick soll automatisch auf die Geschichten gelenkt werden.
+
+Nicht auf die UI.
+
+==================================================
+ICONS
+
+Bestehende Icons beibehalten.
+
+Sie sollen sich jedoch harmonischer in die Materialsprache einfügen.
+
+Nicht wie aufgesetzte UI-Symbole.
+
+Sondern wie Teil derselben Oberfläche.
+
+==================================================
+AROMA- UND AUFBEREITUNGSKARTEN
+
+Diese Bereiche sollen sich wie kleine Sammelkarten anfühlen.
+
+Nicht wie Statistikmodule.
+
+Nicht wie Widgets.
+
+==================================================
+
+Mehr:
+
+* Wertigkeit
+* Ruhe
+* Materialität
+
+Weniger:
+
+* technische UI
+
+==================================================
+HINTERGRUND
+
+Der bestehende Hintergrund darf bleiben.
+
+Prüfen:
+
+ob die aktuelle Low-Poly-Optik etwas organischer interpretiert werden kann.
+
+==================================================
+
+Ziel:
+
+Weniger harte Geometrie.
+
+Mehr natürliche Flächen.
+
+Mehr Ruhe.
+
+==================================================
+WELTKARTE
+
+Aktuell keinerlei funktionale Änderungen.
+
+Aktuell keine Layoutänderungen.
+
+Die neue Material-Sprache soll lediglich so vorbereitet werden,
+dass sie später auf die Weltkarte übertragen werden kann.
+
+==================================================
+GESTALTUNGSGRUNDSATZ
+
+Wenn zwischen diesen beiden Optionen gewählt werden muss:
+
+A) mehr Effekte
+
+oder
+
+B) mehr Ruhe
+
+immer Variante B wählen.
+
+==================================================
+
+Die Materialität soll eher gefühlt werden als sichtbar sein.
+
+==================================================
+ZIEL
+
+Nach der Überarbeitung soll Coffee Nest wirken wie:
+
+“Ein persönliches Kaffeejournal, das über viele Jahre gewachsen ist.”
+
+Nicht wie:
+
+“Eine App zur Verwaltung von Kaffeedaten.”
+
+==================================================
+ABSCHLUSS
+
+1. Build durchführen
+2. Mobile Ansicht prüfen
+3. iPhone-PWA prüfen
+4. Lesbarkeit prüfen
+5. Sicherstellen, dass keine Funktionen verändert wurden
+6. Sicherstellen, dass keine Navigation verändert wurde
+7. Sicherstellen, dass die App ruhiger und hochwertiger wirkt
+8. Fokus auf Materialität statt auf Effekte
+9. Fokus auf Atmosphäre statt auf Dekoration
