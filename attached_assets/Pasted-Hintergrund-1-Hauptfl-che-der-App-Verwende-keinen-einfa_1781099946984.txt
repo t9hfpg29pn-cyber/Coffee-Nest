@@ -1,0 +1,164 @@
+Hintergrund 1 – Hauptfläche der App
+
+Verwende keinen einfarbigen Hintergrund.
+
+Erstelle einen mehrschichtigen Hintergrund aus 3–4 großen, organischen Farbflächen.
+
+Eigenschaften:
+
+weiche, fließende Übergänge
+keine Polygonflächen
+keine harten Kanten
+keine sichtbaren Muster
+sehr geringe Kontraste
+erinnert an Kaffee, der sich langsam in Papier ausbreitet
+
+Farben:
+
+#1B0D08
+#2B140C
+#3A1D10
+#4A2616
+
+Die Farbflächen dürfen sich überlappen und sollen wirken wie:
+
+Kaffeeflecken auf Papier
+Blooming eines Pour Over
+ineinanderlaufende Wasserfarben
+
+Nicht wie Geometrie.
+Nicht wie Low Poly.
+
+Hintergrund 2 – Papierfläche
+
+Alle Karten und Content-Bereiche sollen auf einer hellen Papierfläche liegen.
+
+Farbe:
+
+#F2EBDC
+
+Eigenschaften:
+
+warmes Creme
+leicht vergilbt
+kein Reinweiß
+erinnert an Chemex-Filterpapier
+Papiertextur
+
+Die Papierflächen dürfen niemals glatt wirken.
+
+Erzeuge eine sehr subtile Papierstruktur:
+
+feine Papierfasern
+kaum sichtbar
+maximal 3–5 % Deckkraft
+nur bei genauem Hinsehen erkennbar
+
+Referenz:
+
+hochwertiges Naturpapier
+Boox Go Displayoberfläche
+Chemex Papierfilter
+
+Wichtig:
+
+Keine Grunge-Textur.
+Keine Kratzer.
+Keine Vintage-Effekte.
+
+Kanten der Papierflächen
+
+Papierflächen dürfen nicht wie Standard-Cards aussehen.
+
+Verwende:
+
+große Rundungen (20–28 px)
+leicht organische Konturen
+minimale Unregelmäßigkeiten
+
+Die Kanten sollen wirken wie:
+
+gestanztes Papier
+nicht wie zerknittertes Pergament
+
+Nicht verwenden:
+
+ausgefranste Ränder
+verbrannte Ränder
+alte Schriftrollenoptik
+Layering
+
+Jede Ebene besteht aus:
+
+dunkler Hintergrund
+Papierfläche
+kleine Akzentfläche
+
+Zwischen den Ebenen:
+
+8–16 px Abstand
+sehr weicher Schatten
+Schattenfarbe dunkelbraun statt schwarz
+
+Beispiel:
+
+rgba(28,12,7,0.25)
+
+Die Tiefe soll hochwertig wirken.
+
+Nicht dramatisch.
+
+Nicht Comic.
+
+Farbige Akzentflächen
+
+Kleine Flächen wie:
+
+Buttons
+Icon-Hintergründe
+Statistikfelder
+
+dürfen eine eigene Papierfarbe besitzen.
+
+Farben:
+
+#D6B06B
+#C79543
+#B77B2E
+
+Diese Flächen sollen wirken wie:
+
+Papier das Kaffee aufgenommen hat
+getrocknete Blooming-Ränder
+warme Kaffeefilter-Färbung
+
+Nicht wie Gold.
+Nicht wie Metall.
+
+Gesamtwirkung
+
+Das Ziel ist nicht:
+
+Pergament
+Vintage
+Mittelalter
+Scrapbook
+
+Das Ziel ist:
+
+Ein modernes Coffee Journal.
+
+Assoziationen:
+
+Chemex
+Specialty Coffee
+hochwertige Verpackungen von Röstereien
+japanische Papierwaren
+Moleskine
+handgefertigte Kaffeekarten
+
+Die App soll ruhig, warm, hochwertig und haptisch wirken.
+
+Nicht verspielt.
+Nicht rustikal.
+Nicht retro.

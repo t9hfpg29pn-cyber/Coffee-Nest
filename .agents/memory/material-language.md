@@ -33,33 +33,38 @@ canonical, approved translation — copy its composition for any classic-theme s
   palette flip, audit every empty/loading state for cream-on-background text (it goes invisible).
   Bottom-sheet MODALS may keep a rounded elevated surface — that exception is fine.
 
-**Torn edges on RN-Web — the #1 "looks like card UI" cause:**
-- The torn silhouette is a CSS `filter: url(#torn-N)` displacement filter applied to plain Views.
-  It only works if real DOM `<filter>` defs with that id exist. `react-native-svg`'s web build does
-  NOT reliably emit usable filter primitives (`<Filter>`/`<FeTurbulence>`/`<FeDisplacementMap>`),
-  AND rendering a raw `React.createElement("div", {dangerouslySetInnerHTML})` through RNW's reconciler
-  throws "Invalid hook call". Working approach (`TornDefs` in `components/TornPaper.tsx`): inject the
-  raw SVG `<defs>` string into `document.body` once via `useEffect` + `host.innerHTML` (id-guarded).
-- **Why:** when the filter id doesn't resolve, every sheet falls back to a rounded rectangle with an
-  offset kraft block behind it = exactly a drop-shadow card. User read this as "80% card UI". The
-  palette being correct is NOT enough — the displacement filter MUST actually paint.
-- **How to apply:** on web keep the sheet base shape SHARP (borderRadius 0) so the displacement
-  supplies the only edge; only use rounded corners on native (no filters there). If sheets ever look
-  like cards again on web, first confirm `#torn-N` filters exist in the live DOM, not the palette.
+**Torn edges on RN-Web — use STATIC baked masks, NOT live per-element filters:**
+- The torn silhouette is now a self-contained `mask-image` data-URI that BAKES the same
+  `feTurbulence`+`feDisplacementMap` once (`tornMaskUri(seed)` in `components/TornPaper.tsx`, memoized
+  per seed; `maskSize:100% 100%`, both `maskImage` + `WebkitMaskImage`). It does NOT depend on any
+  shared DOM `<defs>` — `TornDefs` is now a no-op kept only for API compat.
+- **Why:** the old approach applied a LIVE `filter: url(#torn-N)` to every sheet, with defs injected
+  into `document.body`. In a static mockup that's fine, but the real app renders one filtered sheet
+  PER list item and scrolls → turbulence recomputed on every repaint = jank, AND when a live filter
+  lags/fails the offset backing layer paints as a plain rectangle peeking out (user's "leere Blöcke,
+  besonders am linken Rand"). Baked masks rasterize once, composite cheaply, and never fall back to a
+  bare rectangle.
+- **How to apply:** RN-Web passes unknown style props straight through (`createReactDOMStyle` +
+  `normalizeValueWithProperty` leave string values like `maskImage`/`filter`/`backgroundImage`
+  unchanged), so set them via a `webStyle()` helper (web-only). Mask SVG: 320×320, rect inset 16px so
+  ±5.5px displacement (`scale 11`) never clips to a straight edge. Drop-shadow MUST live on a
+  NON-masked wrapper View (mask is applied after filter, so a mask on the same element clips the
+  shadow halo). On native there are no masks → keep the rounded-corner fallback.
 
-**Richness = layered SOLID-colour planes, NOT any texture overlay (final, hard-won):**
-- The TornSheet face is a SOLID colour + `filter: url(#torn-N) drop-shadow(...)`. NO mottle, NO
-  fibre, NO baked noise `background-image`. Depth/"multi-tonality" comes ONLY from: the torn
-  silhouette, the offset kraft/espresso2 backing peek, the espresso3 underlayer peek (espresso
-  tone), and the drop-shadow — exactly like the mockup. The single web-only global `Grain`
-  overlay stays at opacity ~0.05.
-- Torn filter params MUST match the mockup 1:1: region `-12%/124%`, `baseFrequency 0.013 0.016`,
-  `numOctaves 3`, `scale 11`; `paper-grain` = `baseFrequency 0.9 numOctaves 2`. Do NOT retune these.
-- **Why:** every attempt to add "damp-paper" texture (live per-sheet filter → janky; then a baked
-  soft-light mottle + fibre `background-image`) WASHED OUT the cream into a flat muddy grey and the
-  user kept seeing "kaum Veränderung / riesiger Unterschied" vs the template. The mockup has ZERO
-  surface texture; matching it exactly is what finally read as rich. **How to apply:** if the user
-  wants more depth, add/strengthen layered planes & contrast — never a noise/texture fill.
+**Multi-tonality on cream = subtle WARM gradient + kraft showing through torn edges:**
+- The TornSheet face is a SOLID base colour + a subtle warm `backgroundImage` linear-gradient (cream:
+  `surfaceElevated→surface`; espresso: `espresso3→espresso→espresso2`, all theme tokens). Plus the
+  baked torn mask lets the offset kraft/espresso2 backing peek through the edges = real
+  "Mehrfarbigkeit". Global `Grain` is now a STATIC tiled noise data-URI (not a live full-screen
+  turbulence filter), opacity ~0.05, `mixBlendMode:multiply`.
+- **Why:** a DESATURATED noise/mottle overlay (`saturate 0`) washed cream into muddy grey and was
+  rejected; but a flat solid cream with no working edges read as "gar keine Struktur". The fix is warm
+  tonal variation (gradient between warm tokens, never grey) + reliable torn edges revealing the kraft
+  backing. **How to apply:** for more depth, deepen the warm gradient stops or strengthen the backing
+  peek/contrast — never add a desaturated noise fill.
+- **Torn params** (keep 1:1 with mockup intent): mask region `-14%/128%`, `baseFrequency 0.013 0.016`,
+  `numOctaves 3`, `scale 11`; grain tile `baseFrequency 0.9 numOctaves 2`. Any integer seed is valid
+  now (the mask is generated on demand) — back/under seeds = `seed+6`/`seed+3`.
 - **Entdeckungen contrast structure:** AROMEN and AUFBEREITUNGEN are `tone="espresso"` DARK planes
   whose section label/sub use `creamTextSoft`/`creamTextFaint`; each CategoryCard is a
   `tone="cream"` chip (`peek={false}`) with an espresso `IconStamp` + `goldLight` icon, so cream
@@ -69,15 +74,6 @@ canonical, approved translation — copy its composition for any classic-theme s
   `onPress` is set it is wrapped in a bare `Pressable` (no flex). For a flex-grid item, wrap the
   TornSheet in an outer `<View style={{flexBasis:"44%",flexGrow:1}}>` — putting flexBasis on the
   TornSheet itself does NOT size the grid item.
-
-**Torn seed ids skip 10 — never derive seeds by raw arithmetic:**
-- `TORN_SEEDS` in `components/TornPaper.tsx` is `[1..9, 11..17]` — there is intentionally NO `torn-10`.
-  Deriving a backing/under silhouette with `(seed + k) % 16 + 1` can land on `10`; `url(#torn-10)`
-  is unresolved, the View renders as a plain rectangle, and that single list item visually regresses
-  to a "card". Always pick back/under seeds by INDEXING into `TORN_SEEDS`
-  (`TORN_SEEDS[(idx + k) % TORN_SEEDS.length]`) so the result is guaranteed to be a defined filter id.
-- **Why:** `LIST_SEEDS` contains `3`, and `(3+6)%16+1 = 10` → the backing of every 10th roastery/coffee
-  sheet silently lost its torn edge. Found in code review, not visible in tsc.
 
 **CoffeeIcons.tsx prop gotcha (caused 2 build failures):**
 - Some exports are SCALE/STATE glyphs with a REQUIRED non-size prop, not generic icons:

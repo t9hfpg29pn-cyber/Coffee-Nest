@@ -11,46 +11,73 @@ import { useThemeColors } from "@/context/ThemeContext";
 
 const isWeb = Platform.OS === "web";
 
-// Seeds available as `url(#torn-N)` filters. Each gives a different torn edge so
-// adjacent sheets never share an identical silhouette.
-const TORN_SEEDS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 17];
-
-// Apply a raw CSS filter string on web only; no-op on native (graceful fallback
-// to softly rounded sheets handled by the caller's borderRadius).
-function webFilter(value: string): ViewStyle {
-  return isWeb ? ({ filter: value } as unknown as ViewStyle) : {};
-}
-
+// Apply web-only inline style props (filter, mask, gradients) that React Native
+// Web passes straight through to the DOM. No-op on native.
 function webStyle(value: Record<string, string | number>): ViewStyle {
   return isWeb ? (value as unknown as ViewStyle) : {};
 }
 
-// The torn-edge SVG filter defs. These MUST be REAL DOM <filter> nodes so that
-// `filter: url(#torn-N)` actually resolves on web — react-native-svg's web build
-// does not reliably emit usable SVG filter primitives (FeDisplacementMap etc.),
-// which silently leaves every sheet as a plain rounded rectangle (= "card UI").
-// So on web we inject the exact raw SVG markup the approved mockup uses. On
-// native this is a no-op (filters are a web-only effect).
-const TORN_DEFS_HTML = `<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>${TORN_SEEDS.map(
-  (s) =>
-    `<filter id="torn-${s}" x="-12%" y="-12%" width="124%" height="124%"><feTurbulence type="fractalNoise" baseFrequency="0.013 0.016" numOctaves="3" seed="${s}" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="11" xChannelSelector="R" yChannelSelector="G"/></filter>`,
-).join("")}<filter id="paper-grain"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter></defs></svg>`;
+// ── Torn edge as a STATIC baked mask ────────────────────────────────────────
+// The approved mockup tears each sheet with a live `feTurbulence` +
+// `feDisplacementMap` SVG filter applied to every element. That is fine for a
+// single static mockup screen, but the real app renders one sheet PER list item
+// and scrolls — re-running turbulence on every repaint causes the jank the user
+// reported, and when a live filter lags/fails the offset backing paints as a
+// plain rectangle (the "empty blocks", especially on the left edge).
+//
+// So we bake the EXACT same displacement once into a self-contained SVG data
+// URI and use it as a `mask-image`. The browser rasterises the mask a single
+// time and compositing it is GPU-cheap, so the torn silhouette is identical to
+// the mockup but reliable and scroll-friendly. Memoised per seed.
+const maskCache: Record<number, string> = {};
+function tornMaskUri(seed: number): string {
+  if (maskCache[seed]) return maskCache[seed];
+  const svg =
+    `<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320' viewBox='0 0 320 320' preserveAspectRatio='none'>` +
+    `<filter id='t' x='-14%' y='-14%' width='128%' height='128%'>` +
+    `<feTurbulence type='fractalNoise' baseFrequency='0.013 0.016' numOctaves='3' seed='${seed}' result='n'/>` +
+    `<feDisplacementMap in='SourceGraphic' in2='n' scale='11' xChannelSelector='R' yChannelSelector='G'/>` +
+    `</filter>` +
+    `<rect x='16' y='16' width='288' height='288' fill='#fff' filter='url(#t)'/>` +
+    `</svg>`;
+  const uri = `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+  maskCache[seed] = uri;
+  return uri;
+}
 
+function maskStyle(seed: number): ViewStyle {
+  if (!isWeb) return {};
+  const uri = tornMaskUri(seed);
+  return {
+    maskImage: uri,
+    WebkitMaskImage: uri,
+    maskSize: "100% 100%",
+    WebkitMaskSize: "100% 100%",
+    maskRepeat: "no-repeat",
+    WebkitMaskRepeat: "no-repeat",
+  } as unknown as ViewStyle;
+}
+
+// A subtle warm paper grain, baked ONCE into a tiled data-URI image (not a live
+// full-screen turbulence filter, which was a major scroll cost). Web-only.
+let grainUri: string | null = null;
+function grainBg(): string {
+  if (grainUri) return grainUri;
+  const svg =
+    `<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'>` +
+    `<filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter>` +
+    `<rect width='160' height='160' filter='url(#n)'/>` +
+    `</svg>`;
+  grainUri = `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+  return grainUri;
+}
+
+// Kept for API compatibility — torn edges are now self-contained masks, so no
+// shared SVG <defs> need injecting. No-op.
 export function TornDefs() {
-  React.useEffect(() => {
-    if (!isWeb || typeof document === "undefined") return;
-    if (document.getElementById("torn-paper-defs")) return;
-    const host = document.createElement("div");
-    host.id = "torn-paper-defs";
-    host.setAttribute("aria-hidden", "true");
-    host.style.cssText = "position:absolute;width:0;height:0;overflow:hidden";
-    host.innerHTML = TORN_DEFS_HTML;
-    document.body.appendChild(host);
-  }, []);
   return null;
 }
 
-// A subtle paper-grain overlay. Web-only (relies on SVG filter + blend mode).
 export function Grain() {
   if (!isWeb) return null;
   return (
@@ -59,7 +86,8 @@ export function Grain() {
       style={[
         StyleSheet.absoluteFill,
         webStyle({
-          filter: "url(#paper-grain)",
+          backgroundImage: grainBg(),
+          backgroundRepeat: "repeat",
           opacity: 0.05,
           mixBlendMode: "multiply",
         }),
@@ -107,17 +135,18 @@ export function TornSheet({
     ? "drop-shadow(0 12px 20px rgba(74,48,24,0.24))"
     : "drop-shadow(0 10px 16px rgba(58,39,22,0.16))";
 
-  // Derive backing/underlayer silhouettes by indexing into TORN_SEEDS so the
-  // result is ALWAYS a defined filter id. Raw arithmetic (e.g. (seed+6)%16+1)
-  // could yield 10, but there is no torn-10 filter — an unresolved url(#torn-10)
-  // renders a plain rectangle and regresses the sheet back to a "card".
-  const seedIdx = Math.max(0, TORN_SEEDS.indexOf(seed));
-  const backSeed = TORN_SEEDS[(seedIdx + 6) % TORN_SEEDS.length];
-  const underSeed = TORN_SEEDS[(seedIdx + 3) % TORN_SEEDS.length];
+  // A gentle warm gradient gives the face visible multi-tonality (the user asked
+  // for "Struktur / Mehrfarbigkeit") without a desaturated noise wash that muddied
+  // the cream before. Tones stay inside the same warm family per theme.
+  const faceGradient = espresso
+    ? `linear-gradient(150deg, ${colors.espresso3} 0%, ${colors.espresso} 56%, ${colors.espresso2} 100%)`
+    : `linear-gradient(150deg, ${colors.surfaceElevated} 0%, ${colors.surface} 62%, ${colors.surface} 100%)`;
 
-  // On web the torn SVG displacement filter supplies the organic edge, so the
-  // base shape is a SHARP rectangle (exactly like the mockup) — no radius, or it
-  // reads as a rounded card. On native (no filters) fall back to soft corners.
+  // Distinct seeds for the backing/underlayer so adjacent silhouettes differ.
+  const backSeed = seed + 6;
+  const underSeed = seed + 3;
+
+  // On native there are no masks/filters, so fall back to soft rounded corners.
   const faceRadius: ViewStyle = isWeb ? {} : { borderRadius: 14 };
   const backRadius: ViewStyle = isWeb ? {} : { borderRadius: 16 };
 
@@ -130,7 +159,7 @@ export function TornSheet({
             styles.backing,
             backRadius,
             { backgroundColor: backing },
-            webFilter(`url(#torn-${backSeed})`),
+            maskStyle(backSeed),
             { transform: [{ rotate: `${rotate - 1}deg` }] },
           ]}
         />
@@ -142,24 +171,29 @@ export function TornSheet({
             styles.under,
             backRadius,
             { backgroundColor: colors.espresso3, opacity: 0.85 },
-            webFilter(`url(#torn-${underSeed})`),
+            maskStyle(underSeed),
             { transform: [{ rotate: `${rotate + 1.4}deg` }] },
           ]}
         />
       )}
+      {/* Shadow wrapper carries the drop-shadow on web. It is NOT masked, so the
+          shadow follows the torn silhouette of the masked face child instead of
+          being clipped away by the mask. */}
       <View
         pointerEvents="none"
-        style={[
-          StyleSheet.absoluteFill,
-          faceRadius,
-          { backgroundColor: face },
-          // Solid paper face — exactly like the approved mockup. Depth comes from
-          // the torn silhouette, the offset backing/underlayer peeks and the drop
-          // shadow, NOT from any baked-in texture (which only muddied the colour).
-          webFilter(`url(#torn-${seed}) ${shadow}`),
-          isWeb ? {} : styles.nativeFaceShadow,
-        ]}
-      />
+        style={[StyleSheet.absoluteFill, isWeb ? webStyle({ filter: shadow }) : null]}
+      >
+        <View
+          style={[
+            StyleSheet.absoluteFill,
+            faceRadius,
+            { backgroundColor: face },
+            isWeb ? webStyle({ backgroundImage: faceGradient }) : null,
+            maskStyle(seed),
+            isWeb ? null : styles.nativeFaceShadow,
+          ]}
+        />
+      </View>
       <View style={[styles.content, contentStyle]}>{children}</View>
     </View>
   );
@@ -213,7 +247,7 @@ export function TornBox({
           StyleSheet.absoluteFill,
           r,
           { backgroundColor: color },
-          webFilter(`url(#torn-${seed})`),
+          maskStyle(seed),
         ]}
       />
       <View style={[StyleSheet.absoluteFill, styles.stampInner]}>{children}</View>
@@ -262,11 +296,6 @@ export function Hairline({
 }
 
 const styles = StyleSheet.create({
-  defs: {
-    position: "absolute",
-    width: 0,
-    height: 0,
-  },
   wrap: {
     alignSelf: "stretch",
   },
