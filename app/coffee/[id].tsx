@@ -23,7 +23,8 @@ import * as Haptics from "expo-haptics";
 import { getCoffeeById, updateCoffee, deleteCoffee, getGrinders, Coffee, GrindSetting, CoffeeOrigin, Grinder } from "@/lib/storage";
 import { useUserNames } from "@/context/UserNamesContext";
 import { useThemeColors, useCardExtras, useTheme } from "@/context/ThemeContext";
-import { PolyBackground, PolyCornerCut, PolyActionButton } from "@/components/PolyBackground";
+import { PolyBackground, PolyActionButton } from "@/components/PolyBackground";
+import { PaperSurface } from "@/components/Paper";
 
 function RatingSlider({
   label,
@@ -1034,7 +1035,7 @@ export default function CoffeeDetailScreen() {
         keyboardShouldPersistTaps="handled"
         bottomOffset={24}
       >
-        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight, borderRadius: cardExtras.cardRadius }]}>
+        <PaperSurface contentStyle={styles.section}>
           <SectionHeader title="KAFFEE" color={colors.textSecondary} />
           <TextInput
             style={[
@@ -1046,9 +1047,9 @@ export default function CoffeeDetailScreen() {
             placeholder="Kaffeename"
             placeholderTextColor={colors.textSecondary}
           />
-        </View>
+        </PaperSurface>
 
-        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight, borderRadius: cardExtras.cardRadius }]}>
+        <PaperSurface contentStyle={styles.section} flip>
           <SectionHeader title="BEWERTUNGEN" color={colors.textSecondary} />
           <View style={{ gap: 20, marginTop: 8 }}>
             <RatingSlider
@@ -1083,9 +1084,9 @@ export default function CoffeeDetailScreen() {
               </>
             )}
           </View>
-        </View>
+        </PaperSurface>
 
-        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight, borderRadius: cardExtras.cardRadius }]}>
+        <PaperSurface contentStyle={styles.section}>
           <SectionHeader title="EIGENSCHAFTEN" color={colors.textSecondary} />
           <View style={{ gap: 20, marginTop: 8 }}>
             <GrinderPicker
@@ -1120,7 +1121,7 @@ export default function CoffeeDetailScreen() {
               surfaceColor={colors.surface}
             />
           </View>
-        </View>
+        </PaperSurface>
 
         {/* ── HERKUNFT ──────────────────────────────────────────────────── */}
         {(() => {
@@ -1130,7 +1131,7 @@ export default function CoffeeDetailScreen() {
           const hasOrigin = filledOrigins.length > 0;
           const showEditor = originEditing || !hasOrigin;
           return (
-        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight, borderRadius: cardExtras.cardRadius }]}>
+        <PaperSurface contentStyle={styles.section} flip>
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
             <SectionHeader title="HERKUNFT" color={colors.textSecondary} />
             {hasOrigin && (
@@ -1180,12 +1181,12 @@ export default function CoffeeDetailScreen() {
                 .join("   |   ")}
             </Text>
           )}
-        </View>
+        </PaperSurface>
           );
         })()}
 
         {/* ── AUFBEREITUNG ──────────────────────────────────────────────── */}
-        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight, borderRadius: cardExtras.cardRadius }]}>
+        <PaperSurface contentStyle={styles.section}>
           <SectionHeader title="AUFBEREITUNG" color={colors.textSecondary} />
           <View style={{ marginTop: 8 }}>
             <ProcessingPicker
@@ -1197,9 +1198,9 @@ export default function CoffeeDetailScreen() {
               surfaceColor={colors.surface}
             />
           </View>
-        </View>
+        </PaperSurface>
 
-        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight, borderRadius: cardExtras.cardRadius }]}>
+        <PaperSurface contentStyle={styles.section} flip>
           <SectionHeader title="NOTIZEN" color={colors.textSecondary} />
           <View style={{ gap: 16, marginTop: 8 }}>
             <View style={{ gap: 6 }}>
@@ -1249,9 +1250,9 @@ export default function CoffeeDetailScreen() {
               />
             </View>
           </View>
-        </View>
+        </PaperSurface>
 
-        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight, borderRadius: cardExtras.cardRadius }]}>
+        <PaperSurface contentStyle={styles.section}>
           <SectionHeader title="PREIS" color={colors.textSecondary} />
           <View style={{ gap: 6, marginTop: 8 }}>
             <Text style={[styles.fieldLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
@@ -1271,7 +1272,7 @@ export default function CoffeeDetailScreen() {
               </Text>
             </View>
           </View>
-        </View>
+        </PaperSurface>
 
         <PolyActionButton
           onPress={handleSave}
@@ -1355,8 +1356,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   section: {
-    borderRadius: 16,
-    borderWidth: 1,
     padding: 16,
   },
   nameInput: {

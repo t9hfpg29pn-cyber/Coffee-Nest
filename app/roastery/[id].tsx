@@ -29,7 +29,8 @@ import {
   Coffee,
 } from "@/lib/storage";
 import { useUserNames } from "@/context/UserNamesContext";
-import { PolyBackground, PolyCornerCut, PolyActionButton } from "@/components/PolyBackground";
+import { PolyBackground, PolyActionButton } from "@/components/PolyBackground";
+import { PaperSurface } from "@/components/Paper";
 import { useThemeColors, useCardExtras } from "@/context/ThemeContext";
 
 function CoffeeBeanIcon({ size = 18, color }: { size?: number; color: string }) {
@@ -346,8 +347,8 @@ export default function RoasteryScreen() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ padding: 20, paddingBottom: bottomPad + 20 }}
           ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
-          renderItem={({ item }) => (
-            <Pressable
+          renderItem={({ item, index }) => (
+            <PaperSurface
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 router.push({
@@ -356,19 +357,8 @@ export default function RoasteryScreen() {
                 });
               }}
               onLongPress={() => handleDelete(item)}
-              style={({ pressed }) => [
-                styles.card,
-                cardExtras.shadow,
-                {
-                  backgroundColor: colors.surfaceElevated,
-                  borderColor: colors.border,
-                  borderTopColor: cardExtras.topHighlight,
-                  borderRadius: cardExtras.cardRadius,
-                  overflow: "hidden" as const,
-                  opacity: pressed ? 0.92 : 1,
-                  transform: [{ scale: pressed ? 0.985 : 1 }],
-                },
-              ]}
+              contentStyle={styles.card}
+              flip={index % 2 === 1}
             >
               <View style={styles.cardTop}>
                 <View style={[styles.cardIcon, { backgroundColor: colors.tint + "20" }]}>
@@ -440,8 +430,7 @@ export default function RoasteryScreen() {
                   </>
                 )}
               </View>
-              <PolyCornerCut />
-            </Pressable>
+            </PaperSurface>
           )}
         />
       )}
@@ -632,11 +621,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginBottom: 12,
   },
-  card: {
-    borderRadius: 16,
-    borderWidth: 1,
-    overflow: "hidden",
-  },
+  card: {},
   cardTop: {
     flexDirection: "row",
     alignItems: "center",

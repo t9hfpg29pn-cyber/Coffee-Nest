@@ -67,24 +67,25 @@ export function useCardExtras(): {
   const colorScheme = useColorScheme();
 
   if (design === "lowpoly") {
+    // Depth is carried by the paper layering itself; shadows stay barely-there.
     return {
       shadow: Platform.OS === "web"
-        ? ({ boxShadow: "0 1px 2px rgba(0,0,0,0.20), 0 8px 20px rgba(0,0,0,0.26), inset 0 1px 0 rgba(255,255,255,0.05)" } as ViewStyle)
+        ? ({ boxShadow: "0 1px 1px rgba(0,0,0,0.14)" } as ViewStyle)
         : {
           shadowColor: "#000000",
-          shadowOffset: { width: 0, height: 3 },
-          shadowOpacity: 0.26,
-          shadowRadius: 14,
-          elevation: 5,
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.12,
+          shadowRadius: 4,
+          elevation: 1,
         },
       elevatedShadow: Platform.OS === "web"
-        ? ({ boxShadow: "0 2px 4px rgba(0,0,0,0.22), 0 14px 30px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.07)" } as ViewStyle)
+        ? ({ boxShadow: "0 2px 3px rgba(0,0,0,0.16)" } as ViewStyle)
         : {
           shadowColor: "#000000",
-          shadowOffset: { width: 0, height: 6 },
-          shadowOpacity: 0.30,
-          shadowRadius: 20,
-          elevation: 9,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.16,
+          shadowRadius: 6,
+          elevation: 2,
         },
       topHighlight: "rgba(225,162,74,0.30)",
       cardRadius: 10,

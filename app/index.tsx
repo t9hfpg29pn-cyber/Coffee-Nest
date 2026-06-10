@@ -20,7 +20,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getRoasteries, saveRoastery, deleteRoastery, getCoffees, Roastery, getDiscoveryStats, DiscoveryStats, getDiscoveryFact, DiscoveryFact } from "@/lib/storage";
 import { useUserNames } from "@/context/UserNamesContext";
 import { useThemeColors, useCardExtras } from "@/context/ThemeContext";
-import { PolyBackground, PolyCornerCut, PolyActionButton } from "@/components/PolyBackground";
+import { PolyBackground, PolyActionButton } from "@/components/PolyBackground";
+import { PaperSurface } from "@/components/Paper";
 import { CompassIcon, CupIcon, RoasteryIcon, GlobeIcon } from "@/components/CoffeeIcons";
 
 export default function RoasteriesScreen() {
@@ -324,20 +325,7 @@ export default function RoasteriesScreen() {
           ListHeaderComponent={() => (
             <View>
               {!factDismissed && discoveryFact ? (
-                <View
-                  style={[
-                    styles.todayCard,
-                    cardExtras.shadow,
-                    {
-                      backgroundColor: colors.surfaceElevated,
-                      borderColor: colors.border,
-                      borderTopColor: colors.tint,
-                      borderRadius: cardExtras.cardRadius,
-                      overflow: "hidden" as const,
-                      marginBottom: 12,
-                    },
-                  ]}
-                >
+                <PaperSurface accentBorder={colors.tint} style={{ marginBottom: 12 }}>
                   <View style={[styles.todayCardHeader, { borderBottomColor: colors.border }]}>
                     <CompassIcon size={16} color={colors.tint} />
                     <Text style={[styles.todayCardLabel, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
@@ -376,29 +364,15 @@ export default function RoasteriesScreen() {
                       </Text>
                     </View>
                   )}
-                </View>
+                </PaperSurface>
               ) : null}
-              <Pressable
+              <PaperSurface
                 onPress={() => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   router.push("/discoveries");
                 }}
-                style={({ pressed }) => [
-                  styles.discoveryCard,
-                cardExtras.shadow,
-                {
-                  backgroundColor: colors.surfaceElevated,
-                  borderColor: colors.border,
-                  borderTopColor: cardExtras.topHighlight,
-                  borderRadius: cardExtras.cardRadius,
-                  opacity: pressed ? 0.92 : 1,
-                  transform: [{ scale: pressed ? 0.985 : 1 }],
-                  overflow: "hidden" as const,
-                  marginBottom: 12,
-                },
-              ]}
-            >
-              <PolyCornerCut />
+                style={{ marginBottom: 12 }}
+              >
               <View style={styles.discoveryHeader}>
                 <Text style={[styles.discoveryLabel, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
                   ENTDECKUNGEN
@@ -436,29 +410,18 @@ export default function RoasteriesScreen() {
                   </Text>
                 </View>
               </View>
-              </Pressable>
+              </PaperSurface>
             </View>
           )}
-          renderItem={({ item }) => (
-            <Pressable
+          renderItem={({ item, index }) => (
+            <PaperSurface
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 router.push({ pathname: "/roastery/[id]", params: { id: item.id, name: item.name } });
               }}
               onLongPress={() => handleDelete(item)}
-              style={({ pressed }) => [
-                styles.card,
-                cardExtras.shadow,
-                {
-                  backgroundColor: colors.surfaceElevated,
-                  borderColor: colors.border,
-                  borderTopColor: cardExtras.topHighlight,
-                  borderRadius: cardExtras.cardRadius,
-                  overflow: "hidden" as const,
-                  opacity: pressed ? 0.92 : 1,
-                  transform: [{ scale: pressed ? 0.985 : 1 }],
-                },
-              ]}
+              contentStyle={styles.card}
+              flip={index % 2 === 1}
             >
               <View style={[styles.cardIcon, { backgroundColor: colors.tint + "20" }]}>
                 <Ionicons name="cafe" size={22} color={colors.tint} />
@@ -510,8 +473,7 @@ export default function RoasteriesScreen() {
                 ) : null}
               </View>
               <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
-              <PolyCornerCut />
-            </Pressable>
+            </PaperSurface>
           )}
         />
       )}
@@ -739,8 +701,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     padding: 16,
-    borderRadius: 16,
-    borderWidth: 1,
     gap: 14,
   },
   cardIcon: {

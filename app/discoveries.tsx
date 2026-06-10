@@ -32,7 +32,8 @@ import {
 } from "@/lib/storage";
 import { useThemeColors, useCardExtras, useTheme } from "@/context/ThemeContext";
 import { useUserNames } from "@/context/UserNamesContext";
-import { PolyBackground, PolyCornerCut } from "@/components/PolyBackground";
+import { PolyBackground } from "@/components/PolyBackground";
+import { PaperSurface } from "@/components/Paper";
 import { CoffeeOriginMap } from "@/components/CoffeeOriginMap";
 import { COFFEE_WORLD_MAP } from "@/constants/coffeeMap";
 import {
@@ -136,16 +137,12 @@ function CategoryCard({
   onPress: () => void;
 }) {
   return (
-    <Pressable
+    <PaperSurface
       onPress={onPress}
-      style={({ pressed }) => [
-        styles.categoryCard,
-        {
-          backgroundColor: colors.surface,
-          borderRadius: isLowpoly ? 4 : 12,
-          opacity: pressed ? 0.7 : 1,
-        },
-      ]}
+      tone="mid"
+      dogEar={false}
+      style={styles.categoryCardOuter}
+      contentStyle={styles.categoryCard}
     >
       <View
         style={[
@@ -188,7 +185,7 @@ function CategoryCard({
           </Text>
         )}
       </View>
-    </Pressable>
+    </PaperSurface>
   );
 }
 
@@ -312,18 +309,6 @@ export default function DiscoveriesScreen() {
     haseTop.name === dodoTop.name && haseTop.roasteryName === dodoTop.roasteryName
   );
 
-  const cardStyle = [
-    styles.section,
-    cardExtras.shadow,
-    {
-      backgroundColor: colors.surfaceElevated,
-      borderColor: colors.border,
-      borderTopColor: cardExtras.topHighlight,
-      borderRadius: cardExtras.cardRadius,
-      overflow: "hidden" as const,
-    },
-  ];
-
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <PolyBackground />
@@ -354,8 +339,7 @@ export default function DiscoveriesScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* ── KAFFEEWELT ────────────────────────────────────────────── */}
-        <View style={cardStyle}>
-          <PolyCornerCut />
+        <PaperSurface>
           <View style={styles.sectionHeader}>
             <View style={{ flex: 1 }}>
               <Text style={[styles.sectionLabel, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
@@ -451,11 +435,10 @@ export default function DiscoveriesScreen() {
               </Text>
             </View>
           ) : null}
-        </View>
+        </PaperSurface>
 
         {/* ── DEIN KAFFEEPROFIL ─────────────────────────────────────── */}
-        <View style={cardStyle}>
-          <PolyCornerCut />
+        <PaperSurface flip>
           <View style={styles.sectionHeader}>
             <Text style={[styles.sectionLabel, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
               DEIN KAFFEEPROFIL
@@ -473,17 +456,7 @@ export default function DiscoveriesScreen() {
               {/* GEMEINSAMER FAVORIT — Mittelpunkt des Profils */}
               {user2active && sharedFav && (
                 <View style={styles.heroWrap}>
-                  <View
-                    style={[
-                      styles.heroCard,
-                      cardExtras.elevatedShadow,
-                      {
-                        backgroundColor: colors.surface,
-                        borderColor: colors.tint,
-                        borderRadius: isLowpoly ? 8 : 14,
-                      },
-                    ]}
-                  >
+                  <PaperSurface tone="mid" accentBorder={colors.tint} contentStyle={styles.heroCard}>
                     <Text style={[styles.heroLabel, { color: colors.tint, fontFamily: "Inter_700Bold" }]}>
                       GEMEINSAMER FAVORIT
                     </Text>
@@ -511,7 +484,7 @@ export default function DiscoveriesScreen() {
                         </Text>
                       </View>
                     </View>
-                  </View>
+                  </PaperSurface>
                 </View>
               )}
 
@@ -652,11 +625,10 @@ export default function DiscoveriesScreen() {
               </View>
             </View>
           )}
-        </View>
+        </PaperSurface>
 
         {/* ── AROMEN ────────────────────────────────────────────────── */}
-        <View style={cardStyle}>
-          <PolyCornerCut />
+        <PaperSurface>
           <View style={styles.sectionHeader}>
             <View style={{ flex: 1 }}>
               <Text style={[styles.sectionLabel, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
@@ -684,11 +656,10 @@ export default function DiscoveriesScreen() {
               />
             ))}
           </View>
-        </View>
+        </PaperSurface>
 
         {/* ── AUFBEREITUNGEN ────────────────────────────────────────── */}
-        <View style={cardStyle}>
-          <PolyCornerCut />
+        <PaperSurface flip>
           <View style={styles.sectionHeader}>
             <View style={{ flex: 1 }}>
               <Text style={[styles.sectionLabel, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
@@ -716,7 +687,7 @@ export default function DiscoveriesScreen() {
               />
             ))}
           </View>
-        </View>
+        </PaperSurface>
       </ScrollView>
 
       {/* ── Country detail sheet ──────────────────────────────────────── */}
@@ -988,8 +959,6 @@ const styles = StyleSheet.create({
   // Gemeinsamer Favorit — hero
   heroWrap: { paddingHorizontal: 16, paddingTop: 20, paddingBottom: 10 },
   heroCard: {
-    borderWidth: 1.5,
-    borderTopWidth: 2,
     alignItems: "center",
     paddingVertical: 28,
     paddingHorizontal: 22,
@@ -1019,10 +988,12 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   categoryCard: {
-    flexBasis: "47%",
-    flexGrow: 1,
     padding: 16,
     gap: 6,
+  },
+  categoryCardOuter: {
+    flexBasis: "47%",
+    flexGrow: 1,
   },
   categoryIconWrap: {
     width: 44,

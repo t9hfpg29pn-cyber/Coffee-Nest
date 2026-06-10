@@ -1,11 +1,11 @@
 ---
-name: Material language (paper-journal)
+name: Material language (cut-paper journal)
 description: Where Coffee Nest's card depth/material lives and the rule for tuning it
 ---
-Coffee Nest's surface "material" (depth, shadows, corner radius, top highlight) is centralized in `useCardExtras()` in `context/ThemeContext.tsx`. It returns `{ shadow, elevatedShadow, topHighlight, cardRadius }`; almost every card across screens spreads `cardExtras.shadow` + uses `colors.surfaceElevated`/`colors.border`/`topHighlight`/`cardRadius`.
+Coffee Nest's card "material" is now centralized in the **`PaperSurface`** primitive in `components/Paper.tsx` (drop-in card replacement; also `TornDivider`). The aesthetic is a BOLD layered/cut-paper journal: layering reads via **edges/offset/overlap, NOT drop shadows**, with asymmetric border-radii, a top deckle band, optional dog-ear, and an organic SVG paper-landscape background in `components/PolyBackground.tsx`.
 
-Material levels: Ebene 1 = `colors.background`; Ebene 2 = `shadow` (normal cards); Ebene 3 = `elevatedShadow` (important content, e.g. the GEMEINSAMER FAVORIT heroCard in discoveries).
+**PaperSurface contract:** pass SIZING/margin via `style` (root); inner padding/layout via `contentStyle`. The sheet itself owns borderWidth + overflow + asymmetric radii + deckle band + dog-ear. Props: `onPress`/`onLongPress`/`disabled`/`testID`/`style`/`contentStyle`/`tone`("raised"|"mid")/`accentBorder`/`flip`/`deckle`/`dogEar`. It renders a plain `View` when non-interactive (no nested-pressable conflicts in forms). For list cards, alternate `flip={index % 2 === 1}` for organic asymmetry. After migrating, strip `borderRadius`/`borderWidth` from the screen's `styles.section`/`styles.card` (PaperSurface owns them); leftover empty `card: {}` is fine.
 
-**Rule:** tune the app-wide material feel ONLY through `useCardExtras()` tokens, never via per-screen structural/layout edits.
-**Why:** the design brief is "modernize the surface material, change NOTHING functional/layout/IA/navigation; always choose calm over effects (no floating cards, no 3D, no glassmorphism, no noise)." Centralized tokens keep that constraint safe and consistent.
-**How to apply:** if a screen still feels too "dashboard," adjust shadow opacity/spread, radius, or topHighlight here — do not add per-card structural changes. Keep the existing palette in `constants/colors.ts` intact (material ≠ color redefinition).
+**Rule:** tune card material app-wide through `PaperSurface` (geometry/deckle/dog-ear) — not per-screen structural edits. The legacy `useCardExtras()` shadow tokens in `context/ThemeContext.tsx` still exist and some screens may keep an unused `const cardExtras = useCardExtras()` read (harmless — tsconfig has no noUnusedLocals), but new cards should route through PaperSurface, not raw `surfaceElevated` Views + `cardExtras.shadow`.
+**Why:** the current brief shifted from "calm modernized material" to a deliberately bold cut-paper reskin ("go 30% too far"). Functions/data/navigation/IA must stay unchanged — it is a pure visual/material reskin.
+**How to apply:** if a screen still feels flat/"dashboard", deepen layering in PaperSurface (offset backing sheet, edge contrast, radii, deckle/dog-ear) — keep palette in `constants/colors.ts` (3-tier paper + backdrop) and never alter functional/layout/IA.

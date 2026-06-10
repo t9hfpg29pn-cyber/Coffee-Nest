@@ -1,0 +1,299 @@
+COFFEE NEST – PAPER LAYERS EXPERIMENT
+
+WICHTIG:
+
+Dies ist KEIN Polish-Sprint.
+
+Dies ist KEIN UI-Tuning.
+
+Dies ist KEIN Border-Radius-Update.
+
+Dies ist ein bewusst mutiger Design-Experiment-Branch.
+
+Ziel:
+
+Eine alternative visuelle Identität für Coffee Nest testen.
+
+Funktionen, Daten, Navigation und Informationsarchitektur bleiben unverändert.
+
+Nur die visuelle Sprache darf sich deutlich verändern.
+
+==================================================
+DAS PROBLEM DER AKTUELLEN UI
+
+Aktuell wirkt Coffee Nest wie:
+
+* Karten
+* Karten
+* Karten
+* Karten
+
+in einer schönen Farbpalette.
+
+Die App wirkt dadurch weiterhin wie eine Datenbank oder ein Dashboard.
+
+Die aktuelle Oberfläche vermittelt nicht ausreichend:
+
+* Wärme
+* Materialität
+* Haptik
+* Ruhe
+* Nest-Gefühl
+
+==================================================
+DESIGN-INSPIRATION
+
+Orientiere dich NICHT an typischen App-Dashboards.
+
+Orientiere dich stattdessen an:
+
+* hochwertigem Papier
+* Papier-Collagen
+* Coffee Table Books
+* Chemex-Papierfiltern
+* Schichtpapier
+* handwerklichen Druckerzeugnissen
+
+==================================================
+WICHTIGE REFERENZ
+
+Die Inspiration ist das vom Nutzer bereitgestellte App-Icon.
+
+Nicht die Farben.
+
+Nicht das Motiv.
+
+Sondern die Konstruktion.
+
+Dort erkennt man:
+
+* wenige große Formen
+* klare Ebenen
+* sichtbare Layer
+* organische Übergänge
+* deutliche Tiefenwirkung
+* sehr wenig Details
+
+Trotzdem wirkt das Icon hochwertig und ruhig.
+
+Diese Denkweise soll auf Coffee Nest übertragen werden.
+
+==================================================
+GRUNDSATZ
+
+Weniger UI.
+
+Mehr Objekt.
+
+Weniger Container.
+
+Mehr Material.
+
+==================================================
+KARTEN NEU DENKEN
+
+Die aktuellen Karten dürfen ihre rechteckige Identität verlieren.
+
+NICHT:
+
+abgerundete Rechtecke.
+
+NICHT:
+
+klassische Container.
+
+==================================================
+
+Stattdessen:
+
+Papierflächen.
+
+Organische Layer.
+
+Asymmetrische Formen.
+
+Ausgeschnittene Flächen.
+
+==================================================
+
+Die Bereiche dürfen wirken als wären sie:
+
+* ausgeschnitten
+* aufgelegt
+* geschichtet
+
+==================================================
+SICHTBARES LAYERING
+
+Der Nutzer muss erkennen:
+
+Hier liegen mehrere Ebenen übereinander.
+
+==================================================
+
+Nicht durch Schatten.
+
+Nicht durch Glow.
+
+Sondern durch:
+
+* Materialkanten
+* Flächenversatz
+* Überlappungen
+* unterschiedliche Ebenen
+
+==================================================
+
+WICHTIG:
+
+Layering soll sichtbar werden.
+
+Nicht nur angedeutet.
+
+Der letzte Versuch war zu subtil.
+
+==================================================
+PAPIER-CHARAKTER
+
+Denke an:
+
+einen dicken Chemex-Filter.
+
+Wenn heißes Wasser Kaffee durchdringt.
+
+Wenn das Papier sich mit warmen Brauntönen sättigt.
+
+Wenn sich die Struktur des Materials zeigt.
+
+==================================================
+
+Nicht fotorealistisch.
+
+Nicht texturreich.
+
+Aber spürbar.
+
+==================================================
+
+Die Flächen dürfen wirken wie:
+
+* schwere Papierlagen
+* hochwertige Naturfasern
+* warmes Material
+
+==================================================
+TIEFENWIRKUNG
+
+Tiefenwirkung entsteht durch:
+
+* Layer
+* Überlappungen
+* Form
+
+NICHT durch:
+
+* starke Schatten
+* Glas-Effekte
+* Neumorphism
+* 3D
+
+==================================================
+FARBVERWENDUNG
+
+Grundpalette beibehalten.
+
+Aber die Ebenen stärker differenzieren.
+
+Aktuell verschmelzen Hintergrund und Karten zu stark.
+
+==================================================
+
+Benötigt werden:
+
+Ebene 1
+dunkler
+
+Ebene 2
+wärmer
+
+Ebene 3
+heller
+
+==================================================
+
+Wie verschiedene Papierlagen,
+die unterschiedlich stark vom Kaffee durchtränkt wurden.
+
+==================================================
+HINTERGRUND
+
+Der Hintergrund soll nicht mehr wie ein technischer Hintergrund wirken.
+
+==================================================
+
+Die bisherigen Low-Poly-Flächen dürfen deutlich organischer interpretiert werden.
+
+Weniger:
+
+Polygon.
+
+Mehr:
+
+Papierlandschaft.
+
+==================================================
+TYPOGRAFIE
+
+Typografie bleibt grundsätzlich erhalten.
+
+Aber:
+
+Die Oberfläche soll zuerst über Formen und Ebenen wirken.
+
+Nicht über Boxen.
+
+==================================================
+AROMA
+
+Die Aroma-Karten sollen sich eher wie kleine Sammlerstücke anfühlen.
+
+Nicht wie Statistik-Widgets.
+
+==================================================
+ENTDECKUNGEN
+
+Die Entdeckungsbereiche sollen wirken wie Seiten eines Journals.
+
+Nicht wie Dashboard-Module.
+
+==================================================
+WICHTIGER HINWEIS
+
+Lieber 30 % zu weit gehen
+als erneut nur 3 % Politur erzeugen.
+
+Dieses Experiment soll sichtbar anders aussehen.
+
+Wenn zwei Lösungen möglich sind:
+
+A)
+bekannt und sicher
+
+B)
+mutiger und stärker auf Layering fokussiert
+
+immer B wählen.
+
+==================================================
+ABSCHLUSS
+
+Nach Umsetzung:
+
+1. Build durchführen
+2. Mobile Ansicht prüfen
+3. iPhone-PWA prüfen
+4. Sicherstellen, dass keinerlei Funktionen verändert wurden
+5. Sicherstellen, dass keinerlei Navigation verändert wurde
+6. Sicherstellen, dass das Ergebnis auf den ersten Blick anders wirkt
+7. Sicherstellen, dass Materialität und Layering klar erkennbar sind
+8. Sicherstellen, dass die App eher wie ein Kaffeejournal als wie ein Dashboard wirkt

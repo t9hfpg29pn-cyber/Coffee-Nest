@@ -20,6 +20,7 @@ import * as DocumentPicker from "expo-document-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useUserNames } from "@/context/UserNamesContext";
 import { PolyBackground, PolyActionButton } from "@/components/PolyBackground";
+import { PaperSurface } from "@/components/Paper";
 import { getRoasteries, getAllCoffees, getGrinders, saveGrinders, normalizeGrinders, DEFAULT_GRINDERS, Grinder, GrinderDesign } from "@/lib/storage";
 import { useTheme, useThemeColors, useCardExtras, DesignMode } from "@/context/ThemeContext";
 import { CupIcon, GemIcon, GrinderIcon } from "@/components/CoffeeIcons";
@@ -283,7 +284,7 @@ export default function SettingsScreen() {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight, borderRadius: cardExtras.cardRadius }]}>
+        <PaperSurface style={styles.section}>
           <Text style={[styles.sectionLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
             DESIGN
           </Text>
@@ -332,13 +333,13 @@ export default function SettingsScreen() {
               ? "Warm · geometrisch · facettiert"
               : "Warm · klassisch · Kaffeefarben"}
           </Text>
-        </View>
+        </PaperSurface>
 
         <Text style={[styles.hint, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
           Das Design wird sofort überall in der App angewendet.
         </Text>
 
-        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight, borderRadius: cardExtras.cardRadius, marginTop: 16 }]}>
+        <PaperSurface style={[styles.section, { marginTop: 16 }]} flip>
           <Text style={[styles.sectionLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
             BENUTZER
           </Text>
@@ -441,13 +442,13 @@ export default function SettingsScreen() {
               </Text>
             </Pressable>
           )}
-        </View>
+        </PaperSurface>
 
         <Text style={[styles.hint, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
           Die Namen werden überall in der App verwendet und lokal gespeichert.
         </Text>
 
-        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight, borderRadius: cardExtras.cardRadius, marginTop: 16 }]}>
+        <PaperSurface style={[styles.section, { marginTop: 16 }]}>
           <Text style={[styles.sectionLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
             KAFFEEMÜHLEN
           </Text>
@@ -542,13 +543,13 @@ export default function SettingsScreen() {
               Maximal 3 Mühlen möglich
             </Text>
           )}
-        </View>
+        </PaperSurface>
 
         <Text style={[styles.hint, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
           Wähle beim Kaffee die verwendete Mühle aus.
         </Text>
 
-        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight, borderRadius: cardExtras.cardRadius, marginTop: 16 }]}>
+        <PaperSurface style={[styles.section, { marginTop: 16 }]} flip>
           <Text style={[styles.sectionLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
             DATENSICHERUNG
           </Text>
@@ -596,7 +597,7 @@ export default function SettingsScreen() {
             </View>
             <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
           </Pressable>
-        </View>
+        </PaperSurface>
 
         <Text style={[styles.hint, { color: colors.textSecondary, fontFamily: "Inter_400Regular", marginTop: 8 }]}>
           Exportiere regelmäßig ein Backup um Datenverlust zu vermeiden.
@@ -643,9 +644,6 @@ const styles = StyleSheet.create({
   },
   section: {
     marginHorizontal: 20,
-    borderRadius: 14,
-    borderWidth: 1,
-    overflow: "hidden",
     marginBottom: 8,
   },
   sectionLabel: {
