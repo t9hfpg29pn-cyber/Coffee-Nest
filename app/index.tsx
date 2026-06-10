@@ -9,6 +9,7 @@ import {
   Modal,
   Alert,
   Platform,
+  ImageBackground,
 } from "react-native";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -22,6 +23,7 @@ import { useThemeColors, useCardExtras } from "@/context/ThemeContext";
 import { PolyBackground, PolyActionButton } from "@/components/PolyBackground";
 import { TornDefs, TornSheet, TornBox, Grain } from "@/components/TornPaper";
 import { CupIcon, RoasteryIcon, GlobeIcon, CompassIcon } from "@/components/CoffeeIcons";
+import { paper02CardTexture } from "@/assets/textures";
 
 const SERIF_BLACK = "Fraunces_700Bold";
 const SERIF_BOLD = "Fraunces_600SemiBold";
@@ -350,24 +352,30 @@ export default function RoasteriesScreen() {
                     styles.roasteryCard,
                     {
                       backgroundColor: colors.surfaceElevated,
-                      borderColor: colors.border,
                       opacity: pressed ? 0.9 : 1,
                     },
                   ]}
                 >
-                  <View style={[styles.cardIcon, { backgroundColor: colors.gold + "1F" }]}>
-                    <RoasteryIcon size={28} color={colors.gold} />
-                  </View>
-                  <View style={styles.cardContent}>
-                    <Text style={[styles.cardName, { color: colors.ink, fontFamily: SERIF_BOLD }]} numberOfLines={1}>
-                      {item.name}
-                    </Text>
-                    <Text style={[styles.cardMeta, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]} numberOfLines={1}>
-                      {item.location ? `${item.location} · ` : ""}{count} {count === 1 ? "Kaffee" : "Kaffees"}
-                    </Text>
-                    {avg ? renderScore(avg) : null}
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color={colors.inkFaint} />
+                  <ImageBackground
+                    source={paper02CardTexture}
+                    resizeMode="cover"
+                    style={styles.cardSurface}
+                    imageStyle={styles.cardSurfaceImage}
+                  >
+                    <View style={[styles.cardIcon, { backgroundColor: colors.gold + "1F" }]}>
+                      <RoasteryIcon size={28} color={colors.gold} />
+                    </View>
+                    <View style={styles.cardContent}>
+                      <Text style={[styles.cardName, { color: colors.ink, fontFamily: SERIF_BOLD }]} numberOfLines={1}>
+                        {item.name}
+                      </Text>
+                      <Text style={[styles.cardMeta, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]} numberOfLines={1}>
+                        {item.location ? `${item.location} · ` : ""}{count} {count === 1 ? "Kaffee" : "Kaffees"}
+                      </Text>
+                      {avg ? renderScore(avg) : null}
+                    </View>
+                    <Ionicons name="chevron-forward" size={20} color={colors.inkFaint} />
+                  </ImageBackground>
                 </Pressable>
               );
             })}
@@ -695,21 +703,27 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
 
-  // Röstereien — standalone clean index cards
+  // Röstereien — standalone cards printed on the real PAPER-02 sheet texture
   roasteryCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 16,
-    paddingVertical: 20,
-    paddingHorizontal: 18,
     borderRadius: 20,
-    borderWidth: StyleSheet.hairlineWidth,
     marginBottom: 14,
     shadowColor: "#2C1810",
     shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.08,
     shadowRadius: 14,
     elevation: 2,
+  },
+  cardSurface: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
+    paddingVertical: 20,
+    paddingHorizontal: 18,
+    borderRadius: 20,
+    overflow: "hidden",
+  },
+  cardSurfaceImage: {
+    borderRadius: 20,
   },
   cardIcon: {
     width: 56,

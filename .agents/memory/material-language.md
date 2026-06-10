@@ -132,3 +132,16 @@ folded corners, paper layers, multiple shadows, "text on a big surface".
 and wants "hochwertige Karteikarte" calm premium quality, validated on this ONE component before
 rolling out. **How to apply:** this is the reference card to propagate to other lists later;
 do NOT expand scope to other screens until the user approves this one.
+
+## Roastery card prints on the REAL PAPER-02 asset (not solid fill)
+The user demanded the home roastery card use the actual "PAPER-02 – Wide Paper Sheet (Sektionen)"
+element from the design-system template as a real image asset, NOT a CSS/SVG/color approximation.
+Slice = OPAQUE interior swatch (`magick crop ... -alpha off`, NO floodfill — avoids curved edges +
+label), saved `assets/textures/paper02_card.png`, exported `paper02CardTexture`. Used as
+`<ImageBackground resizeMode="cover">` clipped to the card's existing borderRadius (overflow hidden
++ imageStyle radius); outer Pressable keeps borderRadius + the subtle shadow (shadow on OUTER
+wrapper, image clip on INNER — overflow:hidden would otherwise eat the shadow).
+**Why:** repeated rule from this user — "use the template as an asset library to CUT FROM, not as
+inspiration/reference"; recreations get rejected. Same opaque-swatch slicing pitfall as the texture
+system. **How to apply:** when asked to use any labelled template element, crop it as a real asset
+and require() it; keep the card's existing shape/layout/content, only swap the background fill.

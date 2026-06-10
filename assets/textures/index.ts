@@ -19,6 +19,8 @@ export const coffeeBgTexture = require("./coffee_bg.png");
 
 export const paperMainTexture = require("./paper_main.png");
 export const paperWideTexture = require("./paper_wide.png");
+// PAPER-02 opaque interior swatch — printed-paper fill for the roastery card.
+export const paper02CardTexture = require("./paper02_card.png");
 export const paperSmallTexture = require("./paper_small.png");
 export const paperTallTexture = require("./paper_tall.png");
 export const paperLongTexture = require("./paper_long.png");
