@@ -25,18 +25,21 @@ function webStyle(value: Record<string, string | number>): ViewStyle {
   return isWeb ? (value as unknown as ViewStyle) : {};
 }
 
-// A seamless grayscale paper-grain tile. The browser rasterises this SVG ONCE
-// and reuses it as a background-image, composited with the sheet colour via
-// background-blend-mode. This is far cheaper than a live feTurbulence filter on
-// every sheet (which made scrolling janky) yet keeps the grain clearly visible.
-// Two contrast ranges: a light grain for the cream face (multiply) and a dark
-// grain for the espresso face (screen).
-const buildNoise = (slope: number, intercept: number): string =>
+// A seamless ORGANIC paper-mottle tile — NOT fine grain. The goal is damp-paper
+// multi-tonality: large, soft blooms where the surface is subtly lighter in some
+// patches and darker in others (like paper that is partly wet / a faint coffee
+// stain), all within a single sheet. Achieved with a LOW-frequency fractalNoise
+// (big soft clouds, not crissel), desaturated and centred on mid-grey, then
+// composited with `soft-light` so values above 0.5 gently LIGHTEN the sheet and
+// values below 0.5 gently DARKEN it → real multi-colour, never a flat fill.
+// `slope` controls how pronounced the blooms are; the tile is rasterised ONCE
+// and reused, so there is no per-sheet live-filter cost.
+const buildMottle = (slope: number, seed: number): string =>
   `url("data:image/svg+xml;utf8,${encodeURIComponent(
-    `<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/><feComponentTransfer><feFuncR type='linear' slope='${slope}' intercept='${intercept}'/><feFuncG type='linear' slope='${slope}' intercept='${intercept}'/><feFuncB type='linear' slope='${slope}' intercept='${intercept}'/></feComponentTransfer></filter><rect width='100%' height='100%' filter='url(#f)'/></svg>`,
+    `<svg xmlns='http://www.w3.org/2000/svg' width='440' height='440'><filter id='m'><feTurbulence type='fractalNoise' baseFrequency='0.009 0.011' numOctaves='3' seed='${seed}' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/><feComponentTransfer><feFuncR type='linear' slope='${slope}' intercept='${(1 - slope) / 2}'/><feFuncG type='linear' slope='${slope}' intercept='${(1 - slope) / 2}'/><feFuncB type='linear' slope='${slope}' intercept='${(1 - slope) / 2}'/></feComponentTransfer></filter><rect width='100%' height='100%' filter='url(#m)'/></svg>`,
   )}")`;
-const NOISE_CREAM = buildNoise(0.26, 0.74);
-const NOISE_ESPRESSO = buildNoise(0.4, 0);
+const MOTTLE_CREAM = buildMottle(0.5, 7);
+const MOTTLE_ESPRESSO = buildMottle(0.72, 3);
 
 // The torn-edge SVG filter defs. These MUST be REAL DOM <filter> nodes so that
 // `filter: url(#torn-N)` actually resolves on web — react-native-svg's web build
@@ -46,8 +49,8 @@ const NOISE_ESPRESSO = buildNoise(0.4, 0);
 // native this is a no-op (filters are a web-only effect).
 const TORN_DEFS_HTML = `<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>${TORN_SEEDS.map(
   (s) =>
-    `<filter id="torn-${s}" x="-12%" y="-12%" width="124%" height="124%"><feTurbulence type="fractalNoise" baseFrequency="0.013 0.016" numOctaves="3" seed="${s}" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="11" xChannelSelector="R" yChannelSelector="G"/></filter>`,
-).join("")}<filter id="paper-grain"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter></defs></svg>`;
+    `<filter id="torn-${s}" x="-16%" y="-16%" width="132%" height="132%"><feTurbulence type="fractalNoise" baseFrequency="0.008 0.011" numOctaves="1" seed="${s}" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="13" xChannelSelector="R" yChannelSelector="G"/></filter>`,
+).join("")}<filter id="paper-grain"><feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="3" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter></defs></svg>`;
 
 export function TornDefs() {
   React.useEffect(() => {
@@ -166,15 +169,16 @@ export function TornSheet({
           StyleSheet.absoluteFill,
           faceRadius,
           { backgroundColor: face },
-          // Paper fibre baked into the face as a tiled noise background-image
-          // (rasterised once) and blended with the sheet colour. The torn
-          // displacement filter on this same View then warps the grain with the
-          // edge — giving visible structure WITHOUT a per-sheet live filter.
+          // Organic damp-paper mottle baked into the face as a large tiled
+          // background-image (rasterised once) and blended with the sheet colour
+          // via soft-light — so each surface has soft lighter/darker blooms
+          // WITHIN it, not a flat fill and not fine grain. The torn displacement
+          // filter on this same View then warps the blooms with the edge.
           isWeb
             ? webStyle({
-                backgroundImage: espresso ? NOISE_ESPRESSO : NOISE_CREAM,
-                backgroundBlendMode: espresso ? "screen" : "multiply",
-                backgroundSize: "170px 170px",
+                backgroundImage: espresso ? MOTTLE_ESPRESSO : MOTTLE_CREAM,
+                backgroundBlendMode: "soft-light",
+                backgroundSize: "380px 380px",
               })
             : {},
           webFilter(`url(#torn-${seed}) ${shadow}`),
