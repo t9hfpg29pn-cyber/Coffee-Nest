@@ -139,30 +139,28 @@ export default function RoasteriesScreen() {
     });
   };
 
-  const renderScore = (avg: { hase: number | null; dodo: number | null }) => (
-    <View style={styles.scoreRow}>
-      {avg.hase !== null && (
-        <View style={styles.scorePair}>
-          <Text style={[styles.scoreName, { color: colors.inkSoft, fontFamily: "Inter_500Medium" }]}>
-            {name1}
+  const renderScore = (avg: { hase: number | null; dodo: number | null }) => {
+    const showHase = avg.hase !== null;
+    const showDodo = user2active && avg.dodo !== null;
+    if (!showHase && !showDodo) return null;
+    return (
+      <View style={styles.scoreRow}>
+        {showHase && (
+          <Text style={[styles.scoreText, { color: colors.gold, fontFamily: "Inter_500Medium" }]}>
+            {name1} {avg.hase!.toFixed(1)}
           </Text>
-          <Text style={[styles.scoreValue, { color: colors.gold, fontFamily: "Inter_700Bold" }]}>
-            {avg.hase!.toFixed(1)}
+        )}
+        {showHase && showDodo && (
+          <Text style={[styles.scoreDivider, { color: colors.inkFaint, fontFamily: "Inter_400Regular" }]}>|</Text>
+        )}
+        {showDodo && (
+          <Text style={[styles.scoreText, { color: colors.gold, fontFamily: "Inter_500Medium" }]}>
+            {name2} {avg.dodo!.toFixed(1)}
           </Text>
-        </View>
-      )}
-      {user2active && avg.dodo !== null && (
-        <View style={styles.scorePair}>
-          <Text style={[styles.scoreName, { color: colors.inkSoft, fontFamily: "Inter_500Medium" }]}>
-            {name2}
-          </Text>
-          <Text style={[styles.scoreValue, { color: colors.gold, fontFamily: "Inter_700Bold" }]}>
-            {avg.dodo!.toFixed(1)}
-          </Text>
-        </View>
-      )}
-    </View>
-  );
+        )}
+      </View>
+    );
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -335,46 +333,42 @@ export default function RoasteriesScreen() {
             </TornSheet>
           </Pressable>
 
-          {/* Röstereien — entries live directly on the page, separated only by hairline dividers */}
+          {/* Röstereien — each entry is a standalone, clean index card */}
           <View style={styles.listBlock}>
-            {filteredRoasteries.map((item, index) => {
+            {filteredRoasteries.map((item) => {
               const avg = avgRatings[item.id];
+              const count = coffeeCounts[item.id] ?? 0;
               return (
-                <View key={item.id}>
-                  {index > 0 ? <View style={[styles.rowDivider, { backgroundColor: colors.hair }]} /> : null}
-                  <Pressable
-                    onPress={() => {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      router.push({ pathname: "/roastery/[id]", params: { id: item.id, name: item.name } });
-                    }}
-                    onLongPress={() => handleDelete(item)}
-                    style={({ pressed }) => [styles.roasteryRow, { opacity: pressed ? 0.55 : 1 }]}
-                  >
-                    <View style={styles.rowIcon}>
-                      <RoasteryIcon size={26} color={colors.gold} />
-                    </View>
-                    <View style={styles.roasteryContent}>
-                      <Text style={[styles.roasteryName, { color: colors.ink, fontFamily: SERIF_BOLD }]} numberOfLines={1}>
-                        {item.name}
-                      </Text>
-                      <View style={styles.roasteryMeta}>
-                        {item.location ? (
-                          <>
-                            <Text style={[styles.roasteryMetaText, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
-                              {item.location}
-                            </Text>
-                            <View style={[styles.metaDot, { backgroundColor: colors.inkFaint }]} />
-                          </>
-                        ) : null}
-                        <Text style={[styles.roasteryMetaText, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
-                          {coffeeCounts[item.id] ?? 0} {coffeeCounts[item.id] === 1 ? "Kaffee" : "Kaffees"}
-                        </Text>
-                      </View>
-                      {avg ? renderScore(avg) : null}
-                    </View>
-                    <Ionicons name="chevron-forward" size={20} color={colors.inkFaint} style={{ marginTop: 4 }} />
-                  </Pressable>
-                </View>
+                <Pressable
+                  key={item.id}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    router.push({ pathname: "/roastery/[id]", params: { id: item.id, name: item.name } });
+                  }}
+                  onLongPress={() => handleDelete(item)}
+                  style={({ pressed }) => [
+                    styles.roasteryCard,
+                    {
+                      backgroundColor: colors.surfaceElevated,
+                      borderColor: colors.border,
+                      opacity: pressed ? 0.9 : 1,
+                    },
+                  ]}
+                >
+                  <View style={[styles.cardIcon, { backgroundColor: colors.gold + "1F" }]}>
+                    <RoasteryIcon size={28} color={colors.gold} />
+                  </View>
+                  <View style={styles.cardContent}>
+                    <Text style={[styles.cardName, { color: colors.ink, fontFamily: SERIF_BOLD }]} numberOfLines={1}>
+                      {item.name}
+                    </Text>
+                    <Text style={[styles.cardMeta, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]} numberOfLines={1}>
+                      {item.location ? `${item.location} · ` : ""}{count} {count === 1 ? "Kaffee" : "Kaffees"}
+                    </Text>
+                    {avg ? renderScore(avg) : null}
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color={colors.inkFaint} />
+                </Pressable>
               );
             })}
           </View>
@@ -701,60 +695,52 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
 
-  // Röstereien — plain rows on the page, separated by hairline dividers
-  rowDivider: {
-    height: 1,
-    marginLeft: 44,
-  },
-  roasteryRow: {
+  // Röstereien — standalone clean index cards
+  roasteryCard: {
     flexDirection: "row",
-    alignItems: "flex-start",
-    paddingVertical: 18,
-    gap: 14,
-  },
-  rowIcon: {
-    width: 30,
     alignItems: "center",
-    marginTop: 2,
+    gap: 16,
+    paddingVertical: 20,
+    paddingHorizontal: 18,
+    borderRadius: 20,
+    borderWidth: StyleSheet.hairlineWidth,
+    marginBottom: 14,
+    shadowColor: "#2C1810",
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.08,
+    shadowRadius: 14,
+    elevation: 2,
   },
-  roasteryContent: {
+  cardIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  cardContent: {
     flex: 1,
   },
-  roasteryName: {
+  cardName: {
     fontSize: 22,
     lineHeight: 27,
   },
-  roasteryMeta: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 4,
-    flexWrap: "wrap",
-  },
-  roasteryMetaText: {
+  cardMeta: {
     fontSize: 13,
-  },
-  metaDot: {
-    width: 3,
-    height: 3,
-    borderRadius: 1.5,
-    marginHorizontal: 8,
+    marginTop: 3,
   },
   scoreRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 20,
-    marginTop: 10,
+    gap: 8,
+    marginTop: 8,
   },
-  scorePair: {
-    flexDirection: "row",
-    alignItems: "baseline",
-    gap: 6,
+  scoreText: {
+    fontSize: 14,
   },
-  scoreName: {
-    fontSize: 13,
-  },
-  scoreValue: {
-    fontSize: 18,
+  scoreDivider: {
+    fontSize: 14,
+    opacity: 0.7,
   },
 
   // States

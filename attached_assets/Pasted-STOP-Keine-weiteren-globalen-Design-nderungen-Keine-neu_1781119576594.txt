@@ -1,0 +1,222 @@
+STOP.
+
+Keine weiteren globalen Designänderungen.
+
+Keine neuen Hintergründe.
+
+Keine neuen Texturen.
+
+Keine Anpassungen an anderen Screens.
+
+Keine Änderungen an Entdeckungen, Weltkarte, Profil, Einstellungen oder Detailseiten.
+
+Wir arbeiten jetzt ausschließlich an EINER Komponente:
+
+DIE RÖSTEREI-KACHEL AUF DER STARTSEITE.
+
+---
+
+HINTERGRUND
+
+Die bisherigen Designänderungen haben zu viele Baustellen gleichzeitig geöffnet.
+
+Ich möchte jetzt bewusst nur einen einzigen UI-Baustein perfektionieren.
+
+Erst wenn diese Komponente überzeugt, wird ihr Design auf die restliche App übertragen.
+
+---
+
+AUFGABE
+
+Baue die Rösterei-Karte neu.
+
+Nur diese Komponente.
+
+Beispiel:
+
+[Icon]
+
+Roestbar
+Münster · 4 Kaffees
+
+Hase 8 | Dodo 6
+
+>
+
+---
+
+ZIELGEFÜHL
+
+Die Karte soll wirken wie eine hochwertige Karteikarte in einem modernen Kaffeejournal.
+
+Nicht:
+
+- Scrapbook
+- Bastelprojekt
+- Pergamentrolle
+- Vintage-Papierfetzen
+- Wasserflecken
+- Zerrissene Kanten
+
+Sondern:
+
+- hochwertig
+- ruhig
+- klar
+- warm
+- aufgeräumt
+- haptisch
+
+---
+
+LAYOUT
+
+Die komplette Karte ist wieder eine eigenständige Karte.
+
+Nicht bloß Text auf einer großen Fläche.
+
+---
+
+KARTENFLÄCHE
+
+Heller Papierfarbton.
+
+Saubere rechteckige Form.
+
+Große Radien.
+
+Keine unregelmäßigen Außenkanten.
+
+Keine ausgeschnittenen Papierformen.
+
+Keine Flecken.
+
+Keine übertriebenen Texturen.
+
+Wenn überhaupt Textur, dann extrem subtil.
+
+---
+
+SCHATTEN
+
+Nur ein einziger weicher Schatten.
+
+Sehr dezent.
+
+Ziel:
+
+Die Karte hebt sich leicht vom Hintergrund ab.
+
+Nicht schweben.
+
+Nicht stapeln.
+
+Nicht mehrere Ebenen simulieren.
+
+---
+
+ABSTÄNDE
+
+Großzügige Innenabstände.
+
+Luftiges Layout.
+
+Weniger visuelle Dichte.
+
+---
+
+ICON-BEREICH
+
+Links ein kleines quadratisches Feld.
+
+Ca. 56x56.
+
+Warmer Akzentton.
+
+Bestehendes Icon weiterverwenden.
+
+---
+
+TITEL
+
+Roestbar
+
+Deutlich wichtigste Information.
+
+Groß.
+
+Markant.
+
+Saubere Hierarchie.
+
+---
+
+UNTERZEILE
+
+Münster · 4 Kaffees
+
+Sekundär.
+
+Ruhig.
+
+Kleiner.
+
+---
+
+BEWERTUNG
+
+Hase 8 | Dodo 6
+
+Akzentfarbe.
+
+Nicht fett.
+
+Nicht dominant.
+
+---
+
+CHEVRON
+
+Rechts.
+
+Vertikal mittig.
+
+Dezent.
+
+---
+
+WICHTIG
+
+Keine weiteren kreativen Interpretationen.
+
+Keine zusätzlichen Dekoelemente.
+
+Keine Papierlagen.
+
+Keine zerrissenen Kanten.
+
+Keine Wasserflecken.
+
+Keine Schattenexperimente.
+
+Keine gefalteten Ecken.
+
+Keine globalen Designänderungen.
+
+---
+
+ERFOLGSKRITERIUM
+
+Wenn 20 Röstereien untereinander angezeigt werden, soll die Seite:
+
+- ruhig
+- hochwertig
+- leicht lesbar
+- modern
+- konsistent
+
+wirken.
+
+Nach Fertigstellung ausschließlich diese Komponente zeigen bzw. ändern.
+
+Nichts anderes in der App anfassen.

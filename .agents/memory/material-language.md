@@ -118,3 +118,17 @@ Entdeckungen=cream wide) are the ONLY nested sheets allowed = the layer-3 catego
 **Why:** a standalone masthead TornSheet + separate list TornSheet = TWO page-papers in the
 "one große Papierfläche" category → architect FAIL ("4 paper planes at top"). Do NOT give the
 masthead its own sheet. Applies to `app/index.tsx` + `app/roastery/[id].tsx`.
+
+## Direction reversal: roastery list = standalone clean cards (NOT page-rows)
+The "page-is-the-surface / hairline rows" approach was REJECTED by the user for the home-screen
+roastery list item. New direction (June 2026): each roastery is a STANDALONE clean "index card"
+in a modern coffee-journal style — light solid surface (`surfaceElevated`), large radius (~20),
+hairline border, ONE subtle soft shadow (the only depth cue), generous airy padding, 56x56 warm
+gold-tint icon tile, serif title > quiet meta line ("Ort · N Kaffees") > subtle accent rating
+("name 8.0 | name 6.0" in gold, medium weight not bold), centered chevron.
+**Explicitly forbidden on this card:** torn/irregular edges, cutout paper shapes, water stains,
+folded corners, paper layers, multiple shadows, "text on a big surface".
+**Why:** user called the torn-paper/page-surface look "Scrapbook/Bastelprojekt/Pergamentrolle"
+and wants "hochwertige Karteikarte" calm premium quality, validated on this ONE component before
+rolling out. **How to apply:** this is the reference card to propagate to other lists later;
+do NOT expand scope to other screens until the user approves this one.
