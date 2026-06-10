@@ -1,0 +1,37 @@
+/* Coffee Nest — Paper Layers V3 design tokens */
+.paper-root {
+  --paper-bg: #E9DDC9;
+  --paper-bg-2: #E2D4BC;
+  --cream: #F7EFDD;
+  --cream-2: #FCF6E9;
+  --kraft: #C8A876;
+  --kraft-deep: #B28A53;
+  --espresso: #241812;
+  --espresso-2: #150D08;
+  --espresso-3: #382418;
+  --gold: #BC7E2C;
+  --gold-light: #D89B3C;
+  --ink: #29190F;
+  --ink-soft: #6E5840;
+  --ink-faint: #9A836A;
+  --cream-text: #F3E8D4;
+  --cream-text-soft: #BBA486;
+  --cream-text-faint: #8C7558;
+  --hair: rgba(41, 25, 15, 0.14);
+  --hair-cream: rgba(243, 232, 212, 0.18);
+
+  --serif: "Playfair Display", Georgia, serif;
+  --sans: "Inter", system-ui, sans-serif;
+}
+
+.paper-root * { box-sizing: border-box; }
+
+.label {
+  font-family: var(--sans);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.26em;
+  font-size: 10px;
+}
+.serif { font-family: var(--serif); }
+.sans { font-family: var(--sans); }
