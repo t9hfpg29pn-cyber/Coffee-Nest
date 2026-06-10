@@ -191,25 +191,130 @@ function PaperMap() {
   );
 }
 
+/* ── Coffee Nest icon family (web SVG, shapes unchanged from the app) ─── */
+const ico = (c: string, w = 2) => ({
+  stroke: c,
+  strokeWidth: w,
+  strokeLinecap: "round" as const,
+  strokeLinejoin: "round" as const,
+  fill: "none",
+});
+
+function AromaIcon({ step, size = 24, color = "currentColor" }: { step: number; size?: number; color?: string }) {
+  const p = ico(color, 2);
+  const pt = ico(color, 1.6);
+  switch (step) {
+    case 1: // Schokoladig — chocolate bar
+      return (
+        <svg width={size} height={size} viewBox="0 0 28 28">
+          <g transform="rotate(-22 14 14)">
+            <rect x="4" y="2" width="20" height="24" rx="2.5" ry="2.5" {...p} />
+            <line x1="4" y1="14" x2="24" y2="14" {...p} />
+            <line x1="4" y1="6.7" x2="24" y2="6.7" {...pt} />
+            <line x1="4" y1="10.3" x2="24" y2="10.3" {...pt} />
+            <line x1="10.7" y1="2" x2="10.7" y2="14" {...pt} />
+            <line x1="17.3" y1="2" x2="17.3" y2="14" {...pt} />
+            <path d="M4,14 L19,26" {...pt} />
+          </g>
+        </svg>
+      );
+    case 2: // Nussig — nut
+      return (
+        <svg width={size} height={size} viewBox="0 0 28 28">
+          <path d="M14,4 C14,2 16,1 16,4" {...p} />
+          <path d="M6,13 C6,5 22,5 22,13" {...p} />
+          <line x1="4" y1="13" x2="24" y2="13" {...p} />
+          <path d="M6,13 Q5,22 14,27 Q23,22 22,13" {...p} />
+        </svg>
+      );
+    case 4: // Fruchtig/Beerig — berries
+      return (
+        <svg width={size} height={size} viewBox="0 0 28 28">
+          <path d="M14,6 L14,3" {...p} />
+          <path d="M10,4.5 C10,1.5 14,1 14,3" {...pt} />
+          <circle cx="11" cy="10" r="3.5" {...p} />
+          <circle cx="17" cy="10" r="3.5" {...p} />
+          <circle cx="8" cy="17" r="3.5" {...p} />
+          <circle cx="14" cy="17" r="3.5" {...p} />
+          <circle cx="20" cy="17" r="3.5" {...p} />
+          <circle cx="11" cy="24" r="3.5" {...p} />
+          <circle cx="17" cy="24" r="3.5" {...p} />
+        </svg>
+      );
+    case 5: // Blumig/Zitrisch — radial burst
+      return (
+        <svg width={size} height={size} viewBox="0 0 28 28">
+          <circle cx="14" cy="14" r="11.5" stroke={color} strokeWidth={2.5} fill="none" />
+          <circle cx="14" cy="14" r="8.5" {...pt} />
+          <path
+            d="M14,14 L14,5.5 M14,14 L19,7.1 M14,14 L22.1,11.4 M14,14 L22.1,16.6 M14,14 L19,20.9 M14,14 L14,22.5 M14,14 L9,20.9 M14,14 L5.9,16.6 M14,14 L5.9,11.4 M14,14 L9,7.1"
+            strokeWidth={1.5}
+            stroke={color}
+            strokeLinecap="round"
+            fill="none"
+          />
+          <circle cx="14" cy="14" r="1.5" stroke={color} strokeWidth={1.5} fill="none" />
+        </svg>
+      );
+    default:
+      return null;
+  }
+}
+
+function ProcessingIcon({ method, size = 24, color = "currentColor" }: { method: string; size?: number; color?: string }) {
+  const steps: Record<string, number> = { washed: 1, natural: 2, honey: 3 };
+  const p = ico(color, 2);
+  const pt = ico(color, 1.6);
+  switch (steps[method]) {
+    case 1: // Washed — water droplet
+      return (
+        <svg width={size} height={size} viewBox="0 0 28 28">
+          <path d="M14,3 C14,3 22,12 22,18 A8,8 0 1 1 6,18 C6,12 14,3 14,3 Z" {...p} />
+          <path d="M11,18 C11,20.5 12.5,22 14.5,22" {...pt} />
+        </svg>
+      );
+    case 2: // Natural — coffee cherry with leaf
+      return (
+        <svg width={size} height={size} viewBox="0 0 28 28">
+          <path d="M14,8 L14,4" {...p} />
+          <path d="M14,5 C16,2 20,2.5 21,5 C19,7.5 15.5,7 14,5 Z" {...pt} />
+          <circle cx="14" cy="16" r="7.5" {...p} />
+          <path d="M11,12.5 C12.5,11.5 15.5,11.5 17,12.5" {...pt} />
+        </svg>
+      );
+    case 3: // Honey — honeycomb cell
+      return (
+        <svg width={size} height={size} viewBox="0 0 28 28">
+          <polygon points="14,3.5 22.5,8.5 22.5,18.5 14,23.5 5.5,18.5 5.5,8.5" {...p} />
+          <polygon points="14,9 18,11.5 18,16.5 14,19 10,16.5 10,11.5" {...pt} />
+        </svg>
+      );
+    default:
+      return null;
+  }
+}
+
 const AROMEN = [
-  { label: "Schokoladig", count: 6, best: "Brazil Daterra", h: 8.6, d: 8.1 },
-  { label: "Fruchtig", count: 5, best: "Yirgacheffe", h: 9.2, d: 8.8 },
-  { label: "Nussig", count: 4, best: "Honduras Marcala", h: 7.9, d: 7.5 },
-  { label: "Blumig", count: 3, best: "Gesha Esmeralda", h: 9.4, d: 9.0 },
+  { label: "Schokoladig", step: 1, count: 6, best: "Brazil Daterra", h: 8.6, d: 8.1 },
+  { label: "Fruchtig", step: 4, count: 5, best: "Yirgacheffe", h: 9.2, d: 8.8 },
+  { label: "Nussig", step: 2, count: 4, best: "Honduras Marcala", h: 7.9, d: 7.5 },
+  { label: "Blumig", step: 5, count: 3, best: "Gesha Esmeralda", h: 9.4, d: 9.0 },
 ];
 const AUFB = [
-  { label: "Washed", count: 11, best: "Kenia AA", h: 8.8, d: 8.3 },
-  { label: "Natural", count: 7, best: "Yirgacheffe", h: 9.2, d: 8.8 },
-  { label: "Honey", count: 3, best: "Costa Rica", h: 8.1, d: 7.8 },
+  { label: "Washed", method: "washed", count: 11, best: "Kenia AA", h: 8.8, d: 8.3 },
+  { label: "Natural", method: "natural", count: 7, best: "Yirgacheffe", h: 9.2, d: 8.8 },
+  { label: "Honey", method: "honey", count: 3, best: "Costa Rica", h: 8.1, d: 7.8 },
 ];
 
 function CategoryChip({
+  icon,
   label,
   count,
   best,
   h,
   d,
 }: {
+  icon: ReactNode;
   label: string;
   count: number;
   best: string;
@@ -220,6 +325,16 @@ function CategoryChip({
     <div className="relative" style={{ minWidth: 0 }}>
       <div aria-hidden className="absolute inset-0" style={{ background: "var(--cream)", filter: "url(#torn-5)" }} />
       <div className="relative px-4 py-4">
+        {/* icon stamp — espresso paper backing, gold outline (design-matched) */}
+        <div className="relative mb-3" style={{ width: 44, height: 44 }}>
+          <div aria-hidden className="absolute inset-0" style={{ background: "var(--espresso)", filter: "url(#torn-9)" }} />
+          <div
+            className="relative flex h-full w-full items-center justify-center"
+            style={{ color: "var(--gold-light)" }}
+          >
+            {icon}
+          </div>
+        </div>
         <div className="serif" style={{ fontSize: 17, fontWeight: 700, color: "var(--ink)" }}>
           {label}
         </div>
@@ -441,7 +556,15 @@ export function Entdeckungen() {
           <SectionLabel light sub="Entdeckte Geschmackswelten">Aromen</SectionLabel>
           <div className="mt-5 grid grid-cols-2 gap-4">
             {AROMEN.map((a) => (
-              <CategoryChip key={a.label} label={a.label} count={a.count} best={a.best} h={a.h} d={a.d} />
+              <CategoryChip
+                key={a.label}
+                icon={<AromaIcon step={a.step} />}
+                label={a.label}
+                count={a.count}
+                best={a.best}
+                h={a.h}
+                d={a.d}
+              />
             ))}
           </div>
         </Sheet>
@@ -451,7 +574,15 @@ export function Entdeckungen() {
           <SectionLabel light sub="Entdeckte Verarbeitungsmethoden">Aufbereitungen</SectionLabel>
           <div className="mt-5 grid grid-cols-2 gap-4">
             {AUFB.map((a) => (
-              <CategoryChip key={a.label} label={a.label} count={a.count} best={a.best} h={a.h} d={a.d} />
+              <CategoryChip
+                key={a.label}
+                icon={<ProcessingIcon method={a.method} />}
+                label={a.label}
+                count={a.count}
+                best={a.best}
+                h={a.h}
+                d={a.d}
+              />
             ))}
           </div>
         </Sheet>
