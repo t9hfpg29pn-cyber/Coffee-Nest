@@ -25,33 +25,6 @@ function webStyle(value: Record<string, string | number>): ViewStyle {
   return isWeb ? (value as unknown as ViewStyle) : {};
 }
 
-// A seamless ORGANIC paper-mottle tile — NOT fine grain. The goal is damp-paper
-// multi-tonality: large, soft blooms where the surface is subtly lighter in some
-// patches and darker in others (like paper that is partly wet / a faint coffee
-// stain), all within a single sheet. Achieved with a LOW-frequency fractalNoise
-// (big soft clouds, not crissel), desaturated and centred on mid-grey, then
-// composited with `soft-light` so values above 0.5 gently LIGHTEN the sheet and
-// values below 0.5 gently DARKEN it → real multi-colour, never a flat fill.
-// `slope` controls how pronounced the blooms are; the tile is rasterised ONCE
-// and reused, so there is no per-sheet live-filter cost.
-const buildMottle = (slope: number, seed: number): string =>
-  `url("data:image/svg+xml;utf8,${encodeURIComponent(
-    `<svg xmlns='http://www.w3.org/2000/svg' width='440' height='440'><filter id='m'><feTurbulence type='fractalNoise' baseFrequency='0.009 0.011' numOctaves='3' seed='${seed}' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/><feComponentTransfer><feFuncR type='linear' slope='${slope}' intercept='${(1 - slope) / 2}'/><feFuncG type='linear' slope='${slope}' intercept='${(1 - slope) / 2}'/><feFuncB type='linear' slope='${slope}' intercept='${(1 - slope) / 2}'/></feComponentTransfer></filter><rect width='100%' height='100%' filter='url(#m)'/></svg>`,
-  )}")`;
-// Applied on BOTH cream and espresso sheets so the multi-tonality is everywhere.
-// Cream needs a bit more contrast than espresso because soft-light barely shifts
-// a near-white surface, so the blooms would otherwise be invisible on it.
-const MOTTLE_CREAM = buildMottle(0.62, 7);
-const MOTTLE_ESPRESSO = buildMottle(0.72, 3);
-
-// A fine, DEZENT paper-fibre tile layered on top of the large mottle so the
-// surface also reads as actual paper up close (small fibres), not just colour
-// blooms. Kept very low-contrast (small slope) and small-scale so it is a whisper
-// of texture, never the harsh "crissel" grain that was rejected earlier.
-const FIBER = `url("data:image/svg+xml;utf8,${encodeURIComponent(
-  `<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='0.6 0.72' numOctaves='2' seed='5' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/><feComponentTransfer><feFuncR type='linear' slope='0.16' intercept='0.42'/><feFuncG type='linear' slope='0.16' intercept='0.42'/><feFuncB type='linear' slope='0.16' intercept='0.42'/></feComponentTransfer></filter><rect width='100%' height='100%' filter='url(#f)'/></svg>`,
-)}")`;
-
 // The torn-edge SVG filter defs. These MUST be REAL DOM <filter> nodes so that
 // `filter: url(#torn-N)` actually resolves on web — react-native-svg's web build
 // does not reliably emit usable SVG filter primitives (FeDisplacementMap etc.),
@@ -60,8 +33,8 @@ const FIBER = `url("data:image/svg+xml;utf8,${encodeURIComponent(
 // native this is a no-op (filters are a web-only effect).
 const TORN_DEFS_HTML = `<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>${TORN_SEEDS.map(
   (s) =>
-    `<filter id="torn-${s}" x="-28%" y="-28%" width="156%" height="156%"><feTurbulence type="fractalNoise" baseFrequency="0.012 0.015" numOctaves="2" seed="${s}" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="18" xChannelSelector="R" yChannelSelector="G"/></filter>`,
-).join("")}<filter id="paper-grain"><feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="3" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter></defs></svg>`;
+    `<filter id="torn-${s}" x="-12%" y="-12%" width="124%" height="124%"><feTurbulence type="fractalNoise" baseFrequency="0.013 0.016" numOctaves="3" seed="${s}" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="11" xChannelSelector="R" yChannelSelector="G"/></filter>`,
+).join("")}<filter id="paper-grain"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter></defs></svg>`;
 
 export function TornDefs() {
   React.useEffect(() => {
@@ -87,7 +60,7 @@ export function Grain() {
         StyleSheet.absoluteFill,
         webStyle({
           filter: "url(#paper-grain)",
-          opacity: 0.08,
+          opacity: 0.05,
           mixBlendMode: "multiply",
         }),
       ]}
@@ -180,18 +153,9 @@ export function TornSheet({
           StyleSheet.absoluteFill,
           faceRadius,
           { backgroundColor: face },
-          // Organic damp-paper mottle baked into the face as a large tiled
-          // background-image (rasterised once) and blended with the sheet colour
-          // via soft-light — so each surface has soft lighter/darker blooms
-          // WITHIN it, not a flat fill and not fine grain. The torn displacement
-          // filter on this same View then warps the blooms with the edge.
-          isWeb
-            ? webStyle({
-                backgroundImage: `${espresso ? MOTTLE_ESPRESSO : MOTTLE_CREAM}, ${FIBER}`,
-                backgroundBlendMode: "soft-light, soft-light",
-                backgroundSize: "380px 380px, 110px 110px",
-              })
-            : {},
+          // Solid paper face — exactly like the approved mockup. Depth comes from
+          // the torn silhouette, the offset backing/underlayer peeks and the drop
+          // shadow, NOT from any baked-in texture (which only muddied the colour).
           webFilter(`url(#torn-${seed}) ${shadow}`),
           isWeb ? {} : styles.nativeFaceShadow,
         ]}

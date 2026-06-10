@@ -144,13 +144,18 @@ function CategoryCard({
   onPress: () => void;
 }) {
   return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => [styles.chipOuter, { opacity: pressed ? 0.9 : 1 }]}
-    >
-      <IconStamp size={50} seed={seed} tone="kraft" style={styles.chipStamp}>
-        {icon}
-      </IconStamp>
+    <View style={styles.chipOuter}>
+      <TornSheet
+        tone="cream"
+        seed={seed}
+        rotate={0}
+        peek={false}
+        onPress={onPress}
+        contentStyle={styles.chipPad}
+      >
+        <IconStamp size={46} seed={9} style={styles.chipStamp}>
+          {icon}
+        </IconStamp>
       <Text style={[styles.chipName, { color: colors.ink, fontFamily: SERIF_BOLD }]} numberOfLines={1}>
         {cat.label}
       </Text>
@@ -179,7 +184,8 @@ function CategoryCard({
           Noch nicht entdeckt
         </Text>
       )}
-    </Pressable>
+      </TornSheet>
+    </View>
   );
 }
 
@@ -632,18 +638,18 @@ export default function DiscoveriesScreen() {
         </TornSheet>
 
         {/* ── AROMEN — cream collectible chips ──────────────────────── */}
-        <TornSheet tone="cream" seed={5} rotate={-0.7} contentStyle={styles.sheetPad}>
-          <Text style={[styles.sectionLabel, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
+        <TornSheet tone="espresso" seed={5} rotate={-0.7} contentStyle={styles.sheetPad}>
+          <Text style={[styles.sectionLabel, { color: colors.creamTextSoft, fontFamily: "Inter_600SemiBold" }]}>
             AROMEN
           </Text>
-          <Text style={[styles.sectionSubtitle, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
+          <Text style={[styles.sectionSubtitle, { color: colors.creamTextFaint, fontFamily: "Inter_400Regular" }]}>
             Entdeckte Geschmackswelten
           </Text>
           <View style={styles.categoryGrid}>
             {aromaStats.map((cat, i) => (
               <CategoryCard
                 key={cat.key}
-                icon={<AromaIcon step={Number(cat.key)} size={26} color={colors.espresso} />}
+                icon={<AromaIcon step={Number(cat.key)} size={26} color={colors.goldLight} />}
                 cat={cat}
                 name1={name1}
                 name2={name2}
@@ -659,18 +665,18 @@ export default function DiscoveriesScreen() {
         </TornSheet>
 
         {/* ── AUFBEREITUNGEN — cream collectible chips ──────────────── */}
-        <TornSheet tone="cream" seed={11} rotate={0.7} contentStyle={styles.sheetPad}>
-          <Text style={[styles.sectionLabel, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
+        <TornSheet tone="espresso" seed={11} rotate={0.7} contentStyle={styles.sheetPad}>
+          <Text style={[styles.sectionLabel, { color: colors.creamTextSoft, fontFamily: "Inter_600SemiBold" }]}>
             AUFBEREITUNGEN
           </Text>
-          <Text style={[styles.sectionSubtitle, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
+          <Text style={[styles.sectionSubtitle, { color: colors.creamTextFaint, fontFamily: "Inter_400Regular" }]}>
             Entdeckte Verarbeitungsmethoden
           </Text>
           <View style={styles.categoryGrid}>
             {processingStats.map((cat, i) => (
               <CategoryCard
                 key={cat.key}
-                icon={<ProcessingIcon method={cat.key} size={26} color={colors.espresso} />}
+                icon={<ProcessingIcon method={cat.key} size={26} color={colors.goldLight} />}
                 cat={cat}
                 name1={name1}
                 name2={name2}
@@ -1006,6 +1012,7 @@ const styles = StyleSheet.create({
     flexBasis: "44%",
     flexGrow: 1,
   },
+  chipPad: { paddingHorizontal: 16, paddingVertical: 16 },
   chipStamp: { marginBottom: 12 },
   chipName: { fontSize: 18, lineHeight: 22 },
   chipCount: { fontSize: 11.5, marginTop: 2 },

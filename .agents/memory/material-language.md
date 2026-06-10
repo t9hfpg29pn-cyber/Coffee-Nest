@@ -47,18 +47,28 @@ canonical, approved translation — copy its composition for any classic-theme s
   supplies the only edge; only use rounded corners on native (no filters there). If sheets ever look
   like cards again on web, first confirm `#torn-N` filters exist in the live DOM, not the palette.
 
-**Paper texture must be a rasterised background-image, NOT a per-sheet live filter:**
-- A live `feTurbulence` SVG filter applied to every TornSheet (e.g. an overlay with
-  `filter: url(#paper-grain) url(#torn-N)`) makes web scrolling janky and sections paint slowly —
-  turbulence is recomputed per element. It was ALSO too subtle to read as structure.
-- Working approach: bake the grain into the face as a tiled noise `background-image` (an SVG
-  `feTurbulence` data-URI built once via `buildNoise(slope,intercept)` in `components/TornPaper.tsx`),
-  composited with the sheet colour via `background-blend-mode` (`multiply` on cream, `screen` on
-  espresso). The browser rasterises it ONCE; the face's existing torn filter still warps the grain
-  with the edge. Visible texture, ~zero per-item cost.
-- **Why:** user reported both "Oberflächen nicht strukturiert" AND "Performance hakelig" from the same
-  live-filter overlay. **How to apply:** never add a live SVG filter that scales with list length;
-  prefer a single rasterised tile + blend mode. Keep only ONE global `Grain` live filter per screen.
+**Richness = layered SOLID-colour planes, NOT any texture overlay (final, hard-won):**
+- The TornSheet face is a SOLID colour + `filter: url(#torn-N) drop-shadow(...)`. NO mottle, NO
+  fibre, NO baked noise `background-image`. Depth/"multi-tonality" comes ONLY from: the torn
+  silhouette, the offset kraft/espresso2 backing peek, the espresso3 underlayer peek (espresso
+  tone), and the drop-shadow — exactly like the mockup. The single web-only global `Grain`
+  overlay stays at opacity ~0.05.
+- Torn filter params MUST match the mockup 1:1: region `-12%/124%`, `baseFrequency 0.013 0.016`,
+  `numOctaves 3`, `scale 11`; `paper-grain` = `baseFrequency 0.9 numOctaves 2`. Do NOT retune these.
+- **Why:** every attempt to add "damp-paper" texture (live per-sheet filter → janky; then a baked
+  soft-light mottle + fibre `background-image`) WASHED OUT the cream into a flat muddy grey and the
+  user kept seeing "kaum Veränderung / riesiger Unterschied" vs the template. The mockup has ZERO
+  surface texture; matching it exactly is what finally read as rich. **How to apply:** if the user
+  wants more depth, add/strengthen layered planes & contrast — never a noise/texture fill.
+- **Entdeckungen contrast structure:** AROMEN and AUFBEREITUNGEN are `tone="espresso"` DARK planes
+  whose section label/sub use `creamTextSoft`/`creamTextFaint`; each CategoryCard is a
+  `tone="cream"` chip (`peek={false}`) with an espresso `IconStamp` + `goldLight` icon, so cream
+  chips POP against the dark plane. Rendering those sections as flat `tone="cream"` (the bug) made
+  the whole screen look pale and flat. `IconStamp` defaults to `tone="espresso"` — don't pass `kraft`.
+- **Grid sizing gotcha:** `TornSheet` applies its `style` prop to the INNER container, and when
+  `onPress` is set it is wrapped in a bare `Pressable` (no flex). For a flex-grid item, wrap the
+  TornSheet in an outer `<View style={{flexBasis:"44%",flexGrow:1}}>` — putting flexBasis on the
+  TornSheet itself does NOT size the grid item.
 
 **Torn seed ids skip 10 — never derive seeds by raw arithmetic:**
 - `TORN_SEEDS` in `components/TornPaper.tsx` is `[1..9, 11..17]` — there is intentionally NO `torn-10`.
