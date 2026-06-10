@@ -1054,7 +1054,7 @@ export default function CoffeeDetailScreen() {
       >
 
         <TornSheet tone="espresso" seed={3} rotate={-0.8} contentStyle={styles.noteSection}>
-          <SectionHeader title="BEWERTUNGEN" color={colors.creamTextSoft} />
+          <SectionHeader title="BEWERTUNGEN" color={colors.inkFaint} />
           <View style={{ gap: 22, marginTop: 14 }}>
             <RatingSlider
               label={`${name1} Rating`}
@@ -1064,14 +1064,14 @@ export default function CoffeeDetailScreen() {
               onChange={(v) => { setHaseRating(v); markChanged(); }}
               minLabel="schlecht"
               maxLabel="grossartig"
-              color={colors.goldLight}
-              textColor={colors.creamText}
-              borderColor={colors.espresso3}
-              surfaceColor={colors.espresso3}
+              color={colors.gold}
+              textColor={colors.ink}
+              borderColor={colors.kraft}
+              surfaceColor={colors.paperBg2}
             />
             {user2active && (
               <>
-                <Hairline cream />
+                <Hairline />
                 <RatingSlider
                   label={`${name2} Rating`}
                   value={dodoRating}
@@ -1080,10 +1080,10 @@ export default function CoffeeDetailScreen() {
                   onChange={(v) => { setDodoRating(v); markChanged(); }}
                   minLabel="schlecht"
                   maxLabel="grossartig"
-                  color={colors.goldLight}
-                  textColor={colors.creamText}
-                  borderColor={colors.espresso3}
-                  surfaceColor={colors.espresso3}
+                  color={colors.gold}
+                  textColor={colors.ink}
+                  borderColor={colors.kraft}
+                  surfaceColor={colors.paperBg2}
                 />
               </>
             )}

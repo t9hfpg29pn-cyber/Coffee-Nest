@@ -1,7 +1,8 @@
 import React from "react";
-import { StyleSheet, View, Pressable, ViewStyle } from "react-native";
+import { Image, StyleSheet, View, Pressable, ViewStyle } from "react-native";
 import Svg, { Polygon, Path } from "react-native-svg";
 import { useTheme } from "@/context/ThemeContext";
+import { coffeeBgTexture } from "@/assets/textures";
 
 // Organic "paper field" behind every screen — large, soft, overlapping torn
 // layers (never a technical low-poly mesh). A few big shapes give the warm
@@ -9,11 +10,16 @@ import { useTheme } from "@/context/ThemeContext";
 export function PolyBackground() {
   const { design } = useTheme();
 
-  // Classic (Paper Layers V3): the "table" is a FLAT light warm-beige field set
-  // by the screen container's backgroundColor. No gradient/soak — a dark soak
-  // here is what made the journal read as aged parchment. The only texture is
-  // the subtle <Grain/> overlay from TornPaper.
-  if (design === "classic") return null;
+  // Classic: the whole-app background is the real DARK COFFEE paper texture
+  // (image #1), rendered full-bleed behind every screen. The light paper sheets
+  // (TornSheet) rest on top of it.
+  if (design === "classic") {
+    return (
+      <View style={StyleSheet.absoluteFill} pointerEvents="none">
+        <Image source={coffeeBgTexture} resizeMode="cover" style={StyleSheet.absoluteFill} />
+      </View>
+    );
+  }
 
   if (design !== "lowpoly") return null;
 

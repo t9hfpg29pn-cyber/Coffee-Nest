@@ -463,31 +463,31 @@ export default function DiscoveriesScreen() {
               {user2active && sharedFav && (
                 <View style={styles.heroWrap}>
                   <TornSheet tone="espresso" seed={4} rotate={-0.9} contentStyle={styles.heroCard}>
-                    <Text style={[styles.heroLabel, { color: colors.goldLight, fontFamily: "Inter_600SemiBold" }]}>
+                    <Text style={[styles.heroLabel, { color: colors.gold, fontFamily: "Inter_600SemiBold" }]}>
                       GEMEINSAMER FAVORIT
                     </Text>
-                    <Text style={[styles.heroName, { color: colors.creamText, fontFamily: SERIF_BOLD }]} numberOfLines={2}>
+                    <Text style={[styles.heroName, { color: colors.ink, fontFamily: SERIF_BOLD }]} numberOfLines={2}>
                       {sharedFav.name}
                     </Text>
                     {sharedFav.roasteryName ? (
-                      <Text style={[styles.heroRoastery, { color: colors.creamTextSoft, fontFamily: "Inter_400Regular" }]} numberOfLines={1}>
+                      <Text style={[styles.heroRoastery, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]} numberOfLines={1}>
                         {sharedFav.roasteryName}
                       </Text>
                     ) : null}
                     <View style={styles.heroRatings}>
                       <View style={styles.heroRatingItem}>
-                        <HaseIcon size={18} color={colors.goldLight} />
-                        <Text style={[styles.heroRatingText, { color: colors.creamTextSoft, fontFamily: "Inter_400Regular" }]}>
+                        <HaseIcon size={18} color={colors.gold} />
+                        <Text style={[styles.heroRatingText, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
                           {name1}{" "}
-                          <Text style={{ color: colors.goldLight, fontFamily: "Inter_700Bold", fontSize: 20 }}>{sharedFav.haseRating}</Text>
+                          <Text style={{ color: colors.gold, fontFamily: "Inter_700Bold", fontSize: 20 }}>{sharedFav.haseRating}</Text>
                         </Text>
                       </View>
-                      <View style={[styles.heroDivider, { backgroundColor: colors.hairCream }]} />
+                      <View style={[styles.heroDivider, { backgroundColor: colors.hair }]} />
                       <View style={styles.heroRatingItem}>
-                        <DodoIcon size={18} color={colors.goldLight} />
-                        <Text style={[styles.heroRatingText, { color: colors.creamTextSoft, fontFamily: "Inter_400Regular" }]}>
+                        <DodoIcon size={18} color={colors.gold} />
+                        <Text style={[styles.heroRatingText, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
                           {name2}{" "}
-                          <Text style={{ color: colors.goldLight, fontFamily: "Inter_700Bold", fontSize: 20 }}>{sharedFav.dodoRating}</Text>
+                          <Text style={{ color: colors.gold, fontFamily: "Inter_700Bold", fontSize: 20 }}>{sharedFav.dodoRating}</Text>
                         </Text>
                       </View>
                     </View>
@@ -639,17 +639,17 @@ export default function DiscoveriesScreen() {
 
         {/* ── AROMEN — cream collectible chips ──────────────────────── */}
         <TornSheet tone="espresso" seed={5} rotate={-0.7} contentStyle={styles.sheetPad}>
-          <Text style={[styles.sectionLabel, { color: colors.creamTextSoft, fontFamily: "Inter_600SemiBold" }]}>
+          <Text style={[styles.sectionLabel, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
             AROMEN
           </Text>
-          <Text style={[styles.sectionSubtitle, { color: colors.creamTextFaint, fontFamily: "Inter_400Regular" }]}>
+          <Text style={[styles.sectionSubtitle, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
             Entdeckte Geschmackswelten
           </Text>
           <View style={styles.categoryGrid}>
             {aromaStats.map((cat, i) => (
               <CategoryCard
                 key={cat.key}
-                icon={<AromaIcon step={Number(cat.key)} size={26} color={colors.goldLight} />}
+                icon={<AromaIcon step={Number(cat.key)} size={26} color={colors.gold} />}
                 cat={cat}
                 name1={name1}
                 name2={name2}
@@ -666,17 +666,17 @@ export default function DiscoveriesScreen() {
 
         {/* ── AUFBEREITUNGEN — cream collectible chips ──────────────── */}
         <TornSheet tone="espresso" seed={11} rotate={0.7} contentStyle={styles.sheetPad}>
-          <Text style={[styles.sectionLabel, { color: colors.creamTextSoft, fontFamily: "Inter_600SemiBold" }]}>
+          <Text style={[styles.sectionLabel, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
             AUFBEREITUNGEN
           </Text>
-          <Text style={[styles.sectionSubtitle, { color: colors.creamTextFaint, fontFamily: "Inter_400Regular" }]}>
+          <Text style={[styles.sectionSubtitle, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
             Entdeckte Verarbeitungsmethoden
           </Text>
           <View style={styles.categoryGrid}>
             {processingStats.map((cat, i) => (
               <CategoryCard
                 key={cat.key}
-                icon={<ProcessingIcon method={cat.key} size={26} color={colors.goldLight} />}
+                icon={<ProcessingIcon method={cat.key} size={26} color={colors.gold} />}
                 cat={cat}
                 name1={name1}
                 name2={name2}

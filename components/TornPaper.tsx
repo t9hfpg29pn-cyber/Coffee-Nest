@@ -1,5 +1,6 @@
 import React from "react";
 import {
+  Image,
   Platform,
   Pressable,
   StyleProp,
@@ -8,6 +9,11 @@ import {
   ViewStyle,
 } from "react-native";
 import { useThemeColors } from "@/context/ThemeContext";
+import {
+  paperMainTexture,
+  paperStainedTexture,
+  paperAccentTexture,
+} from "@/assets/textures";
 
 const isWeb = Platform.OS === "web";
 
@@ -17,7 +23,11 @@ function webStyle(value: Record<string, string | number>): ViewStyle {
   return isWeb ? (value as unknown as ViewStyle) : {};
 }
 
-// ── Torn edge as a STATIC baked mask ────────────────────────────────────────
+// ── Torn edge as a STATIC baked mask (TornBox / gold buttons only) ──────────
+// NOTE: TornSheet and IconStamp now use the real paper-texture PNGs directly,
+// so their torn edges come from the images' own transparent alpha. The baked
+// SVG mask below is only still used by TornBox (the solid gold add/save buttons,
+// for which no paper texture exists).
 // The approved mockup tears each sheet with a live `feTurbulence` +
 // `feDisplacementMap` SVG filter applied to every element. That is fine for a
 // single static mockup screen, but the real app renders one sheet PER list item
@@ -126,29 +136,15 @@ export function TornSheet({
   style?: StyleProp<ViewStyle>;
   contentStyle?: StyleProp<ViewStyle>;
 }) {
-  const colors = useThemeColors();
   const espresso = tone === "espresso";
-
-  const face = espresso ? colors.espresso : colors.surface;
-  const backing = espresso ? colors.espresso2 : colors.kraft;
+  // The face IS the real paper photo: cream -> main sheet, espresso (now a LIGHT
+  // coffee-stained sheet) -> stained sheet. No solid fill / gradient / SVG mask;
+  // the torn silhouette comes from the PNG's own transparent alpha edge.
+  const tex = espresso ? paperStainedTexture : paperMainTexture;
+  const flip = seed % 2 === 0; // mirror the silhouette so adjacent sheets differ
   const shadow = espresso
-    ? "drop-shadow(0 12px 20px rgba(74,48,24,0.24))"
-    : "drop-shadow(0 10px 16px rgba(58,39,22,0.16))";
-
-  // A gentle warm gradient gives the face visible multi-tonality (the user asked
-  // for "Struktur / Mehrfarbigkeit") without a desaturated noise wash that muddied
-  // the cream before. Tones stay inside the same warm family per theme.
-  const faceGradient = espresso
-    ? `linear-gradient(150deg, ${colors.espresso3} 0%, ${colors.espresso} 56%, ${colors.espresso2} 100%)`
-    : `linear-gradient(150deg, ${colors.surfaceElevated} 0%, ${colors.surface} 62%, ${colors.surface} 100%)`;
-
-  // Distinct seeds for the backing/underlayer so adjacent silhouettes differ.
-  const backSeed = seed + 6;
-  const underSeed = seed + 3;
-
-  // On native there are no masks/filters, so fall back to soft rounded corners.
-  const faceRadius: ViewStyle = isWeb ? {} : { borderRadius: 14 };
-  const backRadius: ViewStyle = isWeb ? {} : { borderRadius: 16 };
+    ? "drop-shadow(0 12px 22px rgba(20,12,6,0.42))"
+    : "drop-shadow(0 10px 18px rgba(20,12,6,0.34))";
 
   const inner = (
     <View style={[styles.container, style]}>
@@ -156,42 +152,23 @@ export function TornSheet({
         <View
           pointerEvents="none"
           style={[
-            styles.backing,
-            backRadius,
-            { backgroundColor: backing },
-            maskStyle(backSeed),
-            { transform: [{ rotate: `${rotate - 1}deg` }] },
+            { position: "absolute", top: -7, right: -6, bottom: -10, left: -8, opacity: 0.5 },
+            { transform: [{ rotate: `${rotate - 1.6}deg` }, { scaleX: flip ? 1 : -1 }] },
           ]}
-        />
+        >
+          <Image source={tex} resizeMode="stretch" style={StyleSheet.absoluteFill} />
+        </View>
       )}
-      {espresso && (
-        <View
-          pointerEvents="none"
-          style={[
-            styles.under,
-            backRadius,
-            { backgroundColor: colors.espresso3, opacity: 0.85 },
-            maskStyle(underSeed),
-            { transform: [{ rotate: `${rotate + 1.4}deg` }] },
-          ]}
-        />
-      )}
-      {/* Shadow wrapper carries the drop-shadow on web. It is NOT masked, so the
-          shadow follows the torn silhouette of the masked face child instead of
-          being clipped away by the mask. */}
+      {/* Shadow wrapper carries the drop-shadow on web so it hugs the PNG's torn
+          alpha edge instead of a rectangle. */}
       <View
         pointerEvents="none"
-        style={[StyleSheet.absoluteFill, isWeb ? webStyle({ filter: shadow }) : null]}
+        style={[StyleSheet.absoluteFill, isWeb ? webStyle({ filter: shadow }) : styles.nativeFaceShadow]}
       >
-        <View
-          style={[
-            StyleSheet.absoluteFill,
-            faceRadius,
-            { backgroundColor: face },
-            isWeb ? webStyle({ backgroundImage: faceGradient }) : null,
-            maskStyle(seed),
-            isWeb ? null : styles.nativeFaceShadow,
-          ]}
+        <Image
+          source={tex}
+          resizeMode="stretch"
+          style={[StyleSheet.absoluteFill, { transform: [{ scaleX: flip ? -1 : 1 }] }]}
         />
       </View>
       <View style={[styles.content, contentStyle]}>{children}</View>
@@ -255,9 +232,9 @@ export function TornBox({
   );
 }
 
-// A small torn espresso "stamp" carrying a gold icon — used for category chips
-// (aromas, processing methods). The icon shape itself is untouched; only the
-// backing is the torn-paper material.
+// A small torn "stamp" carrying an icon — used for category chips, list-item
+// markers, etc. The backing is the real ACCENT paper-tile texture (image #4);
+// the icon shape itself is untouched.
 export function IconStamp({
   children,
   size = 44,
@@ -273,12 +250,21 @@ export function IconStamp({
   color?: string;
   style?: StyleProp<ViewStyle>;
 }) {
-  const colors = useThemeColors();
-  const fill = color ?? (tone === "kraft" ? colors.kraft : colors.espresso);
+  // The accent paper tile (texture #4) now backs every small icon stamp. tone /
+  // color are accepted for call-site compatibility but no longer drive a fill.
+  void tone;
+  void color;
+  const flip = seed % 2 === 0;
   return (
-    <TornBox color={fill} seed={seed} style={[{ width: size, height: size }, style]}>
-      {children}
-    </TornBox>
+    <View style={[{ width: size, height: size }, style]}>
+      <View
+        pointerEvents="none"
+        style={[StyleSheet.absoluteFill, { transform: [{ scaleX: flip ? -1 : 1 }] }]}
+      >
+        <Image source={paperAccentTexture} resizeMode="stretch" style={StyleSheet.absoluteFill} />
+      </View>
+      <View style={[StyleSheet.absoluteFill, styles.stampInner]}>{children}</View>
+    </View>
   );
 }
 

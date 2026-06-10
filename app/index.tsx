@@ -352,10 +352,10 @@ export default function RoasteriesScreen() {
               {!factDismissed && discoveryFact ? (
                 <TornSheet tone="espresso" seed={3} rotate={-0.8} contentStyle={styles.notePad} style={styles.noteSheet}>
                   <View style={[styles.noteMotif, { pointerEvents: "none" }]}>
-                    <CompassIcon size={92} color={colors.goldLight} />
+                    <CompassIcon size={92} color={colors.gold} />
                   </View>
                   <View style={styles.todayHeaderRow}>
-                    <Text style={[styles.sectionLabel, { color: colors.creamTextSoft, fontFamily: "Inter_600SemiBold" }]}>
+                    <Text style={[styles.sectionLabel, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
                       HEUTE ENTDECKT
                     </Text>
                     <View style={styles.todayActions}>
@@ -368,7 +368,7 @@ export default function RoasteriesScreen() {
                         hitSlop={8}
                         style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
                       >
-                        <Text style={[styles.todayToggle, { color: colors.creamTextFaint, fontFamily: "Inter_600SemiBold" }]}>
+                        <Text style={[styles.todayToggle, { color: colors.inkSoft, fontFamily: "Inter_600SemiBold" }]}>
                           {factCollapsed ? "Mehr anzeigen" : "Weniger anzeigen"}
                         </Text>
                       </Pressable>
@@ -380,12 +380,12 @@ export default function RoasteriesScreen() {
                         hitSlop={8}
                         style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
                       >
-                        <Feather name="x" size={15} color={colors.creamTextFaint} />
+                        <Feather name="x" size={15} color={colors.inkFaint} />
                       </Pressable>
                     </View>
                   </View>
                   {!factCollapsed && (
-                    <Text style={[styles.todayText, { color: colors.creamText, fontFamily: SERIF_MED }]}>
+                    <Text style={[styles.todayText, { color: colors.ink, fontFamily: SERIF_MED }]}>
                       {discoveryFact.text}
                     </Text>
                   )}
