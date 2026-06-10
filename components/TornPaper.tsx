@@ -149,12 +149,13 @@ export function TornSheet({
   const inner = (
     <View style={[styles.container, style]}>
       {peek && (
+        // A second sheet stacked DIRECTLY beneath: inset on the left & right so it
+        // never pokes past the sides (the chaotic "Flächen schieben vom linken
+        // Rand" the user reported), with only a soft peek at the bottom. No
+        // rotation, no mirror — calm, predictable layering.
         <View
           pointerEvents="none"
-          style={[
-            { position: "absolute", top: -7, right: -6, bottom: -10, left: -8, opacity: 0.5 },
-            { transform: [{ rotate: `${rotate - 1.6}deg` }, { scaleX: flip ? 1 : -1 }] },
-          ]}
+          style={{ position: "absolute", top: 8, left: 7, right: 7, bottom: -7, opacity: 0.38 }}
         >
           <Image source={tex} resizeMode="stretch" style={StyleSheet.absoluteFill} />
         </View>

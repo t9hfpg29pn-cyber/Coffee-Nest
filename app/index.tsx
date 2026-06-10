@@ -697,8 +697,8 @@ const styles = StyleSheet.create({
 
   // Roastery blatt
   roasteryPad: {
-    paddingHorizontal: 18,
-    paddingVertical: 18,
+    paddingHorizontal: 22,
+    paddingVertical: 22,
   },
   roasteryRow: {
     flexDirection: "row",

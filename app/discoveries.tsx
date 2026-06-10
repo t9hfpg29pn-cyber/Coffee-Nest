@@ -1012,7 +1012,7 @@ const styles = StyleSheet.create({
     flexBasis: "44%",
     flexGrow: 1,
   },
-  chipPad: { paddingHorizontal: 16, paddingVertical: 16 },
+  chipPad: { paddingHorizontal: 20, paddingVertical: 20 },
   chipStamp: { marginBottom: 12 },
   chipName: { fontSize: 18, lineHeight: 22 },
   chipCount: { fontSize: 11.5, marginTop: 2 },
