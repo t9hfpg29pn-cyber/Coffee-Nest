@@ -248,16 +248,21 @@ export function IconStamp({
   children,
   size = 44,
   seed = 4,
+  tone = "espresso",
+  color,
   style,
 }: {
   children: React.ReactNode;
   size?: number;
   seed?: number;
+  tone?: "espresso" | "kraft";
+  color?: string;
   style?: StyleProp<ViewStyle>;
 }) {
   const colors = useThemeColors();
+  const fill = color ?? (tone === "kraft" ? colors.kraft : colors.espresso);
   return (
-    <TornBox color={colors.espresso} seed={seed} style={[{ width: size, height: size }, style]}>
+    <TornBox color={fill} seed={seed} style={[{ width: size, height: size }, style]}>
       {children}
     </TornBox>
   );

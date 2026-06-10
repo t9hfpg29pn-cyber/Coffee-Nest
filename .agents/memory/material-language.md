@@ -1,17 +1,43 @@
 ---
-name: Material language (cut-paper layers)
-description: Where Coffee Nest's card depth/material lives and the rule for tuning it
+name: Paper Layers material language
+description: How the Coffee Nest "Paper Layers" torn-paper visual system is composed, why the first attempt failed, and CoffeeIcons prop gotchas.
 ---
-Coffee Nest's card "material" is centralized in the **`PaperSurface`** primitive in `components/Paper.tsx` (drop-in card replacement; also `TornDivider`). The aesthetic is a BOLD **cut-paper LAYERS** look: depth reads via **visibly OFFSET + rotated backing sheets in a contrasting tone, overlap, and asymmetric border-radii — NOT drop shadows**. A subtle organic SVG "paper-field" background lives in `components/PolyBackground.tsx` (now shown for `classic` light too, not only lowpoly).
 
-**V2 change (important):** the old fiddly decoration — top **deckle band** and **dog-ear** — was REMOVED entirely. Those props no longer exist; do not reintroduce them. The prior "deckle + dog-ear" pass was rejected as "a dashboard with a paper theme."
+# Paper Layers material language
 
-**PaperSurface contract:** pass SIZING/margin via `style` (root); inner padding/layout via `contentStyle`. The sheet owns borderWidth + overflow + asymmetric radii + offset backing layer(s). Props: `onPress`/`onLongPress`/`disabled`/`testID`/`style`/`contentStyle`/`tone`("raised"|"mid"|"dark")/`accentBorder`/`flip`/`layers`(1|2). `tone="dark"` = espresso "feature" sheet with a LIGHT cream backing (use it as a container; put light `tone="raised"` cards inside it for the dark-container/light-collectible-card pattern — give the inner grid padding so cards don't touch the dark edge). `layers={2}` adds a second far backing sheet (magazine stack). When non-interactive it renders a plain `View` (no nested-pressable conflicts in forms). For list cards, alternate `flip={index % 2 === 1}`.
+The classic ("light") theme is a torn-paper system implemented with `components/TornPaper.tsx`
+(`TornDefs`, `TornSheet`, `TornBox`, `IconStamp`, `Grain`, `Hairline`). `app/index.tsx` is the
+canonical, approved translation — copy its composition for any classic-theme screen.
 
-**Hero/dark text:** every palette in `constants/colors.ts` (light/dark/lowpoly) carries hero tokens — `heroSurface/heroBacking/heroText/heroTextSub/heroBorder/heroTint`. On any `tone="dark"` surface, color text/icons with `heroText`/`heroTextSub`/`heroTint`, never the normal `text`/`textSecondary`/`tint`.
+**The composition (and the failure mode to avoid):**
+- A redesign that puts paper *texture* on cards STILL READS AS A CARD UI and will be rejected.
+- The fix is a 3-plane contrast model: a DARK espresso "table" = `colors.background`; cream
+  paper "pages" = `<TornSheet tone="cream">`; dark espresso "glued notes" = `<TornSheet tone="espresso">`
+  used sparingly for hero/feature blocks. Depth comes from overlap + offset kraft backing +
+  slight per-item rotation + contrast — NEVER from boxed cards or box-shadows.
+- Content/stats sit DIRECTLY on a cream sheet: no inner cards, no stat tiles, no full-border
+  boxes, no cards-in-cards. List entries use a kraft `IconStamp` + big Playfair serif name.
+- **Why:** the user explicitly rejected the first attempt as "a card UI with paper texture";
+  the approved direction is "a surface BUILT FROM overlapping paper layers".
+- **How to apply:** never render primary text directly on `colors.background` (it is dark) —
+  always inside a cream sheet. Text on cream = ink/inkSoft/inkFaint; on espresso =
+  creamText/creamTextSoft/creamTextFaint. Bottom-sheet MODALS may keep a rounded elevated
+  surface (the canonical index add-modal does) — that exception is fine, it is not a page card.
 
-**Default theme:** `classic` (warm cream) is the DEFAULT (`ThemeContext` initial state) and **`useThemeColors()` returns `Colors.light` for classic ALWAYS — it no longer follows system dark mode**. The dark option is `lowpoly`. (`Colors.dark` is now effectively unused by the hook but kept exported.)
+**CoffeeIcons.tsx prop gotcha (caused 2 build failures):**
+- Some exports are SCALE/STATE glyphs with a REQUIRED non-size prop, not generic icons:
+  `AromaIcon` needs `step`, `ProcessingIcon` needs `method`, `RoastIcon` needs `level`,
+  `GrinderIcon` needs `design`. Using them bare (only size+color) is a tsc error.
+- Prop-free icons safe for decorative/stamp use: CupIcon, RoasteryIcon, GlobeIcon, GemIcon,
+  OriginPinIcon, CompassIcon, TrophyIcon, MillIcon, StarIcon, HaseIcon, DodoIcon.
 
-**Rule:** tune card material app-wide through `PaperSurface` geometry (backing offset/rotation, layers, radii, tone) — not per-screen structural edits. Legacy `useCardExtras()` shadow tokens still exist and some screens keep an unused `const cardExtras = useCardExtras()` read (harmless — tsconfig has no noUnusedLocals), but PaperSurface itself uses NO shadow; only modal/overlay sheets still use `cardExtras.shadow` (left out of the reskin scope intentionally).
-**Why:** the brief is a deliberately bold cut-paper LAYERS reskin ("go 30% too far") against a warm-cream reference image; functions/data/navigation/IA/texts must stay unchanged — pure visual.
-**How to apply:** if a screen feels flat/"dashboard", deepen LAYERING in PaperSurface (bigger backing offset, second layer, edge/tone contrast) — keep palette in `constants/colors.ts` (3-tier paper + darker `backdrop` backing + hero set) and never alter functional/layout/IA. Do NOT add the bottom tab bar from the reference image (nav stays Stack).
+**Theme behavior (still true, survives every reskin):**
+- `classic` is the DEFAULT theme (`ThemeContext` initial state). `useThemeColors()` returns
+  `Colors.light` for classic ALWAYS — it does NOT follow system dark mode. The dark option is
+  `lowpoly`. `Colors.dark` is effectively unused by the hook but kept exported.
+- NAV IS STACK ONLY. The reference mockups show a bottom tab bar — that is an artifact; do NOT
+  add tabs. Keep the existing hierarchical Stack navigation.
+
+**History:** an earlier `PaperSurface`/`components/Paper.tsx` "cut-paper layers" system (with
+deckle/dog-ear, then offset/rotated backings) was fully REPLACED by `TornPaper.tsx`. No
+`PaperSurface` references remain — do not reintroduce it.

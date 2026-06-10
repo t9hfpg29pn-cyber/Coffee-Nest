@@ -18,20 +18,20 @@ export function PolyBackground() {
           viewBox="0 0 375 812"
           preserveAspectRatio="xMidYMid slice"
         >
-          {/* A brighter sheet of paper draped across the top of the field */}
+          {/* A faint warm glow soaking through the top of the table */}
           <Path
             d="M0,0 H375 V236 C300,286 246,198 166,248 C88,296 40,216 0,260 Z"
-            fill="rgba(255,253,247,0.6)"
+            fill="rgba(214,156,86,0.07)"
           />
-          {/* A warmer torn band through the middle */}
+          {/* A slightly warmer torn band through the middle */}
           <Path
             d="M0,250 C90,212 150,300 250,256 C322,226 360,282 375,252 V486 C300,524 228,442 148,490 C80,532 30,456 0,496 Z"
-            fill="rgba(120,84,50,0.05)"
+            fill="rgba(176,122,46,0.05)"
           />
-          {/* A deeper soak settling toward the base */}
+          {/* A deeper espresso soak settling toward the base */}
           <Path
             d="M0,486 C80,524 150,452 232,498 C300,536 350,470 375,500 V812 H0 Z"
-            fill="rgba(70,44,26,0.07)"
+            fill="rgba(0,0,0,0.18)"
           />
         </Svg>
       </View>

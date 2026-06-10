@@ -1,4 +1,4 @@
 - [Verifying Expo web builds](expo-web-verify.md) — screenshot proxy often down; curl the expo-router entry.bundle to confirm a clean 200 build; browser-console errors can be stale.
 - [Grinder data model](grinder-model.md) — grinders are `{name,design}[]` but relations key off grinder NAME string; use `grinders[0].name`, normalize on import.
 - [Hase/Dodo separation](hase-dodo-separation.md) — never average the two raters except getSharedFavoriteCoffee(); gate all user2 data+UI by user2active.
-- [Material language](material-language.md) — card depth/shadow/radius is centralized in useCardExtras(); tune material there, never via per-screen layout edits; keep palette intact.
+- [Paper Layers material language](material-language.md) — classic theme = dark espresso "table" + cream/espresso torn TornSheets (TornPaper.tsx, PaperSurface is gone); texture-on-cards reads as cards & gets rejected; nav is Stack-only; some CoffeeIcons need a required scale prop.

@@ -20,8 +20,8 @@ import { getRoasteries, saveRoastery, deleteRoastery, getCoffees, Roastery, getD
 import { useUserNames } from "@/context/UserNamesContext";
 import { useThemeColors, useCardExtras } from "@/context/ThemeContext";
 import { PolyBackground, PolyActionButton } from "@/components/PolyBackground";
-import { TornDefs, TornSheet, TornBox, Grain, Hairline } from "@/components/TornPaper";
-import { CompassIcon } from "@/components/CoffeeIcons";
+import { TornDefs, TornSheet, TornBox, IconStamp, Grain } from "@/components/TornPaper";
+import { CupIcon, RoasteryIcon, GlobeIcon, GemIcon, OriginPinIcon, CompassIcon, TrophyIcon } from "@/components/CoffeeIcons";
 
 const SERIF_BLACK = "PlayfairDisplay_800ExtraBold";
 const SERIF_BOLD = "PlayfairDisplay_700Bold";
@@ -29,6 +29,8 @@ const SERIF_MED = "PlayfairDisplay_500Medium";
 
 // Varied torn seeds so adjacent roastery sheets never share a silhouette.
 const LIST_SEEDS = [2, 5, 8, 12, 15, 7, 9, 13, 16, 3];
+// Rotating stamp glyphs so each roastery blatt feels hand-pressed & distinct.
+const STAMP_ICONS = [CupIcon, GemIcon, OriginPinIcon, CompassIcon, TrophyIcon];
 
 export default function RoasteriesScreen() {
   const insets = useSafeAreaInsets();
@@ -144,27 +146,18 @@ export default function RoasteriesScreen() {
 
   const renderScore = (avg: { hase: number | null; dodo: number | null }) => (
     <View style={styles.scoreRow}>
-      <Text style={[styles.scoreLabel, { color: colors.inkFaint, fontFamily: "Inter_500Medium" }]}>
-        ⌀ SCORE
-      </Text>
-      <View style={[styles.scoreDivider, { backgroundColor: colors.hair }]} />
       {avg.hase !== null && (
-        <>
-          <View style={styles.scoreChip}>
-            <Text style={[styles.scoreName, { color: colors.inkSoft, fontFamily: "Inter_500Medium" }]}>
-              {name1}
-            </Text>
-            <Text style={[styles.scoreValue, { color: colors.gold, fontFamily: SERIF_BOLD }]}>
-              {avg.hase!.toFixed(1)}
-            </Text>
-          </View>
-          {user2active && avg.dodo !== null && (
-            <View style={[styles.scoreDivider, { backgroundColor: colors.hair }]} />
-          )}
-        </>
+        <View style={styles.scorePair}>
+          <Text style={[styles.scoreName, { color: colors.inkSoft, fontFamily: "Inter_500Medium" }]}>
+            {name1}
+          </Text>
+          <Text style={[styles.scoreValue, { color: colors.gold, fontFamily: SERIF_BOLD }]}>
+            {avg.hase!.toFixed(1)}
+          </Text>
+        </View>
       )}
       {user2active && avg.dodo !== null && (
-        <View style={styles.scoreChip}>
+        <View style={styles.scorePair}>
           <Text style={[styles.scoreName, { color: colors.inkSoft, fontFamily: "Inter_500Medium" }]}>
             {name2}
           </Text>
@@ -182,52 +175,61 @@ export default function RoasteriesScreen() {
       <TornDefs />
       <Grain />
 
-      <View style={[styles.header, { paddingTop: topPad + 16 }]}>
-        <View style={styles.headerLeft}>
-          <Text style={[styles.kicker, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
-            COFFEE NEST
-          </Text>
-          <Text style={[styles.title, { color: colors.ink, fontFamily: SERIF_BLACK }]}>
-            Röstereien
-          </Text>
-          {!loading && cities.length >= 2 && (
+      {/* Masthead — a large cream page bleeding to the top & side edges */}
+      <TornSheet
+        tone="cream"
+        seed={6}
+        rotate={0.4}
+        peek={false}
+        style={styles.masthead}
+        contentStyle={[styles.mastheadPad, { paddingTop: topPad + 22 }]}
+      >
+        <View style={styles.headerRow}>
+          <View style={styles.headerLeft}>
+            <Text style={[styles.kicker, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
+              COFFEE NEST
+            </Text>
+            <Text style={[styles.title, { color: colors.ink, fontFamily: SERIF_BLACK }]}>
+              Röstereien
+            </Text>
+          </View>
+          <View style={styles.headerActions}>
+            {!loading && cities.length >= 2 && (
+              <Pressable
+                ref={filterBtnRef}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  openDropdown();
+                }}
+                style={({ pressed }) => [
+                  styles.filterChip,
+                  {
+                    backgroundColor: selectedCity ? colors.gold : colors.paperBg2,
+                    opacity: pressed ? 0.85 : 1,
+                  },
+                ]}
+              >
+                <Text style={[styles.filterChipText, { color: selectedCity ? colors.creamText : colors.ink, fontFamily: "Inter_600SemiBold" }]}>
+                  {selectedCity ?? "Alle"}
+                </Text>
+                <Ionicons name="chevron-down" size={12} color={selectedCity ? colors.creamText : colors.inkSoft} />
+              </Pressable>
+            )}
             <Pressable
-              ref={filterBtnRef}
+              testID="add-roastery-btn"
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                openDropdown();
+                setShowModal(true);
               }}
-              style={({ pressed }) => [
-                styles.filterChip,
-                {
-                  backgroundColor: selectedCity ? colors.gold : colors.espresso,
-                  opacity: pressed ? 0.85 : 1,
-                },
-              ]}
+              style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
             >
-              <Text style={[styles.filterChipText, { color: colors.creamText, fontFamily: "Inter_600SemiBold" }]}>
-                {selectedCity ?? "Alle"}
-              </Text>
-              <Ionicons name="chevron-down" size={12} color={colors.creamText} />
+              <TornBox color={colors.gold} seed={4} style={styles.addButton}>
+                <Ionicons name="add" size={26} color="#FFF8EC" />
+              </TornBox>
             </Pressable>
-          )}
+          </View>
         </View>
-        <Pressable
-          testID="add-roastery-btn"
-          onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            setShowModal(true);
-          }}
-          style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
-        >
-          <TornBox color={colors.gold} seed={4} style={styles.addButton}>
-            <Ionicons name="add" size={24} color="#fff" />
-          </TornBox>
-        </Pressable>
-      </View>
-      <View style={styles.headerRuleWrap}>
-        <Hairline />
-      </View>
+      </TornSheet>
 
       {/* Dropdown Modal */}
       <Modal visible={showDropdown} transparent animationType="fade">
@@ -325,18 +327,18 @@ export default function RoasteriesScreen() {
         </View>
       ) : roasteries.length === 0 ? (
         <View style={styles.centerState}>
-          <Ionicons name="cafe-outline" size={52} color={colors.inkFaint} />
-          <Text style={[styles.emptyTitle, { color: colors.ink, fontFamily: SERIF_BOLD }]}>
+          <Ionicons name="cafe-outline" size={52} color={colors.creamTextFaint} />
+          <Text style={[styles.emptyTitle, { color: colors.creamText, fontFamily: SERIF_BOLD }]}>
             Noch keine Röstereien
           </Text>
-          <Text style={[styles.emptySubtitle, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
+          <Text style={[styles.emptySubtitle, { color: colors.creamTextSoft, fontFamily: "Inter_400Regular" }]}>
             Tippe auf + um deine erste Rösterei hinzuzufügen
           </Text>
         </View>
       ) : filteredRoasteries.length === 0 ? (
         <View style={styles.centerState}>
-          <Ionicons name="location-outline" size={52} color={colors.inkFaint} />
-          <Text style={[styles.emptyTitle, { color: colors.ink, fontFamily: SERIF_BOLD }]}>
+          <Ionicons name="location-outline" size={52} color={colors.creamTextFaint} />
+          <Text style={[styles.emptyTitle, { color: colors.creamText, fontFamily: SERIF_BOLD }]}>
             Keine Röstereien in {selectedCity}
           </Text>
         </View>
@@ -344,19 +346,20 @@ export default function RoasteriesScreen() {
         <FlatList
           data={filteredRoasteries}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: bottomPad + 40 }}
-          ItemSeparatorComponent={() => <View style={{ height: 24 }} />}
+          contentContainerStyle={{ paddingHorizontal: 22, paddingTop: 28, paddingBottom: bottomPad + 48 }}
+          ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
+          showsVerticalScrollIndicator={false}
           ListHeaderComponent={() => (
             <View>
               {!factDismissed && discoveryFact ? (
-                <TornSheet tone="espresso" seed={3} rotate={-0.8} contentStyle={styles.sheetPad} style={{ marginBottom: 26 }}>
+                <TornSheet tone="espresso" seed={3} rotate={-0.8} contentStyle={styles.notePad} style={styles.noteSheet}>
+                  <View style={[styles.noteMotif, { pointerEvents: "none" }]}>
+                    <CompassIcon size={92} color={colors.goldLight} />
+                  </View>
                   <View style={styles.todayHeaderRow}>
-                    <View style={styles.todayHeaderLeft}>
-                      <CompassIcon size={15} color={colors.goldLight} />
-                      <Text style={[styles.sectionLabel, { color: colors.creamTextSoft, fontFamily: "Inter_600SemiBold" }]}>
-                        HEUTE ENTDECKT
-                      </Text>
-                    </View>
+                    <Text style={[styles.sectionLabel, { color: colors.creamTextSoft, fontFamily: "Inter_600SemiBold" }]}>
+                      HEUTE ENTDECKT
+                    </Text>
                     <View style={styles.todayActions}>
                       <Pressable
                         onPress={() => {
@@ -379,48 +382,40 @@ export default function RoasteriesScreen() {
                         hitSlop={8}
                         style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
                       >
-                        <Feather name="x" size={14} color={colors.creamTextFaint} />
+                        <Feather name="x" size={15} color={colors.creamTextFaint} />
                       </Pressable>
                     </View>
                   </View>
                   {!factCollapsed && (
-                    <>
-                      <View style={styles.todayHair}>
-                        <Hairline cream />
-                      </View>
-                      <Text style={[styles.todayText, { color: colors.creamText, fontFamily: SERIF_MED }]}>
-                        {discoveryFact.text}
-                      </Text>
-                    </>
+                    <Text style={[styles.todayText, { color: colors.creamText, fontFamily: SERIF_MED }]}>
+                      {discoveryFact.text}
+                    </Text>
                   )}
                 </TornSheet>
               ) : null}
-              <TornSheet
-                tone="cream"
-                seed={6}
-                rotate={0.7}
-                contentStyle={styles.sheetPad}
-                style={{ marginBottom: 26 }}
+
+              <Pressable
                 onPress={() => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   router.push("/discoveries");
                 }}
+                style={({ pressed }) => ({ opacity: pressed ? 0.95 : 1 })}
               >
-                <View style={styles.discoveryHeader}>
-                  <Text style={[styles.sectionLabel, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
-                    ENTDECKUNGEN
-                  </Text>
-                  <Ionicons name="chevron-forward" size={16} color={colors.inkFaint} />
-                </View>
-                <View style={styles.discoveryStats}>
-                  {[
-                    { v: discoveryStats?.coffeeCount ?? 0, l: "Kaffees" },
-                    { v: discoveryStats?.roasteryCount ?? 0, l: "Röstereien" },
-                    { v: discoveryStats?.countryCount ?? 0, l: "Herkunftsländer" },
-                  ].map((s, i) => (
-                    <View key={s.l} style={styles.discoveryStatWrap}>
-                      {i > 0 && <View style={[styles.discoveryStatDivider, { backgroundColor: colors.hair }]} />}
-                      <View style={styles.discoveryStat}>
+                <TornSheet tone="cream" seed={11} rotate={0.6} contentStyle={styles.statsPad} style={styles.statsSheet}>
+                  <View style={styles.discoveryHeader}>
+                    <Text style={[styles.sectionLabel, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
+                      ENTDECKUNGEN
+                    </Text>
+                    <Ionicons name="chevron-forward" size={16} color={colors.inkFaint} />
+                  </View>
+                  <View style={styles.discoveryStats}>
+                    {[
+                      { v: discoveryStats?.coffeeCount ?? 0, l: "Kaffees", Icon: CupIcon },
+                      { v: discoveryStats?.roasteryCount ?? 0, l: "Röstereien", Icon: RoasteryIcon },
+                      { v: discoveryStats?.countryCount ?? 0, l: "Herkunftsländer", Icon: GlobeIcon },
+                    ].map((s) => (
+                      <View key={s.l} style={styles.discoveryStat}>
+                        <s.Icon size={26} color={colors.gold} />
                         <Text style={[styles.discoveryStatValue, { color: colors.ink, fontFamily: SERIF_BLACK }]}>
                           {s.v}
                         </Text>
@@ -428,48 +423,55 @@ export default function RoasteriesScreen() {
                           {s.l}
                         </Text>
                       </View>
-                    </View>
-                  ))}
-                </View>
-              </TornSheet>
+                    ))}
+                  </View>
+                </TornSheet>
+              </Pressable>
             </View>
           )}
-          renderItem={({ item, index }) => (
-            <TornSheet
-              tone="cream"
-              seed={LIST_SEEDS[index % LIST_SEEDS.length]}
-              rotate={index % 2 === 0 ? -0.7 : 0.8}
-              contentStyle={styles.roasteryPad}
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                router.push({ pathname: "/roastery/[id]", params: { id: item.id, name: item.name } });
-              }}
-              onLongPress={() => handleDelete(item)}
-            >
-              <View style={styles.roasteryRow}>
-                <View style={styles.roasteryContent}>
-                  <Text style={[styles.roasteryName, { color: colors.ink, fontFamily: SERIF_BOLD }]}>
-                    {item.name}
-                  </Text>
-                  <View style={styles.roasteryMeta}>
-                    {item.location ? (
-                      <>
-                        <Text style={[styles.roasteryMetaText, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
-                          {item.location}
-                        </Text>
-                        <View style={[styles.metaDot, { backgroundColor: colors.inkFaint }]} />
-                      </>
-                    ) : null}
-                    <Text style={[styles.roasteryMetaText, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
-                      {coffeeCounts[item.id] ?? 0} {coffeeCounts[item.id] === 1 ? "Kaffee" : "Kaffees"}
+          renderItem={({ item, index }) => {
+            const StampIcon = STAMP_ICONS[index % STAMP_ICONS.length];
+            const avg = avgRatings[item.id];
+            return (
+              <TornSheet
+                tone="cream"
+                seed={LIST_SEEDS[index % LIST_SEEDS.length]}
+                rotate={index % 2 === 0 ? -0.7 : 0.8}
+                contentStyle={styles.roasteryPad}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  router.push({ pathname: "/roastery/[id]", params: { id: item.id, name: item.name } });
+                }}
+                onLongPress={() => handleDelete(item)}
+              >
+                <View style={styles.roasteryRow}>
+                  <IconStamp size={50} seed={(index % 8) + 1} tone="kraft" style={styles.roasteryStamp}>
+                    <StampIcon size={24} color={colors.espresso} />
+                  </IconStamp>
+                  <View style={styles.roasteryContent}>
+                    <Text style={[styles.roasteryName, { color: colors.ink, fontFamily: SERIF_BOLD }]} numberOfLines={1}>
+                      {item.name}
                     </Text>
+                    <View style={styles.roasteryMeta}>
+                      {item.location ? (
+                        <>
+                          <Text style={[styles.roasteryMetaText, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
+                            {item.location}
+                          </Text>
+                          <View style={[styles.metaDot, { backgroundColor: colors.inkFaint }]} />
+                        </>
+                      ) : null}
+                      <Text style={[styles.roasteryMetaText, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
+                        {coffeeCounts[item.id] ?? 0} {coffeeCounts[item.id] === 1 ? "Kaffee" : "Kaffees"}
+                      </Text>
+                    </View>
+                    {avg ? renderScore(avg) : null}
                   </View>
-                  {avgRatings[item.id] ? renderScore(avgRatings[item.id]!) : null}
+                  <Ionicons name="chevron-forward" size={20} color={colors.inkFaint} style={{ marginTop: 4 }} />
                 </View>
-                <Ionicons name="chevron-forward" size={20} color={colors.inkFaint} style={{ marginTop: 4 }} />
-              </View>
-            </TornSheet>
-          )}
+              </TornSheet>
+            );
+          }}
         />
       )}
 
@@ -477,7 +479,7 @@ export default function RoasteriesScreen() {
         <KeyboardAvoidingView behavior="padding" style={{ flex: 1, justifyContent: "flex-end" }}>
           <Pressable style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)" }} onPress={() => setShowModal(false)} />
         <View style={[styles.modalSheet, { backgroundColor: colors.surfaceElevated, paddingBottom: bottomPad + 20 }]}>
-          <View style={styles.modalHandle} />
+          <View style={[styles.modalHandle, { backgroundColor: colors.border }]} />
           <Text style={[styles.modalTitle, { color: colors.ink, fontFamily: SERIF_BOLD }]}>
             Neue Rösterei
           </Text>
@@ -548,15 +550,14 @@ export default function RoasteriesScreen() {
         style={({ pressed }) => [
           styles.fabSettings,
           {
-            backgroundColor: colors.surface,
-            borderColor: colors.border,
+            backgroundColor: colors.espresso,
             bottom: bottomPad + 20,
-            opacity: pressed ? 0.7 : 1,
+            opacity: pressed ? 0.8 : 1,
           },
         ]}
         hitSlop={8}
       >
-        <Ionicons name="settings-outline" size={18} color={colors.inkSoft} />
+        <Ionicons name="settings-outline" size={20} color={colors.goldLight} />
       </Pressable>
     </View>
   );
@@ -564,136 +565,91 @@ export default function RoasteriesScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: {
+  masthead: {
+    marginTop: -48,
+  },
+  mastheadPad: {
+    paddingHorizontal: 24,
+    paddingBottom: 26,
+  },
+  headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    paddingHorizontal: 24,
-  },
-  headerRuleWrap: {
-    paddingHorizontal: 24,
-    marginTop: 18,
-  },
-  fabSettings: {
-    position: "absolute",
-    right: 20,
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 6,
-    elevation: 4,
   },
   headerLeft: {
     flex: 1,
   },
+  headerActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginTop: 6,
+  },
   kicker: {
-    fontSize: 10,
-    letterSpacing: 2.6,
+    fontSize: 11,
+    letterSpacing: 3,
+    marginBottom: 4,
   },
   title: {
-    fontSize: 42,
+    fontSize: 40,
     lineHeight: 46,
-    marginTop: 8,
   },
   filterChip: {
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    marginTop: 14,
-    alignSelf: "flex-start",
+    paddingHorizontal: 13,
+    paddingVertical: 8,
+    borderRadius: 18,
   },
   filterChipText: {
-    fontSize: 10,
-    letterSpacing: 1.8,
-    textTransform: "uppercase",
-  },
-  dropdownOverlay: {
-    flex: 1,
-  },
-  dropdownMenu: {
-    position: "absolute",
-    minWidth: 140,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    overflow: "hidden",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.35,
-    shadowRadius: 16,
-    elevation: 12,
-  },
-  dropdownItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 14,
-    paddingVertical: 11,
-  },
-  dropdownItemBorder: {
-    borderTopWidth: 1,
-  },
-  dropdownItemText: {
-    fontSize: 14,
+    fontSize: 13,
   },
   addButton: {
     width: 48,
     height: 48,
-    marginTop: 6,
-  },
-  centerState: {
-    flex: 1,
-    justifyContent: "center",
     alignItems: "center",
-    gap: 12,
-    paddingHorizontal: 40,
+    justifyContent: "center",
   },
-  emptyTitle: {
-    fontSize: 24,
-    textAlign: "center",
-    marginTop: 8,
+  fabSettings: {
+    position: "absolute",
+    right: 20,
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
   },
-  emptySubtitle: {
-    fontSize: 15,
-    textAlign: "center",
-    lineHeight: 22,
+
+  // Heute entdeckt note
+  noteSheet: {
+    marginBottom: 26,
   },
-  skeletonCard: {
-    width: "100%",
-    height: 80,
-    borderRadius: 16,
-    marginHorizontal: 20,
+  notePad: {
+    paddingHorizontal: 22,
+    paddingVertical: 22,
+    overflow: "hidden",
   },
-  sheetPad: {
-    paddingHorizontal: 24,
-    paddingVertical: 24,
-  },
-  roasteryPad: {
-    paddingHorizontal: 24,
-    paddingVertical: 20,
+  noteMotif: {
+    position: "absolute",
+    right: -14,
+    bottom: -18,
+    opacity: 0.5,
   },
   sectionLabel: {
     fontSize: 10,
     letterSpacing: 2.6,
-    textTransform: "uppercase",
   },
-  // Today / Heute entdeckt
   todayHeaderRow: {
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
-  },
-  todayHeaderLeft: {
-    flexDirection: "row",
     alignItems: "center",
-    gap: 10,
   },
   todayActions: {
     flexDirection: "row",
@@ -703,65 +659,69 @@ const styles = StyleSheet.create({
   todayToggle: {
     fontSize: 11,
   },
-  todayHair: {
-    marginVertical: 16,
-  },
   todayText: {
-    fontSize: 21,
-    lineHeight: 30,
+    fontSize: 19,
+    lineHeight: 28,
+    marginTop: 14,
+    maxWidth: "82%",
   },
-  // Discoveries stat row
+
+  // Entdeckungen stats sheet
+  statsSheet: {
+    marginBottom: 30,
+  },
+  statsPad: {
+    paddingHorizontal: 24,
+    paddingTop: 18,
+    paddingBottom: 24,
+  },
   discoveryHeader: {
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 18,
   },
   discoveryStats: {
     flexDirection: "row",
-    alignItems: "stretch",
-    marginTop: 20,
-  },
-  discoveryStatWrap: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
+    justifyContent: "space-between",
   },
   discoveryStat: {
     flex: 1,
     alignItems: "center",
+    gap: 6,
   },
   discoveryStatValue: {
-    fontSize: 36,
+    fontSize: 34,
     lineHeight: 38,
   },
   discoveryStatLabel: {
-    fontSize: 11,
-    textAlign: "center",
-    marginTop: 6,
+    fontSize: 12,
   },
-  discoveryStatDivider: {
-    width: 1,
-    height: 44,
+
+  // Roastery blatt
+  roasteryPad: {
+    paddingHorizontal: 18,
+    paddingVertical: 18,
   },
-  // Roastery list item
   roasteryRow: {
     flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 16,
+    alignItems: "center",
+  },
+  roasteryStamp: {
+    marginRight: 16,
   },
   roasteryContent: {
     flex: 1,
-    minWidth: 0,
   },
   roasteryName: {
-    fontSize: 25,
-    lineHeight: 30,
+    fontSize: 22,
+    lineHeight: 27,
   },
   roasteryMeta: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    marginTop: 6,
+    marginTop: 4,
+    flexWrap: "wrap",
   },
   roasteryMetaText: {
     fontSize: 13,
@@ -770,72 +730,117 @@ const styles = StyleSheet.create({
     width: 3,
     height: 3,
     borderRadius: 1.5,
+    marginHorizontal: 8,
   },
   scoreRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 12,
-    gap: 12,
+    gap: 20,
+    marginTop: 10,
   },
-  scoreLabel: {
-    fontSize: 10,
-    letterSpacing: 2,
-  },
-  scoreChip: {
+  scorePair: {
     flexDirection: "row",
     alignItems: "baseline",
     gap: 6,
   },
   scoreName: {
-    fontSize: 11,
+    fontSize: 13,
   },
   scoreValue: {
-    fontSize: 17,
+    fontSize: 18,
   },
-  scoreDivider: {
-    width: 1,
-    height: 14,
+
+  // States
+  centerState: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 40,
+    gap: 12,
   },
+  skeletonCard: {
+    width: "86%",
+    height: 96,
+    borderRadius: 16,
+    opacity: 0.5,
+  },
+  emptyTitle: {
+    fontSize: 24,
+    textAlign: "center",
+  },
+  emptySubtitle: {
+    fontSize: 14,
+    textAlign: "center",
+    lineHeight: 20,
+  },
+
+  // Dropdown
+  dropdownOverlay: {
+    flex: 1,
+  },
+  dropdownMenu: {
+    position: "absolute",
+    minWidth: 180,
+    borderRadius: 14,
+    borderWidth: 1,
+    paddingVertical: 6,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  dropdownItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 12,
+  },
+  dropdownItemBorder: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
+  dropdownItemText: {
+    fontSize: 15,
+  },
+
+  // Modal
   modalSheet: {
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 24,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingHorizontal: 24,
     paddingTop: 12,
-    gap: 4,
   },
   modalHandle: {
-    width: 36,
+    width: 40,
     height: 4,
     borderRadius: 2,
-    backgroundColor: "#D0C4B0",
     alignSelf: "center",
-    marginBottom: 16,
+    marginBottom: 20,
   },
   modalTitle: {
-    fontSize: 26,
-    marginBottom: 16,
+    fontSize: 24,
+    marginBottom: 20,
   },
   inputLabel: {
-    fontSize: 12,
-    letterSpacing: 0.5,
-    marginTop: 8,
-    marginBottom: 6,
+    fontSize: 13,
+    marginBottom: 8,
+    marginTop: 4,
   },
   input: {
+    height: 50,
     borderWidth: 1,
-    borderRadius: 12,
-    padding: 14,
+    paddingHorizontal: 16,
     fontSize: 16,
-    marginBottom: 4,
+    marginBottom: 16,
   },
   saveButton: {
-    marginTop: 16,
-    padding: 16,
-    borderRadius: 14,
-    alignItems: "center",
+    marginTop: 8,
+    marginBottom: 8,
   },
   saveButtonText: {
-    color: "#fff",
+    color: "#FFF8EC",
     fontSize: 16,
   },
 });

@@ -30,7 +30,8 @@ import {
 } from "@/lib/storage";
 import { useUserNames } from "@/context/UserNamesContext";
 import { PolyBackground, PolyActionButton } from "@/components/PolyBackground";
-import { TornDefs, TornSheet, TornBox, IconStamp, Grain, Hairline } from "@/components/TornPaper";
+import { TornDefs, TornSheet, TornBox, IconStamp, Grain } from "@/components/TornPaper";
+import { CupIcon, GemIcon, OriginPinIcon, CompassIcon, TrophyIcon } from "@/components/CoffeeIcons";
 import { useThemeColors, useCardExtras } from "@/context/ThemeContext";
 
 const SERIF_BLACK = "PlayfairDisplay_800ExtraBold";
@@ -39,6 +40,8 @@ const SERIF_MED = "PlayfairDisplay_500Medium";
 
 // Varied torn seeds so adjacent coffee sheets never share a silhouette.
 const LIST_SEEDS = [2, 5, 8, 12, 15, 7, 9, 13, 16, 3];
+// Rotating stamp glyphs so each coffee blatt feels hand-pressed & distinct.
+const STAMP_ICONS = [CupIcon, GemIcon, OriginPinIcon, CompassIcon, TrophyIcon];
 
 function CoffeeBeanIcon({ size = 18, color }: { size?: number; color: string }) {
   const h = Math.round(size * 1.2);
@@ -297,45 +300,53 @@ export default function RoasteryScreen() {
       <PolyBackground />
       <TornDefs />
       <Grain />
-      <View style={[styles.header, { paddingTop: topPad + 12 }]}>
-        <Pressable
-          onPress={() => router.back()}
-          style={({ pressed }) => [styles.backButton, { opacity: pressed ? 0.6 : 1 }]}
-        >
-          <Ionicons name="chevron-back" size={26} color={colors.ink} />
-        </Pressable>
-        <Pressable
-          onPress={openEditRoastery}
-          style={({ pressed }) => [styles.headerCenter, { opacity: pressed ? 0.7 : 1 }]}
-        >
-          <Text style={[styles.headerLabel, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
-            RÖSTEREI
-          </Text>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-            <Text
-              style={[styles.headerTitle, { color: colors.ink, fontFamily: SERIF_BOLD }]}
-              numberOfLines={1}
-            >
-              {roasteryName}
+
+      {/* Masthead — a large cream page bleeding to the top & side edges */}
+      <TornSheet
+        tone="cream"
+        seed={6}
+        rotate={0.4}
+        peek={false}
+        style={styles.masthead}
+        contentStyle={[styles.mastheadPad, { paddingTop: topPad + 22 }]}
+      >
+        <View style={styles.headerRow}>
+          <Pressable
+            onPress={() => router.back()}
+            style={({ pressed }) => [styles.backButton, { opacity: pressed ? 0.6 : 1 }]}
+          >
+            <Ionicons name="chevron-back" size={26} color={colors.ink} />
+          </Pressable>
+          <Pressable
+            onPress={openEditRoastery}
+            style={({ pressed }) => [styles.headerCenter, { opacity: pressed ? 0.7 : 1 }]}
+          >
+            <Text style={[styles.kicker, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
+              RÖSTEREI
             </Text>
-            <Ionicons name="pencil-outline" size={16} color={colors.inkFaint} style={{ marginBottom: 4 }} />
-          </View>
-        </Pressable>
-        <Pressable
-          onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            setShowModal(true);
-          }}
-          style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
-        >
-          <TornBox color={colors.gold} seed={4} style={styles.addButton}>
-            <Ionicons name="add" size={22} color="#fff" />
-          </TornBox>
-        </Pressable>
-      </View>
-      <View style={styles.headerRuleWrap}>
-        <Hairline />
-      </View>
+            <View style={styles.titleRow}>
+              <Text
+                style={[styles.title, { color: colors.ink, fontFamily: SERIF_BLACK }]}
+                numberOfLines={2}
+              >
+                {roasteryName}
+              </Text>
+              <Ionicons name="pencil-outline" size={16} color={colors.inkFaint} style={{ marginTop: 6 }} />
+            </View>
+          </Pressable>
+          <Pressable
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              setShowModal(true);
+            }}
+            style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
+          >
+            <TornBox color={colors.gold} seed={4} style={styles.addButton}>
+              <Ionicons name="add" size={26} color="#FFF8EC" />
+            </TornBox>
+          </Pressable>
+        </View>
+      </TornSheet>
 
       {loading ? (
         <View style={styles.centerState}>
@@ -344,11 +355,11 @@ export default function RoasteryScreen() {
         </View>
       ) : coffees.length === 0 ? (
         <View style={styles.centerState}>
-          <Ionicons name="leaf-outline" size={52} color={colors.inkFaint} />
-          <Text style={[styles.emptyTitle, { color: colors.ink, fontFamily: SERIF_BOLD }]}>
+          <Ionicons name="leaf-outline" size={52} color={colors.creamTextFaint} />
+          <Text style={[styles.emptyTitle, { color: colors.creamText, fontFamily: SERIF_BOLD }]}>
             Noch keine Kaffees
           </Text>
-          <Text style={[styles.emptySubtitle, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
+          <Text style={[styles.emptySubtitle, { color: colors.creamTextSoft, fontFamily: "Inter_400Regular" }]}>
             Tippe auf + um einen Kaffee hinzuzufügen
           </Text>
         </View>
@@ -356,97 +367,85 @@ export default function RoasteryScreen() {
         <FlatList
           data={coffees}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: bottomPad + 40 }}
-          ItemSeparatorComponent={() => <View style={{ height: 24 }} />}
-          renderItem={({ item, index }) => (
-            <TornSheet
-              tone="cream"
-              seed={LIST_SEEDS[index % LIST_SEEDS.length]}
-              rotate={index % 2 === 0 ? -0.7 : 0.8}
-              contentStyle={styles.card}
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                router.push({
-                  pathname: "/coffee/[id]",
-                  params: { id: item.id },
-                });
-              }}
-              onLongPress={() => handleDelete(item)}
-            >
-              <View style={styles.cardTop}>
-                <IconStamp size={40} seed={9}>
-                  <CoffeeBeanIcon size={18} color={colors.goldLight} />
-                </IconStamp>
-                <View style={styles.cardMain}>
-                  <Text style={[styles.cardTitle, { color: colors.ink, fontFamily: SERIF_BOLD }]}>
-                    {item.name}
-                  </Text>
-                  {item.aromaDescription ? (
-                    <Text
-                      numberOfLines={1}
-                      ellipsizeMode="tail"
-                      style={[styles.cardAroma, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}
-                    >
-                      {item.aromaDescription}
+          contentContainerStyle={{ paddingHorizontal: 22, paddingTop: 28, paddingBottom: bottomPad + 48 }}
+          ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
+          showsVerticalScrollIndicator={false}
+          renderItem={({ item, index }) => {
+            const StampIcon = STAMP_ICONS[index % STAMP_ICONS.length];
+            return (
+              <TornSheet
+                tone="cream"
+                seed={LIST_SEEDS[index % LIST_SEEDS.length]}
+                rotate={index % 2 === 0 ? -0.7 : 0.8}
+                contentStyle={styles.coffeePad}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  router.push({
+                    pathname: "/coffee/[id]",
+                    params: { id: item.id },
+                  });
+                }}
+                onLongPress={() => handleDelete(item)}
+              >
+                <View style={styles.coffeeRow}>
+                  <IconStamp size={50} seed={(index % 8) + 1} tone="kraft" style={styles.coffeeStamp}>
+                    <StampIcon size={24} color={colors.espresso} />
+                  </IconStamp>
+                  <View style={styles.coffeeContent}>
+                    <Text style={[styles.coffeeName, { color: colors.ink, fontFamily: SERIF_BOLD }]} numberOfLines={2}>
+                      {item.name}
                     </Text>
-                  ) : item.pricePerKg ? (
-                    <Text style={[styles.cardPrice, { color: colors.inkSoft, fontFamily: "Inter_500Medium" }]}>
-                      {formatPrice(item.pricePerKg)} €/kg
-                    </Text>
-                  ) : null}
-                </View>
-                <Ionicons name="chevron-forward" size={18} color={colors.inkFaint} />
-              </View>
-              <View style={styles.cardHair}>
-                <Hairline />
-              </View>
-              <View style={styles.cardRatings}>
-                <View style={styles.ratingRow}>
-                  <Text style={[styles.ratingLabel, { color: colors.inkSoft, fontFamily: "Inter_500Medium" }]}>
-                    {name1}
-                  </Text>
-                  <View style={styles.ratingValue}>
-                    {item.haseRating !== null ? (
-                      <>
-                        <Text style={[styles.ratingNum, { color: colors.gold, fontFamily: SERIF_BOLD }]}>
-                          {item.haseRating}
-                        </Text>
-                        <Text style={[styles.ratingMax, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
-                          /10
-                        </Text>
-                      </>
-                    ) : (
-                      <Text style={[styles.ratingNum, { color: colors.inkFaint, fontFamily: SERIF_BOLD, opacity: 0.5 }]}>–</Text>
-                    )}
-                  </View>
-                </View>
-                {user2active && (
-                  <>
-                    <View style={[styles.ratingDivider, { backgroundColor: colors.hair }]} />
-                    <View style={styles.ratingRow}>
-                      <Text style={[styles.ratingLabel, { color: colors.inkSoft, fontFamily: "Inter_500Medium" }]}>
-                        {name2}
+                    {item.aromaDescription ? (
+                      <Text
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                        style={[styles.coffeeMeta, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}
+                      >
+                        {item.aromaDescription}
                       </Text>
-                      <View style={styles.ratingValue}>
-                        {item.dodoRating !== null ? (
-                          <>
-                            <Text style={[styles.ratingNum, { color: colors.gold, fontFamily: SERIF_BOLD }]}>
-                              {item.dodoRating}
-                            </Text>
-                            <Text style={[styles.ratingMax, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
-                              /10
-                            </Text>
-                          </>
+                    ) : item.pricePerKg ? (
+                      <Text style={[styles.coffeeMeta, { color: colors.inkSoft, fontFamily: "Inter_500Medium" }]}>
+                        {formatPrice(item.pricePerKg)} €/kg
+                      </Text>
+                    ) : null}
+                    <View style={styles.scoreRow}>
+                      <View style={styles.scorePair}>
+                        <Text style={[styles.scoreName, { color: colors.inkSoft, fontFamily: "Inter_500Medium" }]}>
+                          {name1}
+                        </Text>
+                        {item.haseRating !== null ? (
+                          <Text style={[styles.scoreValue, { color: colors.gold, fontFamily: SERIF_BOLD }]}>
+                            {item.haseRating}
+                          </Text>
                         ) : (
-                          <Text style={[styles.ratingNum, { color: colors.inkFaint, fontFamily: SERIF_BOLD, opacity: 0.5 }]}>–</Text>
+                          <Text style={[styles.scoreValue, { color: colors.inkFaint, fontFamily: SERIF_BOLD, opacity: 0.5 }]}>
+                            –
+                          </Text>
                         )}
                       </View>
+                      {user2active && (
+                        <View style={styles.scorePair}>
+                          <Text style={[styles.scoreName, { color: colors.inkSoft, fontFamily: "Inter_500Medium" }]}>
+                            {name2}
+                          </Text>
+                          {item.dodoRating !== null ? (
+                            <Text style={[styles.scoreValue, { color: colors.gold, fontFamily: SERIF_BOLD }]}>
+                              {item.dodoRating}
+                            </Text>
+                          ) : (
+                            <Text style={[styles.scoreValue, { color: colors.inkFaint, fontFamily: SERIF_BOLD, opacity: 0.5 }]}>
+                              –
+                            </Text>
+                          )}
+                        </View>
+                      )}
                     </View>
-                  </>
-                )}
-              </View>
-            </TornSheet>
-          )}
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color={colors.inkFaint} style={{ marginTop: 4 }} />
+                </View>
+              </TornSheet>
+            );
+          }}
         />
       )}
 
@@ -580,11 +579,16 @@ export default function RoasteryScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: {
-    flexDirection: "row",
-    alignItems: "flex-end",
+  masthead: {
+    marginTop: -48,
+  },
+  mastheadPad: {
     paddingHorizontal: 20,
-    paddingBottom: 16,
+    paddingBottom: 26,
+  },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
     gap: 8,
   },
   backButton: {
@@ -592,29 +596,31 @@ const styles = StyleSheet.create({
     height: 36,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 4,
+    marginTop: 6,
   },
   headerCenter: { flex: 1 },
-  headerLabel: {
-    fontSize: 10,
-    letterSpacing: 2.6,
+  kicker: {
+    fontSize: 11,
+    letterSpacing: 3,
+    marginBottom: 4,
     textTransform: "uppercase",
-    marginBottom: 4,
   },
-  headerTitle: {
-    fontSize: 30,
-    lineHeight: 36,
+  titleRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 8,
   },
-  headerRuleWrap: {
-    paddingHorizontal: 24,
-    marginBottom: 4,
+  title: {
+    flexShrink: 1,
+    fontSize: 34,
+    lineHeight: 40,
   },
   addButton: {
-    width: 46,
-    height: 46,
+    width: 48,
+    height: 48,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 2,
+    marginTop: 6,
   },
   centerState: {
     flex: 1,
@@ -624,62 +630,59 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
   },
   emptyTitle: {
-    fontSize: 20,
+    fontSize: 24,
     textAlign: "center",
     marginTop: 8,
   },
   emptySubtitle: {
-    fontSize: 15,
+    fontSize: 14,
     textAlign: "center",
-    lineHeight: 22,
+    lineHeight: 20,
   },
   skeletonCard: {
-    width: "100%",
-    height: 100,
+    width: "86%",
+    height: 96,
     borderRadius: 16,
-    marginHorizontal: 20,
-    marginBottom: 12,
+    opacity: 0.5,
   },
-  card: {
-    paddingHorizontal: 22,
+  coffeePad: {
+    paddingHorizontal: 18,
     paddingVertical: 18,
   },
-  cardTop: {
+  coffeeRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 14,
   },
-  cardMain: { flex: 1, gap: 3 },
-  cardTitle: { fontSize: 22, lineHeight: 26 },
-  cardAroma: { fontSize: 12.5, opacity: 0.85 },
-  cardPrice: { fontSize: 13 },
-  cardHair: { marginVertical: 16 },
-  cardRatings: {
-    flexDirection: "row",
-    gap: 0,
+  coffeeStamp: {
+    marginRight: 16,
   },
-  ratingRow: {
+  coffeeContent: {
     flex: 1,
+  },
+  coffeeName: {
+    fontSize: 22,
+    lineHeight: 27,
+  },
+  coffeeMeta: {
+    fontSize: 13,
+    marginTop: 4,
+  },
+  scoreRow: {
+    flexDirection: "row",
     alignItems: "center",
-    gap: 2,
+    gap: 20,
+    marginTop: 10,
   },
-  ratingLabel: {
-    fontSize: 11,
-    letterSpacing: 0.5,
-  },
-  ratingValue: {
+  scorePair: {
     flexDirection: "row",
     alignItems: "baseline",
+    gap: 6,
   },
-  ratingNum: {
-    fontSize: 22,
-  },
-  ratingMax: {
+  scoreName: {
     fontSize: 13,
   },
-  ratingDivider: {
-    width: 1,
-    marginVertical: 4,
+  scoreValue: {
+    fontSize: 18,
   },
   modalSheet: {
     borderTopLeftRadius: 24,

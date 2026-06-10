@@ -447,12 +447,7 @@ function OriginEditor({
           ? o.customCountry
           : o.country;
         return (
-        <View key={o.key} style={{
-          backgroundColor: colors.surfaceElevated,
-          borderRadius: isLowpoly ? 4 : 12,
-          borderWidth: 1, borderColor: colors.border,
-          padding: 14, gap: 10,
-        }}>
+        <View key={o.key} style={{ gap: 10 }}>
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 8, flex: 1 }}>
               <OriginPinIcon size={20} color={colors.tint} />
@@ -988,78 +983,79 @@ export default function CoffeeDetailScreen() {
       <PolyBackground />
       <TornDefs />
       <Grain />
-      <View style={[styles.header, { paddingTop: topPad + 12 }]}>
-        <Pressable
-          onPress={() => {
-            if (hasChanges) {
-              Alert.alert("Änderungen verwerfen?", "Du hast ungespeicherte Änderungen.", [
-                { text: "Weiter bearbeiten", style: "cancel" },
-                { text: "Verwerfen", style: "destructive", onPress: () => router.back() },
-              ]);
-            } else {
-              router.back();
-            }
-          }}
-          style={({ pressed }) => [styles.backButton, { opacity: pressed ? 0.6 : 1 }]}
-        >
-          <Ionicons name="chevron-back" size={26} color={colors.ink} />
-        </Pressable>
-        <Text style={[styles.headerTitle, { color: colors.ink, fontFamily: SERIF_BOLD }]} numberOfLines={1}>
-          {name || "Kaffee"}
+      <TornSheet
+        tone="cream"
+        seed={6}
+        rotate={0.4}
+        peek={false}
+        style={styles.masthead}
+        contentStyle={[styles.mastheadPad, { paddingTop: topPad + 14 }]}
+      >
+        <View style={styles.mastheadTop}>
+          <Pressable
+            onPress={() => {
+              if (hasChanges) {
+                Alert.alert("Änderungen verwerfen?", "Du hast ungespeicherte Änderungen.", [
+                  { text: "Weiter bearbeiten", style: "cancel" },
+                  { text: "Verwerfen", style: "destructive", onPress: () => router.back() },
+                ]);
+              } else {
+                router.back();
+              }
+            }}
+            hitSlop={8}
+            style={({ pressed }) => [styles.backButton, { opacity: pressed ? 0.6 : 1 }]}
+          >
+            <Ionicons name="chevron-back" size={26} color={colors.ink} />
+          </Pressable>
+          <View style={styles.mastheadActions}>
+            <Pressable
+              onPress={handleDelete}
+              disabled={saving}
+              hitSlop={8}
+              style={({ pressed }) => ({ opacity: pressed ? 0.6 : saving ? 0.4 : 1 })}
+            >
+              <Ionicons name="trash-outline" size={22} color="#E05252" />
+            </Pressable>
+            <Pressable
+              onPress={handleSave}
+              disabled={saving}
+              hitSlop={8}
+              style={({ pressed }) => ({ opacity: pressed ? 0.85 : saving ? 0.6 : 1 })}
+            >
+              <TornBox color={colors.gold} seed={4} style={styles.saveBox}>
+                {saving ? (
+                  <ActivityIndicator size="small" color="#FFF8EC" />
+                ) : (
+                  <Ionicons name="checkmark" size={24} color="#FFF8EC" />
+                )}
+              </TornBox>
+            </Pressable>
+          </View>
+        </View>
+        <Text style={[styles.kicker, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
+          KAFFEE
         </Text>
-        <Pressable
-          onPress={handleDelete}
-          disabled={saving}
-          style={({ pressed }) => [
-            styles.deleteHeaderButton,
-            { borderRadius: design === "lowpoly" ? 6 : 18, opacity: pressed ? 0.7 : saving ? 0.4 : 1 },
-          ]}
-        >
-          <Ionicons name="close" size={20} color="#E05252" />
-        </Pressable>
-        <Pressable
-          onPress={handleSave}
-          disabled={saving}
-          style={({ pressed }) => [
-            styles.saveHeaderButton,
-            {
-              borderRadius: design === "lowpoly" ? 6 : 18,
-              backgroundColor: colors.tint,
-              opacity: pressed ? 0.85 : saving ? 0.6 : 1,
-            },
-          ]}
-        >
-          {saving ? (
-            <ActivityIndicator size="small" color="#fff" />
-          ) : (
-            <Ionicons name="checkmark" size={20} color="#fff" />
-          )}
-        </Pressable>
-      </View>
+        <TextInput
+          style={[styles.nameTitle, { color: colors.ink, fontFamily: SERIF_BLACK }]}
+          value={name}
+          onChangeText={(v) => { setName(v); markChanged(); }}
+          placeholder="Kaffeename"
+          placeholderTextColor={colors.inkFaint}
+          multiline
+        />
+      </TornSheet>
 
       <KeyboardAwareScrollViewCompat
-        contentContainerStyle={{ padding: 20, paddingBottom: bottomPad + 100, gap: 24 }}
+        contentContainerStyle={{ paddingHorizontal: 22, paddingTop: 28, paddingBottom: bottomPad + 100, gap: 28 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         bottomOffset={24}
       >
-        <PaperSurface contentStyle={styles.section}>
-          <SectionHeader title="KAFFEE" color={colors.textSecondary} />
-          <TextInput
-            style={[
-              styles.nameInput,
-              { color: colors.text, fontFamily: "Inter_600SemiBold", borderBottomColor: colors.border },
-            ]}
-            value={name}
-            onChangeText={(v) => { setName(v); markChanged(); }}
-            placeholder="Kaffeename"
-            placeholderTextColor={colors.textSecondary}
-          />
-        </PaperSurface>
 
-        <PaperSurface contentStyle={styles.section} flip>
-          <SectionHeader title="BEWERTUNGEN" color={colors.textSecondary} />
-          <View style={{ gap: 20, marginTop: 8 }}>
+        <TornSheet tone="espresso" seed={3} rotate={-0.8} contentStyle={styles.noteSection}>
+          <SectionHeader title="BEWERTUNGEN" color={colors.creamTextSoft} />
+          <View style={{ gap: 22, marginTop: 14 }}>
             <RatingSlider
               label={`${name1} Rating`}
               value={haseRating}
@@ -1068,14 +1064,14 @@ export default function CoffeeDetailScreen() {
               onChange={(v) => { setHaseRating(v); markChanged(); }}
               minLabel="schlecht"
               maxLabel="grossartig"
-              color={colors.tint}
-              textColor={colors.text}
-              borderColor={colors.border}
-              surfaceColor={colors.surface}
+              color={colors.goldLight}
+              textColor={colors.creamText}
+              borderColor={colors.espresso3}
+              surfaceColor={colors.espresso3}
             />
             {user2active && (
               <>
-                <View style={{ height: 1, backgroundColor: colors.border }} />
+                <Hairline cream />
                 <RatingSlider
                   label={`${name2} Rating`}
                   value={dodoRating}
@@ -1084,52 +1080,50 @@ export default function CoffeeDetailScreen() {
                   onChange={(v) => { setDodoRating(v); markChanged(); }}
                   minLabel="schlecht"
                   maxLabel="grossartig"
-                  color={colors.tint}
-                  textColor={colors.text}
-                  borderColor={colors.border}
-                  surfaceColor={colors.surface}
+                  color={colors.goldLight}
+                  textColor={colors.creamText}
+                  borderColor={colors.espresso3}
+                  surfaceColor={colors.espresso3}
                 />
               </>
             )}
           </View>
-        </PaperSurface>
+        </TornSheet>
 
-        <PaperSurface contentStyle={styles.section}>
-          <SectionHeader title="EIGENSCHAFTEN" color={colors.textSecondary} />
-          <View style={{ gap: 20, marginTop: 8 }}>
+        <TornSheet tone="cream" seed={11} rotate={0.6} contentStyle={styles.section}>
+          <SectionHeader title="EIGENSCHAFTEN" color={colors.inkFaint} />
+          <View style={{ gap: 26, marginTop: 12 }}>
             <GrinderPicker
               grinders={grinders}
               grindSettings={grindSettings}
               onToggle={toggleGrinder}
               onLevelChange={updateGrindLevel}
               onBlurLevel={normalizeGrindLevel}
-              color={colors.tint}
-              textColor={colors.text}
-              borderColor={colors.border}
-              surfaceColor={colors.surface}
+              color={colors.gold}
+              textColor={colors.ink}
+              borderColor={colors.kraft}
+              surfaceColor={colors.paperBg2}
             />
-            <View style={{ height: 1, backgroundColor: colors.border }} />
             <ScaleSlider
               label="Aroma"
               value={aroma}
               onChange={(v) => { setAroma(v); markChanged(); if (v === 1) triggerToasty(); }}
-              color={colors.tint}
-              textColor={colors.text}
-              borderColor={colors.border}
-              surfaceColor={colors.surface}
+              color={colors.gold}
+              textColor={colors.ink}
+              borderColor={colors.kraft}
+              surfaceColor={colors.paperBg2}
               aromaIcons
             />
-            <View style={{ height: 1, backgroundColor: colors.border }} />
             <RoastLevelPicker
               value={roastLevel}
               onChange={(v) => { setRoastLevel(v); markChanged(); }}
-              color={colors.tint}
-              textColor={colors.text}
-              borderColor={colors.border}
-              surfaceColor={colors.surface}
+              color={colors.gold}
+              textColor={colors.ink}
+              borderColor={colors.kraft}
+              surfaceColor={colors.paperBg2}
             />
           </View>
-        </PaperSurface>
+        </TornSheet>
 
         {/* ── HERKUNFT ──────────────────────────────────────────────────── */}
         {(() => {
@@ -1139,9 +1133,9 @@ export default function CoffeeDetailScreen() {
           const hasOrigin = filledOrigins.length > 0;
           const showEditor = originEditing || !hasOrigin;
           return (
-        <PaperSurface contentStyle={styles.section} flip>
+        <TornSheet tone="cream" seed={8} rotate={-0.7} contentStyle={styles.section}>
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-            <SectionHeader title="HERKUNFT" color={colors.textSecondary} />
+            <SectionHeader title="HERKUNFT" color={colors.inkFaint} />
             {hasOrigin && (
               <Pressable
                 onPress={() => { Haptics.selectionAsync(); setOriginEditing((e) => !e); }}
@@ -1189,68 +1183,68 @@ export default function CoffeeDetailScreen() {
                 .join("   |   ")}
             </Text>
           )}
-        </PaperSurface>
+        </TornSheet>
           );
         })()}
 
         {/* ── AUFBEREITUNG ──────────────────────────────────────────────── */}
-        <PaperSurface contentStyle={styles.section}>
-          <SectionHeader title="AUFBEREITUNG" color={colors.textSecondary} />
-          <View style={{ marginTop: 8 }}>
+        <TornSheet tone="cream" seed={13} rotate={0.7} contentStyle={styles.section}>
+          <SectionHeader title="AUFBEREITUNG" color={colors.inkFaint} />
+          <View style={{ marginTop: 12 }}>
             <ProcessingPicker
               value={processingMethod}
               onChange={(v) => { setProcessingMethod(v); markChanged(); }}
-              color={colors.tint}
-              textColor={colors.text}
-              borderColor={colors.border}
-              surfaceColor={colors.surface}
+              color={colors.gold}
+              textColor={colors.ink}
+              borderColor={colors.kraft}
+              surfaceColor={colors.paperBg2}
             />
           </View>
-        </PaperSurface>
+        </TornSheet>
 
-        <PaperSurface contentStyle={styles.section} flip>
-          <SectionHeader title="NOTIZEN" color={colors.textSecondary} />
-          <View style={{ gap: 16, marginTop: 8 }}>
-            <View style={{ gap: 6 }}>
-              <Text style={[styles.fieldLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
+        <TornSheet tone="cream" seed={15} rotate={-0.6} contentStyle={styles.section}>
+          <SectionHeader title="NOTIZEN" color={colors.inkFaint} />
+          <View style={{ gap: 18, marginTop: 12 }}>
+            <View style={{ gap: 8 }}>
+              <Text style={[styles.fieldLabel, { color: colors.inkSoft, fontFamily: "Inter_500Medium" }]}>
                 Aroma Beschreibung
               </Text>
               <TextInput
                 style={[
                   styles.textArea,
                   {
-                    backgroundColor: colors.surface,
-                    borderColor: colors.border,
-                    color: colors.text,
+                    backgroundColor: colors.paperBg2,
+                    borderColor: colors.kraft,
+                    color: colors.ink,
                     fontFamily: "Inter_400Regular",
                     borderRadius: cardExtras.cardRadius,
                   },
                 ]}
                 placeholder="z.B. Karamell, dunkle Schokolade, Nüsse..."
-                placeholderTextColor={colors.textSecondary}
+                placeholderTextColor={colors.inkFaint}
                 multiline
                 numberOfLines={3}
                 value={aromaDescription}
                 onChangeText={(v) => { setAromaDescription(v); markChanged(); }}
               />
             </View>
-            <View style={{ gap: 6 }}>
-              <Text style={[styles.fieldLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
+            <View style={{ gap: 8 }}>
+              <Text style={[styles.fieldLabel, { color: colors.inkSoft, fontFamily: "Inter_500Medium" }]}>
                 Sonstiges
               </Text>
               <TextInput
                 style={[
                   styles.textArea,
                   {
-                    backgroundColor: colors.surface,
-                    borderColor: colors.border,
-                    color: colors.text,
+                    backgroundColor: colors.paperBg2,
+                    borderColor: colors.kraft,
+                    color: colors.ink,
                     fontFamily: "Inter_400Regular",
                     borderRadius: cardExtras.cardRadius,
                   },
                 ]}
                 placeholder="Weitere Notizen, Zubereitungshinweise..."
-                placeholderTextColor={colors.textSecondary}
+                placeholderTextColor={colors.inkFaint}
                 multiline
                 numberOfLines={3}
                 value={notes}
@@ -1258,29 +1252,29 @@ export default function CoffeeDetailScreen() {
               />
             </View>
           </View>
-        </PaperSurface>
+        </TornSheet>
 
-        <PaperSurface contentStyle={styles.section}>
-          <SectionHeader title="PREIS" color={colors.textSecondary} />
-          <View style={{ gap: 6, marginTop: 8 }}>
-            <Text style={[styles.fieldLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
+        <TornSheet tone="cream" seed={9} rotate={0.8} contentStyle={styles.section}>
+          <SectionHeader title="PREIS" color={colors.inkFaint} />
+          <View style={{ gap: 8, marginTop: 12 }}>
+            <Text style={[styles.fieldLabel, { color: colors.inkSoft, fontFamily: "Inter_500Medium" }]}>
               Preis je Kilogramm
             </Text>
-            <View style={[styles.priceInputRow, { borderColor: colors.border, backgroundColor: colors.surface, borderRadius: cardExtras.cardRadius }]}>
+            <View style={[styles.priceInputRow, { borderColor: colors.kraft, backgroundColor: colors.paperBg2, borderRadius: cardExtras.cardRadius }]}>
               <TextInput
-                style={[styles.priceInput, { color: colors.text, fontFamily: "Inter_400Regular" }]}
+                style={[styles.priceInput, { color: colors.ink, fontFamily: "Inter_400Regular" }]}
                 placeholder="z.B. 24,90"
-                placeholderTextColor={colors.textSecondary}
+                placeholderTextColor={colors.inkFaint}
                 keyboardType="decimal-pad"
                 value={pricePerKg}
                 onChangeText={(v) => { setPricePerKg(v); markChanged(); }}
               />
-              <Text style={[styles.priceSuffix, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
+              <Text style={[styles.priceSuffix, { color: colors.inkSoft, fontFamily: "Inter_600SemiBold" }]}>
                 €/kg
               </Text>
             </View>
           </View>
-        </PaperSurface>
+        </TornSheet>
 
         <PolyActionButton
           onPress={handleSave}
@@ -1329,48 +1323,54 @@ export default function CoffeeDetailScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: {
+  masthead: {
+    marginTop: -48,
+  },
+  mastheadPad: {
+    paddingHorizontal: 24,
+    paddingBottom: 24,
+  },
+  mastheadTop: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  mastheadActions: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    gap: 8,
+    gap: 18,
   },
   backButton: {
     width: 36,
     height: 36,
     justifyContent: "center",
     alignItems: "center",
+    marginLeft: -6,
   },
-  headerTitle: {
-    flex: 1,
-    fontSize: 20,
-    lineHeight: 26,
-  },
-  deleteHeaderButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    justifyContent: "center",
+  saveBox: {
+    width: 46,
+    height: 46,
     alignItems: "center",
-    borderWidth: 1.5,
-    borderColor: "#E05252",
-  },
-  saveHeaderButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
     justifyContent: "center",
-    alignItems: "center",
+  },
+  kicker: {
+    fontSize: 11,
+    letterSpacing: 3,
+    marginBottom: 6,
+  },
+  nameTitle: {
+    fontSize: 34,
+    lineHeight: 40,
+    padding: 0,
   },
   section: {
-    padding: 16,
+    paddingHorizontal: 22,
+    paddingVertical: 22,
   },
-  nameInput: {
-    fontSize: 22,
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    marginTop: 4,
+  noteSection: {
+    paddingHorizontal: 22,
+    paddingVertical: 24,
   },
   fieldLabel: {
     fontSize: 12,
@@ -1383,16 +1383,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     minHeight: 80,
     textAlignVertical: "top",
-  },
-  grindInputRow: {
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    height: 50,
-    justifyContent: "center",
-  },
-  grindInput: {
-    fontSize: 22,
   },
   priceInputRow: {
     flexDirection: "row",

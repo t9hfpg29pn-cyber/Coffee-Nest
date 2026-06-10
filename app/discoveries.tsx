@@ -33,7 +33,7 @@ import {
 import { useThemeColors, useCardExtras, useTheme } from "@/context/ThemeContext";
 import { useUserNames } from "@/context/UserNamesContext";
 import { PolyBackground } from "@/components/PolyBackground";
-import { PaperSurface } from "@/components/Paper";
+import { TornDefs, TornSheet, Grain, Hairline, IconStamp } from "@/components/TornPaper";
 import { CoffeeOriginMap } from "@/components/CoffeeOriginMap";
 import { COFFEE_WORLD_MAP } from "@/constants/coffeeMap";
 import {
@@ -45,6 +45,10 @@ import {
 } from "@/components/CoffeeIcons";
 import Colors from "@/constants/colors";
 
+const SERIF_BLACK = "PlayfairDisplay_800ExtraBold";
+const SERIF_BOLD = "PlayfairDisplay_700Bold";
+const SERIF_MED = "PlayfairDisplay_500Medium";
+
 const KNOWN_COUNTRIES = [
   "Äthiopien", "Brasilien", "Burundi", "Costa Rica", "El Salvador",
   "Guatemala", "Honduras", "Indien", "Indonesien", "Jemen",
@@ -53,6 +57,9 @@ const KNOWN_COUNTRIES = [
 ] as const;
 
 const TOTAL_KNOWN = KNOWN_COUNTRIES.length;
+
+// Varied torn seeds so adjacent category sheets never share a silhouette.
+const CARD_SEEDS = [2, 5, 8, 12, 15, 7, 9, 13];
 
 type ThemeColors = ReturnType<typeof useThemeColors>;
 
@@ -77,14 +84,14 @@ function RatingInline({
 }) {
   return (
     <View style={styles.ratingInline}>
-      <Text style={[styles.ratingChip, { fontSize: size, color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+      <Text style={[styles.ratingChip, { fontSize: size, color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
         {name1}{" "}
-        <Text style={{ color: colors.tint, fontFamily: "Inter_700Bold" }}>{hase ?? "–"}</Text>
+        <Text style={{ color: colors.gold, fontFamily: SERIF_BOLD, fontSize: size + 3 }}>{hase ?? "–"}</Text>
       </Text>
       {user2active && (
-        <Text style={[styles.ratingChip, { fontSize: size, color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+        <Text style={[styles.ratingChip, { fontSize: size, color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
           {name2}{" "}
-          <Text style={{ color: colors.tint, fontFamily: "Inter_700Bold" }}>{dodo ?? "–"}</Text>
+          <Text style={{ color: colors.gold, fontFamily: SERIF_BOLD, fontSize: size + 3 }}>{dodo ?? "–"}</Text>
         </Text>
       )}
     </View>
@@ -106,15 +113,15 @@ function DuoColumn({
     <View style={styles.duoCol}>
       <View style={styles.duoHead}>
         {iconNode}
-        <Text style={[styles.duoName, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]} numberOfLines={1}>
+        <Text style={[styles.duoName, { color: colors.inkSoft, fontFamily: "Inter_500Medium" }]} numberOfLines={1}>
           {name}
         </Text>
       </View>
-      <Text style={[styles.duoPrimary, { color: colors.text, fontFamily: "Inter_600SemiBold" }]} numberOfLines={1}>
+      <Text style={[styles.duoPrimary, { color: colors.ink, fontFamily: SERIF_BOLD }]} numberOfLines={1}>
         {primary}
       </Text>
       {roastery ? (
-        <Text style={[styles.duoRoastery, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]} numberOfLines={1}>
+        <Text style={[styles.duoRoastery, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]} numberOfLines={1}>
           {roastery}
         </Text>
       ) : null}
@@ -123,9 +130,9 @@ function DuoColumn({
   );
 }
 
-// ─── Aroma / Aufbereitung collection card ────────────────────────────────────
+// ─── Aroma / Aufbereitung collection card — cream torn sheet w/ icon stamp ────
 function CategoryCard({
-  icon, cat, name1, name2, user2active, colors, isLowpoly, onPress,
+  icon, cat, name1, name2, user2active, colors, seed, onPress,
 }: {
   icon: React.ReactNode;
   cat: CategoryDiscovery;
@@ -133,58 +140,46 @@ function CategoryCard({
   name2: string;
   user2active: boolean;
   colors: ThemeColors;
-  isLowpoly: boolean;
+  seed: number;
   onPress: () => void;
 }) {
   return (
-    <PaperSurface
+    <Pressable
       onPress={onPress}
-      tone="raised"
-      style={styles.categoryCardOuter}
-      contentStyle={styles.categoryCard}
+      style={({ pressed }) => [styles.chipOuter, { opacity: pressed ? 0.9 : 1 }]}
     >
-      <View
-        style={[
-          styles.categoryIconWrap,
-          {
-            backgroundColor: colors.surfaceElevated,
-            borderRadius: isLowpoly ? 4 : 10,
-          },
-        ]}
-      >
+      <IconStamp size={50} seed={seed} tone="kraft" style={styles.chipStamp}>
         {icon}
-      </View>
-      <Text style={[styles.categoryName, { color: colors.text, fontFamily: "Inter_600SemiBold" }]} numberOfLines={1}>
+      </IconStamp>
+      <Text style={[styles.chipName, { color: colors.ink, fontFamily: SERIF_BOLD }]} numberOfLines={1}>
         {cat.label}
       </Text>
-      <Text style={[styles.categoryCount, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+      <Text style={[styles.chipCount, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
         {cat.count} {cat.count === 1 ? "Kaffee" : "Kaffees"}
       </Text>
-      <View style={styles.categoryBest}>
-        {cat.bestCoffee ? (
-          <>
-            <Text style={[styles.categoryBestLabel, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
-              BESTER
-            </Text>
-            <Text style={[styles.categoryBestName, { color: colors.text, fontFamily: "Inter_500Medium" }]} numberOfLines={1}>
-              {cat.bestCoffee.name}
-            </Text>
-            <RatingInline
-              name1={name1}
-              name2={name2}
-              hase={cat.bestCoffee.haseRating}
-              dodo={cat.bestCoffee.dodoRating}
-              user2active={user2active}
-              colors={colors}
-            />
-          </>
-        ) : (
-          <Text style={[styles.categoryEmptyText, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
-            Noch nicht entdeckt
+      {cat.bestCoffee ? (
+        <View style={styles.chipBest}>
+          <Text style={[styles.chipBestLabel, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
+            BESTER
           </Text>
-        )}
-      </View>
-    </PaperSurface>
+          <Text style={[styles.chipBestName, { color: colors.ink, fontFamily: "Inter_500Medium" }]} numberOfLines={1}>
+            {cat.bestCoffee.name}
+          </Text>
+          <RatingInline
+            name1={name1}
+            name2={name2}
+            hase={cat.bestCoffee.haseRating}
+            dodo={cat.bestCoffee.dodoRating}
+            user2active={user2active}
+            colors={colors}
+          />
+        </View>
+      ) : (
+        <Text style={[styles.chipEmpty, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
+          Noch nicht entdeckt
+        </Text>
+      )}
+    </Pressable>
   );
 }
 
@@ -267,7 +262,6 @@ export default function DiscoveriesScreen() {
   const knownDiscovered = discoveredCountries.filter(
     (c) => KNOWN_COUNTRIES.includes(c as typeof KNOWN_COUNTRIES[number])
   );
-  const totalDiscovered = discoveredCountries.length;
   const lastDiscovered =
     stats?.lastDiscoveredCountry ??
     (discoveredCountries.length > 0
@@ -311,8 +305,18 @@ export default function DiscoveriesScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <PolyBackground />
+      <TornDefs />
+      <Grain />
 
-      <View style={[styles.header, { paddingTop: topPad + 16 }]}>
+      {/* Masthead — a large cream page bleeding to the top & side edges */}
+      <TornSheet
+        tone="cream"
+        seed={6}
+        rotate={0.4}
+        peek={false}
+        style={styles.masthead}
+        contentStyle={[styles.mastheadPad, { paddingTop: topPad + 18 }]}
+      >
         <Pressable
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -321,52 +325,46 @@ export default function DiscoveriesScreen() {
           style={({ pressed }) => [styles.backBtn, { opacity: pressed ? 0.6 : 1 }]}
           hitSlop={8}
         >
-          <Ionicons name="chevron-back" size={24} color={colors.text} />
+          <Ionicons name="chevron-back" size={26} color={colors.ink} />
         </Pressable>
-        <View style={styles.headerTextBlock}>
-          <Text style={[styles.headerLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
-            COFFEE NEST
-          </Text>
-          <Text style={[styles.headerTitle, { color: colors.text, fontFamily: "Inter_700Bold" }]}>
-            Entdeckungen
-          </Text>
-        </View>
-      </View>
+        <Text style={[styles.kicker, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
+          COFFEE NEST
+        </Text>
+        <Text style={[styles.title, { color: colors.ink, fontFamily: SERIF_BLACK }]}>
+          Entdeckungen
+        </Text>
+      </TornSheet>
 
       <ScrollView
-        contentContainerStyle={{ padding: 20, paddingBottom: bottomPad + 32, gap: 22 }}
+        contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 26, paddingBottom: bottomPad + 40, gap: 28 }}
         showsVerticalScrollIndicator={false}
       >
         {/* ── KAFFEEWELT ────────────────────────────────────────────── */}
-        <PaperSurface>
-          <View style={styles.sectionHeader}>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.sectionLabel, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
-                KAFFEEWELT
-              </Text>
-              <Text style={[styles.sectionSubtitle, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
-                Entdecke die Herkunft deiner Kaffees
-              </Text>
-            </View>
-          </View>
+        <TornSheet tone="cream" seed={2} rotate={-0.6} contentStyle={styles.sheetPad}>
+          <Text style={[styles.sectionLabel, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
+            KAFFEEWELT
+          </Text>
+          <Text style={[styles.sectionSubtitle, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
+            Entdecke die Herkunft deiner Kaffees
+          </Text>
 
           <View style={styles.mapProgressRow}>
-            <Text style={[styles.mapProgressText, { color: colors.text, fontFamily: "Inter_600SemiBold" }]}>
+            <Text style={[styles.mapProgressText, { color: colors.ink, fontFamily: "Inter_500Medium" }]}>
               {mapDiscoveredCount} von {TOTAL_KNOWN} Herkunftsländern entdeckt
             </Text>
-            <Text style={[styles.mapProgressPct, { color: colors.tint, fontFamily: "Inter_700Bold" }]}>
+            <Text style={[styles.mapProgressPct, { color: colors.gold, fontFamily: SERIF_BLACK }]}>
               {Math.round(mapProgress * 100)} %
             </Text>
           </View>
           <View style={styles.mapProgressTrackWrap}>
-            <View style={[styles.progressTrack, { backgroundColor: colors.surface }]}>
+            <View style={[styles.progressTrack, { backgroundColor: colors.hair }]}>
               <View
                 style={[
                   styles.progressFill,
                   {
                     width: `${Math.round(mapProgress * 100)}%` as any,
-                    backgroundColor: colors.tint,
-                    borderRadius: isLowpoly ? 2 : 4,
+                    backgroundColor: colors.gold,
+                    borderRadius: isLowpoly ? 1 : 3,
                   },
                 ]}
               />
@@ -388,7 +386,7 @@ export default function DiscoveriesScreen() {
           </View>
 
           {mapDiscoveredCount === 0 && (
-            <Text style={[styles.mapHint, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+            <Text style={[styles.mapHint, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
               Füge deinen ersten Kaffee mit Herkunftsland hinzu.
             </Text>
           )}
@@ -396,27 +394,27 @@ export default function DiscoveriesScreen() {
           {/* Legend */}
           <View style={styles.legend}>
             <View style={styles.legendItem}>
-              <View style={[styles.legendSwatch, { backgroundColor: colors.tint, borderRadius: isLowpoly ? 1 : 4 }]} />
-              <Text style={[styles.legendText, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+              <View style={[styles.legendSwatch, { backgroundColor: colors.gold, borderRadius: isLowpoly ? 1 : 6 }]} />
+              <Text style={[styles.legendText, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
                 Entdeckt
               </Text>
             </View>
             <View style={styles.legendItem}>
-              <View style={[styles.legendSwatch, { backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1, borderRadius: isLowpoly ? 1 : 4 }]} />
-              <Text style={[styles.legendText, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+              <View style={[styles.legendSwatch, { backgroundColor: colors.surface, borderColor: colors.inkFaint, borderWidth: 1.5, borderRadius: isLowpoly ? 1 : 6 }]} />
+              <Text style={[styles.legendText, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
                 Noch nicht entdeckt
               </Text>
             </View>
             <View style={styles.legendItem}>
-              <HaseIcon size={16} color={colors.tint} />
-              <Text style={[styles.legendText, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+              <HaseIcon size={16} color={colors.gold} />
+              <Text style={[styles.legendText, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
                 {name1}s Lieblingsland
               </Text>
             </View>
             {user2active && (
               <View style={styles.legendItem}>
-                <DodoIcon size={16} color={colors.tint} />
-                <Text style={[styles.legendText, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                <DodoIcon size={16} color={colors.gold} />
+                <Text style={[styles.legendText, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
                   {name2}s Lieblingsland
                 </Text>
               </View>
@@ -424,66 +422,70 @@ export default function DiscoveriesScreen() {
           </View>
 
           {lastDiscovered ? (
-            <View style={[styles.lastDiscoveredRow, { borderTopColor: colors.border }]}>
-              <OriginPinIcon size={18} color={colors.tint} />
-              <Text style={[styles.lastDiscoveredLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
-                Zuletzt entdeckt:
-              </Text>
-              <Text style={[styles.lastDiscoveredValue, { color: colors.text, fontFamily: "Inter_600SemiBold" }]}>
-                {lastDiscovered}
-              </Text>
-            </View>
+            <>
+              <View style={styles.lastDiscoveredHair}>
+                <Hairline />
+              </View>
+              <View style={styles.lastDiscoveredRow}>
+                <OriginPinIcon size={18} color={colors.gold} />
+                <Text style={[styles.lastDiscoveredLabel, { color: colors.inkSoft, fontFamily: "Inter_500Medium" }]}>
+                  Zuletzt entdeckt:
+                </Text>
+                <Text style={[styles.lastDiscoveredValue, { color: colors.ink, fontFamily: SERIF_BOLD }]}>
+                  {lastDiscovered}
+                </Text>
+              </View>
+            </>
           ) : null}
-        </PaperSurface>
+        </TornSheet>
 
         {/* ── DEIN KAFFEEPROFIL ─────────────────────────────────────── */}
-        <PaperSurface flip>
-          <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionLabel, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
-              DEIN KAFFEEPROFIL
-            </Text>
-          </View>
+        <TornSheet tone="cream" seed={8} rotate={0.7} contentStyle={styles.sheetPad}>
+          <Text style={[styles.sectionLabel, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
+            DEIN KAFFEEPROFIL
+          </Text>
 
           {!hasProfile ? (
             <View style={styles.emptyRow}>
-              <Text style={[styles.emptyText, { color: colors.textSecondary, fontFamily: "Inter_400Regular", textAlign: "center" }]}>
+              <Text style={[styles.emptyText, { color: colors.inkSoft, fontFamily: "Inter_400Regular", textAlign: "center" }]}>
                 Mehr Kaffees bewerten, um euer Profil zu füllen.
               </Text>
             </View>
           ) : (
             <View>
-              {/* GEMEINSAMER FAVORIT — Mittelpunkt des Profils */}
+              {/* GEMEINSAMER FAVORIT — espresso feature plane */}
               {user2active && sharedFav && (
                 <View style={styles.heroWrap}>
-                  <PaperSurface tone="dark" layers={2} contentStyle={styles.heroCard}>
-                    <Text style={[styles.heroLabel, { color: colors.heroTint, fontFamily: "Inter_700Bold" }]}>
+                  <TornSheet tone="espresso" seed={4} rotate={-0.9} contentStyle={styles.heroCard}>
+                    <Text style={[styles.heroLabel, { color: colors.goldLight, fontFamily: "Inter_600SemiBold" }]}>
                       GEMEINSAMER FAVORIT
                     </Text>
-                    <Text style={[styles.heroName, { color: colors.heroText, fontFamily: "Inter_700Bold" }]} numberOfLines={2}>
+                    <Text style={[styles.heroName, { color: colors.creamText, fontFamily: SERIF_BLACK }]} numberOfLines={2}>
                       {sharedFav.name}
                     </Text>
                     {sharedFav.roasteryName ? (
-                      <Text style={[styles.heroRoastery, { color: colors.heroTextSub, fontFamily: "Inter_400Regular" }]} numberOfLines={1}>
+                      <Text style={[styles.heroRoastery, { color: colors.creamTextSoft, fontFamily: "Inter_400Regular" }]} numberOfLines={1}>
                         {sharedFav.roasteryName}
                       </Text>
                     ) : null}
                     <View style={styles.heroRatings}>
                       <View style={styles.heroRatingItem}>
-                        <HaseIcon size={18} color={colors.heroTint} />
-                        <Text style={[styles.heroRatingText, { color: colors.heroTextSub, fontFamily: "Inter_400Regular" }]}>
+                        <HaseIcon size={18} color={colors.goldLight} />
+                        <Text style={[styles.heroRatingText, { color: colors.creamTextSoft, fontFamily: "Inter_400Regular" }]}>
                           {name1}{" "}
-                          <Text style={{ color: colors.heroTint, fontFamily: "Inter_700Bold" }}>{sharedFav.haseRating}</Text>
+                          <Text style={{ color: colors.goldLight, fontFamily: SERIF_BOLD, fontSize: 20 }}>{sharedFav.haseRating}</Text>
                         </Text>
                       </View>
+                      <View style={[styles.heroDivider, { backgroundColor: colors.hairCream }]} />
                       <View style={styles.heroRatingItem}>
-                        <DodoIcon size={18} color={colors.heroTint} />
-                        <Text style={[styles.heroRatingText, { color: colors.heroTextSub, fontFamily: "Inter_400Regular" }]}>
+                        <DodoIcon size={18} color={colors.goldLight} />
+                        <Text style={[styles.heroRatingText, { color: colors.creamTextSoft, fontFamily: "Inter_400Regular" }]}>
                           {name2}{" "}
-                          <Text style={{ color: colors.heroTint, fontFamily: "Inter_700Bold" }}>{sharedFav.dodoRating}</Text>
+                          <Text style={{ color: colors.goldLight, fontFamily: SERIF_BOLD, fontSize: 20 }}>{sharedFav.dodoRating}</Text>
                         </Text>
                       </View>
                     </View>
-                  </PaperSurface>
+                  </TornSheet>
                 </View>
               )}
 
@@ -491,41 +493,41 @@ export default function DiscoveriesScreen() {
               <View style={styles.profileBlock}>
                 {sameCountry ? (
                   <View style={styles.centerInsight}>
-                    <Text style={[styles.blockLabelCenter, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
+                    <Text style={[styles.blockLabelCenter, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
                       GEMEINSAMES LIEBLINGSLAND
                     </Text>
                     <View style={styles.centerIcons}>
-                      <HaseIcon size={18} color={colors.tint} />
-                      <DodoIcon size={18} color={colors.tint} />
+                      <HaseIcon size={18} color={colors.gold} />
+                      <DodoIcon size={18} color={colors.gold} />
                     </View>
-                    <Text style={[styles.centerPrimary, { color: colors.text, fontFamily: "Inter_600SemiBold" }]} numberOfLines={1}>
+                    <Text style={[styles.centerPrimary, { color: colors.ink, fontFamily: SERIF_BOLD }]} numberOfLines={1}>
                       {haseCountry}
                     </Text>
                   </View>
                 ) : !user2active ? (
                   <View style={styles.centerInsight}>
-                    <Text style={[styles.blockLabelCenter, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
+                    <Text style={[styles.blockLabelCenter, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
                       LIEBLINGSLAND
                     </Text>
-                    <Text style={[styles.centerPrimary, { color: colors.text, fontFamily: "Inter_600SemiBold" }]} numberOfLines={1}>
+                    <Text style={[styles.centerPrimary, { color: colors.ink, fontFamily: SERIF_BOLD }]} numberOfLines={1}>
                       {haseCountry ?? "—"}
                     </Text>
                   </View>
                 ) : (
                   <>
-                    <Text style={[styles.blockLabel, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
+                    <Text style={[styles.blockLabel, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
                       LIEBLINGSLÄNDER
                     </Text>
                     <View style={styles.duoRow}>
                       <DuoColumn
-                        iconNode={<HaseIcon size={18} color={colors.tint} />}
+                        iconNode={<HaseIcon size={18} color={colors.gold} />}
                         name={name1}
                         primary={haseCountry ?? "—"}
                         colors={colors}
                       />
-                      <View style={[styles.duoDivider, { backgroundColor: colors.border }]} />
+                      <View style={[styles.duoDivider, { backgroundColor: colors.hair }]} />
                       <DuoColumn
-                        iconNode={<DodoIcon size={18} color={colors.tint} />}
+                        iconNode={<DodoIcon size={18} color={colors.gold} />}
                         name={name2}
                         primary={dodoCountry ?? "—"}
                         colors={colors}
@@ -536,84 +538,87 @@ export default function DiscoveriesScreen() {
               </View>
 
               {/* SPITZENREITER */}
+              <View style={styles.profileHair}>
+                <Hairline />
+              </View>
               <View style={styles.profileBlock}>
                 {sameTop && haseTop && dodoTop ? (
                   <View style={styles.centerInsight}>
-                    <Text style={[styles.blockLabelCenter, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
+                    <Text style={[styles.blockLabelCenter, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
                       GEMEINSAMER SPITZENREITER
                     </Text>
-                    <Text style={[styles.centerPrimary, { color: colors.text, fontFamily: "Inter_600SemiBold" }]} numberOfLines={2}>
+                    <Text style={[styles.centerPrimary, { color: colors.ink, fontFamily: SERIF_BOLD }]} numberOfLines={2}>
                       {haseTop.name}
                     </Text>
                     {haseTop.roasteryName ? (
-                      <Text style={[styles.centerRoastery, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]} numberOfLines={1}>
+                      <Text style={[styles.centerRoastery, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]} numberOfLines={1}>
                         {haseTop.roasteryName}
                       </Text>
                     ) : null}
                     <View style={styles.centerRatings}>
-                      <Text style={[styles.heroRatingText, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                      <Text style={[styles.heroRatingText, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
                         {name1}{" "}
-                        <Text style={{ color: colors.tint, fontFamily: "Inter_700Bold" }}>{haseTop.rating}</Text>
+                        <Text style={{ color: colors.gold, fontFamily: SERIF_BOLD, fontSize: 16 }}>{haseTop.rating}</Text>
                       </Text>
-                      <Text style={[styles.heroRatingText, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                      <Text style={[styles.heroRatingText, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
                         {name2}{" "}
-                        <Text style={{ color: colors.tint, fontFamily: "Inter_700Bold" }}>{dodoTop.rating}</Text>
+                        <Text style={{ color: colors.gold, fontFamily: SERIF_BOLD, fontSize: 16 }}>{dodoTop.rating}</Text>
                       </Text>
                     </View>
                   </View>
                 ) : !user2active ? (
                   <View style={styles.centerInsight}>
-                    <Text style={[styles.blockLabelCenter, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
+                    <Text style={[styles.blockLabelCenter, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
                       SPITZENREITER
                     </Text>
-                    <Text style={[styles.centerPrimary, { color: colors.text, fontFamily: "Inter_600SemiBold" }]} numberOfLines={2}>
+                    <Text style={[styles.centerPrimary, { color: colors.ink, fontFamily: SERIF_BOLD }]} numberOfLines={2}>
                       {haseTop?.name ?? "—"}
                     </Text>
                     {haseTop?.roasteryName ? (
-                      <Text style={[styles.centerRoastery, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]} numberOfLines={1}>
+                      <Text style={[styles.centerRoastery, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]} numberOfLines={1}>
                         {haseTop.roasteryName}
                       </Text>
                     ) : null}
                     {haseTop ? (
-                      <Text style={[styles.centerSecondary, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                      <Text style={[styles.centerSecondary, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
                         Wertung{" "}
-                        <Text style={{ color: colors.tint, fontFamily: "Inter_700Bold" }}>{haseTop.rating}</Text>
+                        <Text style={{ color: colors.gold, fontFamily: SERIF_BOLD, fontSize: 15 }}>{haseTop.rating}</Text>
                       </Text>
                     ) : null}
                   </View>
                 ) : (
                   <>
-                    <Text style={[styles.blockLabel, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
+                    <Text style={[styles.blockLabel, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
                       SPITZENREITER
                     </Text>
                     <View style={styles.duoRow}>
                       <DuoColumn
-                        iconNode={<HaseIcon size={18} color={colors.tint} />}
+                        iconNode={<HaseIcon size={18} color={colors.gold} />}
                         name={name1}
                         primary={haseTop?.name ?? "—"}
                         roastery={haseTop?.roasteryName}
                         colors={colors}
                         secondaryNode={
                           haseTop ? (
-                            <Text style={[styles.duoSecondary, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                            <Text style={[styles.duoSecondary, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
                               Wertung{" "}
-                              <Text style={{ color: colors.tint, fontFamily: "Inter_700Bold" }}>{haseTop.rating}</Text>
+                              <Text style={{ color: colors.gold, fontFamily: SERIF_BOLD, fontSize: 14 }}>{haseTop.rating}</Text>
                             </Text>
                           ) : undefined
                         }
                       />
-                      <View style={[styles.duoDivider, { backgroundColor: colors.border }]} />
+                      <View style={[styles.duoDivider, { backgroundColor: colors.hair }]} />
                       <DuoColumn
-                        iconNode={<DodoIcon size={18} color={colors.tint} />}
+                        iconNode={<DodoIcon size={18} color={colors.gold} />}
                         name={name2}
                         primary={dodoTop?.name ?? "—"}
                         roastery={dodoTop?.roasteryName}
                         colors={colors}
                         secondaryNode={
                           dodoTop ? (
-                            <Text style={[styles.duoSecondary, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                            <Text style={[styles.duoSecondary, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
                               Wertung{" "}
-                              <Text style={{ color: colors.tint, fontFamily: "Inter_700Bold" }}>{dodoTop.rating}</Text>
+                              <Text style={{ color: colors.gold, fontFamily: SERIF_BOLD, fontSize: 14 }}>{dodoTop.rating}</Text>
                             </Text>
                           ) : undefined
                         }
@@ -624,69 +629,61 @@ export default function DiscoveriesScreen() {
               </View>
             </View>
           )}
-        </PaperSurface>
+        </TornSheet>
 
-        {/* ── AROMEN ────────────────────────────────────────────────── */}
-        <PaperSurface tone="dark">
-          <View style={styles.sectionHeader}>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.sectionLabel, { color: colors.heroTextSub, fontFamily: "Inter_600SemiBold" }]}>
-                AROMEN
-              </Text>
-              <Text style={[styles.sectionSubtitle, { color: colors.heroTextSub, fontFamily: "Inter_400Regular" }]}>
-                Entdeckte Geschmackswelten
-              </Text>
-            </View>
-          </View>
+        {/* ── AROMEN — cream collectible chips ──────────────────────── */}
+        <TornSheet tone="cream" seed={5} rotate={-0.7} contentStyle={styles.sheetPad}>
+          <Text style={[styles.sectionLabel, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
+            AROMEN
+          </Text>
+          <Text style={[styles.sectionSubtitle, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
+            Entdeckte Geschmackswelten
+          </Text>
           <View style={styles.categoryGrid}>
-            {aromaStats.map((cat) => (
+            {aromaStats.map((cat, i) => (
               <CategoryCard
                 key={cat.key}
-                icon={<AromaIcon step={Number(cat.key)} size={26} color={colors.tint} />}
+                icon={<AromaIcon step={Number(cat.key)} size={26} color={colors.espresso} />}
                 cat={cat}
                 name1={name1}
                 name2={name2}
                 user2active={user2active}
                 colors={colors}
-                isLowpoly={isLowpoly}
+                seed={CARD_SEEDS[i % CARD_SEEDS.length]}
                 onPress={() =>
                   openCategory(cat.label, <AromaIcon step={Number(cat.key)} size={30} color={colors.tint} />, cat)
                 }
               />
             ))}
           </View>
-        </PaperSurface>
+        </TornSheet>
 
-        {/* ── AUFBEREITUNGEN ────────────────────────────────────────── */}
-        <PaperSurface tone="dark" flip>
-          <View style={styles.sectionHeader}>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.sectionLabel, { color: colors.heroTextSub, fontFamily: "Inter_600SemiBold" }]}>
-                AUFBEREITUNGEN
-              </Text>
-              <Text style={[styles.sectionSubtitle, { color: colors.heroTextSub, fontFamily: "Inter_400Regular" }]}>
-                Entdeckte Verarbeitungsmethoden
-              </Text>
-            </View>
-          </View>
+        {/* ── AUFBEREITUNGEN — cream collectible chips ──────────────── */}
+        <TornSheet tone="cream" seed={11} rotate={0.7} contentStyle={styles.sheetPad}>
+          <Text style={[styles.sectionLabel, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
+            AUFBEREITUNGEN
+          </Text>
+          <Text style={[styles.sectionSubtitle, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
+            Entdeckte Verarbeitungsmethoden
+          </Text>
           <View style={styles.categoryGrid}>
-            {processingStats.map((cat) => (
+            {processingStats.map((cat, i) => (
               <CategoryCard
                 key={cat.key}
-                icon={<ProcessingIcon method={cat.key} size={26} color={colors.tint} />}
+                icon={<ProcessingIcon method={cat.key} size={26} color={colors.espresso} />}
                 cat={cat}
                 name1={name1}
                 name2={name2}
                 user2active={user2active}
                 colors={colors}
-                isLowpoly={isLowpoly}
+                seed={CARD_SEEDS[(i + 3) % CARD_SEEDS.length]}
                 onPress={() =>
                   openCategory(cat.label, <ProcessingIcon method={cat.key} size={30} color={colors.tint} />, cat)
                 }
               />
             ))}
           </View>
-        </PaperSurface>
+        </TornSheet>
       </ScrollView>
 
       {/* ── Country detail sheet ──────────────────────────────────────── */}
@@ -902,153 +899,125 @@ export default function DiscoveriesScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: {
-    flexDirection: "row",
-    alignItems: "flex-end",
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-    gap: 12,
-  },
-  backBtn: { marginBottom: 4 },
-  headerTextBlock: { flex: 1 },
-  headerLabel: { fontSize: 11, letterSpacing: 1.5, marginBottom: 2 },
-  headerTitle: { fontSize: 32, lineHeight: 38 },
-  section: { borderWidth: 1, borderTopWidth: 2 },
-  sectionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-  },
-  sectionLabel: { fontSize: 11, letterSpacing: 1.5 },
-  sectionCount: { fontSize: 15 },
-  sectionSubtitle: { fontSize: 13, marginTop: 3 },
-  progressTrack: { height: 8, borderRadius: 4, overflow: "hidden" },
-  progressFill: { height: "100%" },
-  emptyRow: {
-    paddingHorizontal: 16,
-    paddingVertical: 24,
-    alignItems: "center",
-  },
-  emptyText: { fontSize: 14 },
-  lastDiscoveredRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderTopWidth: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    gap: 8,
-  },
-  lastDiscoveredLabel: { fontSize: 13 },
-  lastDiscoveredValue: { fontSize: 15, flex: 1 },
+  masthead: { marginTop: -48 },
+  mastheadPad: { paddingHorizontal: 24, paddingBottom: 24 },
+  backBtn: { marginLeft: -4, marginBottom: 10, alignSelf: "flex-start" },
+  kicker: { fontSize: 11, letterSpacing: 3, textTransform: "uppercase", marginBottom: 4 },
+  title: { fontSize: 40, lineHeight: 46 },
 
-  // KAFFEEPROFIL
-  profileBlock: { paddingHorizontal: 20, paddingVertical: 18 },
-  blockLabel: { fontSize: 11, letterSpacing: 1.5, marginBottom: 14 },
-  duoRow: { flexDirection: "row", alignItems: "stretch" },
-  duoCol: { flex: 1, gap: 3 },
-  duoHead: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 1 },
-  duoName: { fontSize: 12, letterSpacing: 0.3, flexShrink: 1 },
-  duoPrimary: { fontSize: 17 },
-  duoSecondary: { fontSize: 12, marginTop: 1 },
-  duoRoastery: { fontSize: 12, marginTop: 1 },
-  duoDivider: { width: 1, marginHorizontal: 14 },
-
-  // Gemeinsamer Favorit — hero
-  heroWrap: { paddingHorizontal: 16, paddingTop: 20, paddingBottom: 10 },
-  heroCard: {
-    alignItems: "center",
-    paddingVertical: 28,
-    paddingHorizontal: 22,
-    gap: 6,
-  },
-  heroLabel: { fontSize: 11, letterSpacing: 1.5, textAlign: "center", marginBottom: 4 },
-  heroName: { fontSize: 30, lineHeight: 36, textAlign: "center" },
-  heroRoastery: { fontSize: 15, textAlign: "center" },
-  heroRatings: { flexDirection: "row", alignItems: "center", gap: 28, marginTop: 16 },
-  heroRatingItem: { flexDirection: "row", alignItems: "center", gap: 6 },
-  heroRatingText: { fontSize: 14 },
-
-  // Merged / single insight (centered)
-  centerInsight: { alignItems: "center", gap: 5 },
-  blockLabelCenter: { fontSize: 11, letterSpacing: 1.5, textAlign: "center", marginBottom: 2 },
-  centerIcons: { flexDirection: "row", alignItems: "center", gap: 8 },
-  centerPrimary: { fontSize: 19, textAlign: "center" },
-  centerRoastery: { fontSize: 13, textAlign: "center" },
-  centerSecondary: { fontSize: 13, textAlign: "center", marginTop: 2 },
-  centerRatings: { flexDirection: "row", alignItems: "center", gap: 20, marginTop: 4 },
-
-  // AROMEN / AUFBEREITUNGEN grid
-  categoryGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    padding: 18,
-    gap: 12,
-  },
-  categoryCard: {
-    padding: 16,
-    gap: 6,
-  },
-  categoryCardOuter: {
-    flexBasis: "47%",
-    flexGrow: 1,
-  },
-  categoryIconWrap: {
-    width: 44,
-    height: 44,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 4,
-  },
-  categoryName: { fontSize: 16 },
-  categoryCount: { fontSize: 12 },
-  categoryBest: {
-    paddingTop: 10,
-    marginTop: 6,
-    gap: 3,
-  },
-  categoryBestLabel: { fontSize: 10, letterSpacing: 1 },
-  categoryBestName: { fontSize: 13 },
-  categoryEmptyText: { fontSize: 12 },
-  ratingInline: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 10 },
-  ratingChip: {},
+  sheetPad: { paddingHorizontal: 22, paddingVertical: 24 },
+  sectionLabel: { fontSize: 10, letterSpacing: 2.6, textTransform: "uppercase" },
+  sectionSubtitle: { fontSize: 12.5, marginTop: 5 },
 
   // KAFFEEWELT map
   mapProgressRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 8,
+    alignItems: "baseline",
+    marginTop: 20,
     gap: 12,
   },
   mapProgressText: { fontSize: 13, flex: 1 },
-  mapProgressPct: { fontSize: 14 },
-  mapProgressTrackWrap: { paddingHorizontal: 16, paddingBottom: 14 },
+  mapProgressPct: { fontSize: 22 },
+  mapProgressTrackWrap: { marginTop: 10 },
+  progressTrack: { height: 6, borderRadius: 3, overflow: "hidden" },
+  progressFill: { height: "100%" },
   mapWrap: {
-    marginHorizontal: 16,
+    marginTop: 20,
     borderRadius: 8,
     overflow: "hidden",
   },
   mapHint: {
     fontSize: 13,
     textAlign: "center",
-    paddingHorizontal: 24,
     paddingTop: 14,
   },
   legend: {
     flexDirection: "row",
     flexWrap: "wrap",
     marginTop: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    gap: 18,
+    gap: 16,
   },
-  legendItem: { flexDirection: "row", alignItems: "center", gap: 6 },
-  legendSwatch: { width: 14, height: 14 },
-  legendText: { fontSize: 12 },
+  legendItem: { flexDirection: "row", alignItems: "center", gap: 7 },
+  legendSwatch: { width: 13, height: 13 },
+  legendText: { fontSize: 11.5 },
+  lastDiscoveredHair: { marginTop: 20 },
+  lastDiscoveredRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingTop: 16,
+    gap: 8,
+  },
+  lastDiscoveredLabel: { fontSize: 12.5 },
+  lastDiscoveredValue: { fontSize: 15, flex: 1 },
+
+  // KAFFEEPROFIL
+  emptyRow: {
+    paddingVertical: 24,
+    alignItems: "center",
+  },
+  emptyText: { fontSize: 14 },
+  profileBlock: { marginTop: 26 },
+  profileHair: { marginTop: 26 },
+  blockLabel: { fontSize: 10, letterSpacing: 2.6, textTransform: "uppercase", marginBottom: 14 },
+  duoRow: { flexDirection: "row", alignItems: "stretch" },
+  duoCol: { flex: 1, gap: 3 },
+  duoHead: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 2 },
+  duoName: { fontSize: 12, letterSpacing: 0.3, flexShrink: 1 },
+  duoPrimary: { fontSize: 20, lineHeight: 25 },
+  duoSecondary: { fontSize: 12, marginTop: 3 },
+  duoRoastery: { fontSize: 12, marginTop: 1 },
+  duoDivider: { width: 1, marginHorizontal: 16 },
+
+  // Gemeinsamer Favorit — espresso hero plane
+  heroWrap: { marginTop: 22 },
+  heroCard: {
+    alignItems: "center",
+    paddingVertical: 28,
+    paddingHorizontal: 22,
+    gap: 6,
+  },
+  heroLabel: { fontSize: 10, letterSpacing: 2.6, textTransform: "uppercase", textAlign: "center", marginBottom: 4 },
+  heroName: { fontSize: 28, lineHeight: 33, textAlign: "center" },
+  heroRoastery: { fontSize: 14, textAlign: "center" },
+  heroRatings: { flexDirection: "row", alignItems: "center", gap: 22, marginTop: 16 },
+  heroRatingItem: { flexDirection: "row", alignItems: "center", gap: 6 },
+  heroRatingText: { fontSize: 14 },
+  heroDivider: { width: 1, height: 24 },
+
+  // Merged / single insight (centered)
+  centerInsight: { alignItems: "center", gap: 5 },
+  blockLabelCenter: { fontSize: 10, letterSpacing: 2.6, textTransform: "uppercase", textAlign: "center", marginBottom: 2 },
+  centerIcons: { flexDirection: "row", alignItems: "center", gap: 8 },
+  centerPrimary: { fontSize: 22, lineHeight: 27, textAlign: "center" },
+  centerRoastery: { fontSize: 13, textAlign: "center" },
+  centerSecondary: { fontSize: 13, textAlign: "center", marginTop: 2 },
+  centerRatings: { flexDirection: "row", alignItems: "center", gap: 20, marginTop: 4 },
+
+  // AROMEN / AUFBEREITUNGEN — collectible chips laid directly on the cream page
+  categoryGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginTop: 24,
+    columnGap: 18,
+    rowGap: 28,
+  },
+  chipOuter: {
+    flexBasis: "44%",
+    flexGrow: 1,
+  },
+  chipStamp: { marginBottom: 12 },
+  chipName: { fontSize: 18, lineHeight: 22 },
+  chipCount: { fontSize: 11.5, marginTop: 2 },
+  chipBest: {
+    marginTop: 12,
+    gap: 3,
+  },
+  chipBestLabel: { fontSize: 9.5, letterSpacing: 2 },
+  chipBestName: { fontSize: 13 },
+  chipEmpty: { fontSize: 12, marginTop: 12 },
+  ratingInline: { flexDirection: "row", flexWrap: "wrap", alignItems: "baseline", gap: 10, marginTop: 2 },
+  ratingChip: {},
 
   // Bottom sheet
   sheetBackdrop: {
