@@ -340,7 +340,7 @@ export default function RoasteryScreen() {
             style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
           >
             <TornBox color={colors.gold} seed={4} style={styles.addButton}>
-              <Ionicons name="add" size={26} color="#FFF8EC" />
+              <Ionicons name="add" size={26} color={colors.espresso} />
             </TornBox>
           </Pressable>
         </View>
@@ -372,6 +372,7 @@ export default function RoasteryScreen() {
             return (
               <TornSheet
                 tone="cream"
+                variant="long"
                 seed={LIST_SEEDS[index % LIST_SEEDS.length]}
                 rotate={index % 2 === 0 ? -0.7 : 0.8}
                 contentStyle={styles.coffeePad}

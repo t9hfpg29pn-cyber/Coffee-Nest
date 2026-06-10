@@ -147,6 +147,7 @@ function CategoryCard({
     <View style={styles.chipOuter}>
       <TornSheet
         tone="cream"
+        variant="small"
         seed={seed}
         rotate={0}
         peek={false}

@@ -10,9 +10,10 @@ import {
 } from "react-native";
 import { useThemeColors } from "@/context/ThemeContext";
 import {
-  paperMainTexture,
-  paperStainedTexture,
-  paperAccentTexture,
+  SHEET_TEXTURES,
+  SheetVariant,
+  accentButtonTexture,
+  iconTileTextures,
 } from "@/assets/textures";
 
 const isWeb = Platform.OS === "web";
@@ -23,50 +24,11 @@ function webStyle(value: Record<string, string | number>): ViewStyle {
   return isWeb ? (value as unknown as ViewStyle) : {};
 }
 
-// ── Torn edge as a STATIC baked mask (TornBox / gold buttons only) ──────────
-// NOTE: TornSheet and IconStamp now use the real paper-texture PNGs directly,
-// so their torn edges come from the images' own transparent alpha. The baked
-// SVG mask below is only still used by TornBox (the solid gold add/save buttons,
-// for which no paper texture exists).
-// The approved mockup tears each sheet with a live `feTurbulence` +
-// `feDisplacementMap` SVG filter applied to every element. That is fine for a
-// single static mockup screen, but the real app renders one sheet PER list item
-// and scrolls — re-running turbulence on every repaint causes the jank the user
-// reported, and when a live filter lags/fails the offset backing paints as a
-// plain rectangle (the "empty blocks", especially on the left edge).
-//
-// So we bake the EXACT same displacement once into a self-contained SVG data
-// URI and use it as a `mask-image`. The browser rasterises the mask a single
-// time and compositing it is GPU-cheap, so the torn silhouette is identical to
-// the mockup but reliable and scroll-friendly. Memoised per seed.
-const maskCache: Record<number, string> = {};
-function tornMaskUri(seed: number): string {
-  if (maskCache[seed]) return maskCache[seed];
-  const svg =
-    `<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320' viewBox='0 0 320 320' preserveAspectRatio='none'>` +
-    `<filter id='t' x='-14%' y='-14%' width='128%' height='128%'>` +
-    `<feTurbulence type='fractalNoise' baseFrequency='0.013 0.016' numOctaves='3' seed='${seed}' result='n'/>` +
-    `<feDisplacementMap in='SourceGraphic' in2='n' scale='11' xChannelSelector='R' yChannelSelector='G'/>` +
-    `</filter>` +
-    `<rect x='16' y='16' width='288' height='288' fill='#fff' filter='url(#t)'/>` +
-    `</svg>`;
-  const uri = `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
-  maskCache[seed] = uri;
-  return uri;
-}
-
-function maskStyle(seed: number): ViewStyle {
-  if (!isWeb) return {};
-  const uri = tornMaskUri(seed);
-  return {
-    maskImage: uri,
-    WebkitMaskImage: uri,
-    maskSize: "100% 100%",
-    WebkitMaskSize: "100% 100%",
-    maskRepeat: "no-repeat",
-    WebkitMaskRepeat: "no-repeat",
-  } as unknown as ViewStyle;
-}
+// Every paper surface — sheets, icon stamps and buttons — now renders a real
+// sliced texture PNG whose torn/rounded silhouette comes from the image's own
+// transparent alpha. No live SVG turbulence/displacement mask runs per element
+// (that caused the scroll jank and the "empty block" rectangles the user
+// reported), so the only baked SVG left is the cheap tiled paper grain below.
 
 // A subtle warm paper grain, baked ONCE into a tiled data-URI image (not a live
 // full-screen turbulence filter, which was a major scroll cost). Web-only.
@@ -114,6 +76,7 @@ export type SheetTone = "cream" | "espresso";
 export function TornSheet({
   children,
   tone = "cream",
+  variant,
   seed = 2,
   rotate = -0.6,
   peek = true,
@@ -126,6 +89,7 @@ export function TornSheet({
 }: {
   children: React.ReactNode;
   tone?: SheetTone;
+  variant?: SheetVariant;
   seed?: number;
   rotate?: number;
   peek?: boolean;
@@ -136,13 +100,16 @@ export function TornSheet({
   style?: StyleProp<ViewStyle>;
   contentStyle?: StyleProp<ViewStyle>;
 }) {
-  const espresso = tone === "espresso";
-  // The face IS the real paper photo: cream -> main sheet, espresso (now a LIGHT
-  // coffee-stained sheet) -> stained sheet. No solid fill / gradient / SVG mask;
-  // the torn silhouette comes from the PNG's own transparent alpha edge.
-  const tex = espresso ? paperStainedTexture : paperMainTexture;
+  // Each sheet's face IS a real sliced paper photo. `variant` picks the exact
+  // labelled shape (main/wide/small/tall/long list element, stained hero, accent
+  // section); when omitted we fall back from `tone` so legacy call sites keep
+  // working: cream -> main sheet, espresso -> light coffee-stained hero sheet.
+  // The torn silhouette comes from the PNG's own transparent alpha edge.
+  const v: SheetVariant = variant ?? (tone === "espresso" ? "hero" : "main");
+  const tex = SHEET_TEXTURES[v];
+  const heavy = v === "hero" || v === "accent";
   const flip = seed % 2 === 0; // mirror the silhouette so adjacent sheets differ
-  const shadow = espresso
+  const shadow = heavy
     ? "drop-shadow(0 12px 22px rgba(20,12,6,0.42))"
     : "drop-shadow(0 10px 18px rgba(20,12,6,0.34))";
 
@@ -216,18 +183,21 @@ export function TornBox({
   radius?: number;
   style?: StyleProp<ViewStyle>;
 }) {
-  const r: ViewStyle = isWeb ? {} : { borderRadius: radius };
+  // The button face IS the real ACCENT-04 button/chip paper texture. `color` is
+  // accepted for call-site compatibility but no longer drives a solid fill.
+  void color;
+  const flip = seed % 2 === 0;
   return (
     <View style={style}>
       <View
         pointerEvents="none"
         style={[
           StyleSheet.absoluteFill,
-          r,
-          { backgroundColor: color },
-          maskStyle(seed),
+          { borderRadius: radius, overflow: "hidden", transform: [{ scaleX: flip ? -1 : 1 }] },
         ]}
-      />
+      >
+        <Image source={accentButtonTexture} resizeMode="stretch" style={StyleSheet.absoluteFill} />
+      </View>
       <View style={[StyleSheet.absoluteFill, styles.stampInner]}>{children}</View>
     </View>
   );
@@ -251,18 +221,25 @@ export function IconStamp({
   color?: string;
   style?: StyleProp<ViewStyle>;
 }) {
-  // The accent paper tile (texture #4) now backs every small icon stamp. tone /
-  // color are accepted for call-site compatibility but no longer drive a fill.
+  // Each stamp is backed by one of the small warm accent swatches (ACCENT-03 +
+  // TILE-01..04 + CHIP-01..04), chosen by seed so neighbouring stamps differ.
+  // tone / color are accepted for call-site compatibility but no longer drive a
+  // fill. A rounded clip keeps the swatch reading as a soft paper tile.
   void tone;
   void color;
+  const tex = iconTileTextures[seed % iconTileTextures.length];
   const flip = seed % 2 === 0;
+  const radius = Math.round(size * 0.3);
   return (
     <View style={[{ width: size, height: size }, style]}>
       <View
         pointerEvents="none"
-        style={[StyleSheet.absoluteFill, { transform: [{ scaleX: flip ? -1 : 1 }] }]}
+        style={[
+          StyleSheet.absoluteFill,
+          { borderRadius: radius, overflow: "hidden", transform: [{ scaleX: flip ? -1 : 1 }] },
+        ]}
       >
-        <Image source={paperAccentTexture} resizeMode="stretch" style={StyleSheet.absoluteFill} />
+        <Image source={tex} resizeMode="stretch" style={StyleSheet.absoluteFill} />
       </View>
       <View style={[StyleSheet.absoluteFill, styles.stampInner]}>{children}</View>
     </View>

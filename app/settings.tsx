@@ -288,7 +288,7 @@ export default function SettingsScreen() {
             disabled={!isDirty}
           >
             <TornBox color={colors.gold} seed={4} style={styles.saveBtn}>
-              <Text style={[styles.saveBtnText, { fontFamily: "Inter_600SemiBold" }]}>
+              <Text style={[styles.saveBtnText, { color: colors.espresso, fontFamily: "Inter_600SemiBold" }]}>
                 Speichern
               </Text>
             </TornBox>
@@ -303,7 +303,7 @@ export default function SettingsScreen() {
         keyboardShouldPersistTaps="handled"
       >
         {/* DESIGN */}
-        <TornSheet tone="cream" seed={13} rotate={-0.7} contentStyle={styles.sectionPad} style={styles.section}>
+        <TornSheet tone="cream" variant="wide" seed={13} rotate={-0.7} contentStyle={styles.sectionPad} style={styles.section}>
           <Text style={[styles.sectionLabel, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
             DESIGN
           </Text>
@@ -359,7 +359,7 @@ export default function SettingsScreen() {
         </Text>
 
         {/* BENUTZER */}
-        <TornSheet tone="cream" seed={12} rotate={0.8} contentStyle={styles.sectionPad} style={styles.section}>
+        <TornSheet tone="cream" variant="wide" seed={12} rotate={0.8} contentStyle={styles.sectionPad} style={styles.section}>
           <Text style={[styles.sectionLabel, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
             BENUTZER
           </Text>
@@ -484,7 +484,7 @@ export default function SettingsScreen() {
         </Text>
 
         {/* KAFFEEMÜHLEN */}
-        <TornSheet tone="cream" seed={8} rotate={-0.8} contentStyle={styles.sectionPad} style={styles.section}>
+        <TornSheet tone="cream" variant="wide" seed={8} rotate={-0.8} contentStyle={styles.sectionPad} style={styles.section}>
           <Text style={[styles.sectionLabel, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
             KAFFEEMÜHLEN
           </Text>
@@ -558,7 +558,7 @@ export default function SettingsScreen() {
                   })}
                 >
                   <TornBox color={colors.gold} seed={11} style={styles.addGrinderBtn}>
-                    <Ionicons name="add" size={18} color={colors.creamText} />
+                    <Ionicons name="add" size={18} color={colors.espresso} />
                   </TornBox>
                 </Pressable>
               </View>
@@ -577,7 +577,7 @@ export default function SettingsScreen() {
         </Text>
 
         {/* DATENSICHERUNG */}
-        <TornSheet tone="cream" seed={15} rotate={0.7} contentStyle={styles.sectionPad} style={styles.section}>
+        <TornSheet tone="cream" variant="accent" seed={15} rotate={0.7} contentStyle={styles.sectionPad} style={styles.section}>
           <Text style={[styles.sectionLabel, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
             DATENSICHERUNG
           </Text>

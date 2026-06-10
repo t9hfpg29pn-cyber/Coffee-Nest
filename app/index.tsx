@@ -222,7 +222,7 @@ export default function RoasteriesScreen() {
               style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
             >
               <TornBox color={colors.gold} seed={4} style={styles.addButton}>
-                <Ionicons name="add" size={26} color="#FFF8EC" />
+                <Ionicons name="add" size={26} color={colors.espresso} />
               </TornBox>
             </Pressable>
           </View>
@@ -399,7 +399,7 @@ export default function RoasteriesScreen() {
                 }}
                 style={({ pressed }) => ({ opacity: pressed ? 0.95 : 1 })}
               >
-                <TornSheet tone="cream" seed={11} rotate={0.6} contentStyle={styles.statsPad} style={styles.statsSheet}>
+                <TornSheet tone="cream" variant="wide" seed={11} rotate={0.6} contentStyle={styles.statsPad} style={styles.statsSheet}>
                   <View style={styles.discoveryHeader}>
                     <Text style={[styles.sectionLabel, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
                       ENTDECKUNGEN
@@ -432,6 +432,7 @@ export default function RoasteriesScreen() {
             return (
               <TornSheet
                 tone="cream"
+                variant="long"
                 seed={LIST_SEEDS[index % LIST_SEEDS.length]}
                 rotate={index % 2 === 0 ? -0.7 : 0.8}
                 contentStyle={styles.roasteryPad}

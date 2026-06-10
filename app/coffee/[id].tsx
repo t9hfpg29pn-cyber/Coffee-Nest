@@ -985,6 +985,7 @@ export default function CoffeeDetailScreen() {
       <Grain />
       <TornSheet
         tone="cream"
+        variant="tall"
         seed={6}
         rotate={0.4}
         peek={false}
@@ -1025,9 +1026,9 @@ export default function CoffeeDetailScreen() {
             >
               <TornBox color={colors.gold} seed={4} style={styles.saveBox}>
                 {saving ? (
-                  <ActivityIndicator size="small" color="#FFF8EC" />
+                  <ActivityIndicator size="small" color={colors.espresso} />
                 ) : (
-                  <Ionicons name="checkmark" size={24} color="#FFF8EC" />
+                  <Ionicons name="checkmark" size={24} color={colors.espresso} />
                 )}
               </TornBox>
             </Pressable>

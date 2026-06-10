@@ -9,27 +9,34 @@ The classic theme is a torn-paper system in `components/TornPaper.tsx` (`TornDef
 `TornBox`, `IconStamp`, `Grain`, `Hairline`) + `components/PolyBackground.tsx` for the app
 background. `app/index.tsx` is the canonical composition — copy it for any classic-theme screen.
 
-**THE MATERIAL IS NOW FOUR REAL PAPER-TEXTURE PHOTOS, used DIRECTLY as layer backgrounds:**
-- Assets in `assets/textures/` (exported by `assets/textures/index.ts` via `require`):
-  `coffee_bg.png` (dark coffee, full rectangle), `paper_main.png`, `paper_stained.png`,
-  `paper_accent.png` (last three are background-removed → torn-edge cutouts on transparent alpha).
-  They were sliced from the user's labelled spec composite with ImageMagick (`magick`/`convert`),
-  then `remove_image_background_tool` on #2/#3/#4.
-- Surface mapping the user dictated ("Keine Filter, sondern direkt diese grafischen Vorlagen"):
-  1. **DARK COFFEE** = whole-app background → `PolyBackground` renders `coffeeBgTexture` as an
-     absolute-fill cover `Image` when `design==="classic"` (it USED to `return null`).
-  2. **MAIN PAPER (light)** = `TornSheet tone="cream"` → `paperMainTexture` (normal cards/lists/pages).
-  3. **COFFEE-STAINED PAPER (light tan)** = `TornSheet tone="espresso"` → `paperStainedTexture`.
-     NOTE: tone "espresso" is now a LIGHT plane (it used to be a dark brown plane).
-  4. **ACCENT TILE (light kraft)** = `IconStamp` backing → `paperAccentTexture` (all small icon stamps).
-- `TornSheet` face = `<Image source resizeMode="stretch">`; torn edge comes from the PNG's own
-  alpha, NOT an SVG mask/gradient/solid fill. Depth = an offset/rotated/`scaleX`-mirrored peek
-  backing image (opacity ~0.5) + a web `drop-shadow` on a non-masked wrapper so the shadow hugs the
-  alpha edge. `flip = seed % 2 === 0` mirrors silhouettes so adjacent sheets differ. Native has no
-  filter → wrapper carries `styles.nativeFaceShadow`.
-- **TornBox stays SOLID color + baked SVG mask** (the gold add/save buttons) — there is no gold
-  paper texture, so it is the ONLY remaining user of `tornMaskUri`/`maskStyle`. `IconStamp` keeps
-  `tone`/`color` props for call-site compatibility but IGNORES them (`void tone; void color;`).
+**THE MATERIAL IS A SET OF ~18 REAL PAPER-TEXTURE PNGs sliced from the user's labelled design-system
+template, used DIRECTLY as layer backgrounds (no solid fill / gradient / SVG mask for the FACE):**
+- Assets in `assets/textures/` (exported by `assets/textures/index.ts` via `require`). Slicing is
+  100% LOCAL — `magick crop +repage` then a floodfill cutout
+  (`-alpha set -bordercolor "#000000" -border 2 -fuzz 32% -fill none -draw "alpha 0,0 floodfill" -shave 2x2 -trim`)
+  which gives clean torn edges AND preserves interior coffee stains. NO external bg-removal tool
+  needed. Pitfall: `-trim` + high fuzz EATS small low-contrast elements (tiles/chips) → for those,
+  crop a clean OPAQUE interior swatch (`-alpha off`, no floodfill) and round them in-component.
+- `assets/textures/index.ts` exports: `coffeeBgTexture` (opaque dark bg); `SHEET_TEXTURES` map +
+  `SheetVariant` type (`main|wide|small|tall|long|hero|accent`); `accentButtonTexture`;
+  `iconTileTextures[]` (ACCENT-03 + TILE-01..04 + CHIP-01..04 = the icon-stamp variety pool).
+- Surface mapping ("Keine Filter, sondern direkt diese grafischen Vorlagen"):
+  1. **DARK COFFEE (BG-01)** = whole-app bg → `PolyBackground` renders `coffeeBgTexture` cover Image.
+  2. **TornSheet `variant`** picks the exact labelled shape; falls back from `tone` when omitted
+     (cream→`main`, espresso→`hero`) so legacy call sites keep working. Wired: list rows→`long`,
+     stats panel + settings sections→`wide`, settings backup→`accent`, discoveries category cards→
+     `small`, coffee masthead→`tall`, stained hero (tone espresso)→`hero`. All sheets stay LIGHT.
+  3. **IconStamp** = `iconTileTextures[seed % len]` (rounded clip); ignores `tone`/`color`.
+  4. **TornBox** (add/save buttons) = `accentButtonTexture` (light AMBER paper), NOT solid+mask
+     anymore — `tornMaskUri`/`maskStyle` were DELETED. `color` prop is ignored (`void color`).
+- `TornSheet` face = `<Image resizeMode="stretch">`; torn edge from PNG alpha. Depth = offset/mirrored
+  peek backing (opacity ~0.4) + web `drop-shadow` on a non-masked wrapper (`heavy` = hero/accent gets
+  a stronger shadow). `flip = seed%2===0` mirrors silhouettes. Native → `styles.nativeFaceShadow`.
+- **CRITICAL button contrast:** the amber button texture is LIGHT, so TornBox foreground icons/text
+  MUST be DARK (`colors.espresso`) — white (`#FFF8EC`)/`creamText` washes out (architect-flagged
+  regression). Applied to every add/save/checkmark/spinner inside a TornBox.
+- **Bump `web-pwa/sw.js` CACHE (`coffeenest-vN`) on ANY texture asset change** or installed PWAs
+  serve stale textures.
 
 **Because espresso planes flipped dark→LIGHT, their text/icon colors were flipped for contrast:**
 - The 5 `tone="espresso"` call sites (index "HEUTE ENTDECKT"; discoveries GEMEINSAMER FAVORIT hero +
