@@ -25,6 +25,19 @@ function webStyle(value: Record<string, string | number>): ViewStyle {
   return isWeb ? (value as unknown as ViewStyle) : {};
 }
 
+// A seamless grayscale paper-grain tile. The browser rasterises this SVG ONCE
+// and reuses it as a background-image, composited with the sheet colour via
+// background-blend-mode. This is far cheaper than a live feTurbulence filter on
+// every sheet (which made scrolling janky) yet keeps the grain clearly visible.
+// Two contrast ranges: a light grain for the cream face (multiply) and a dark
+// grain for the espresso face (screen).
+const buildNoise = (slope: number, intercept: number): string =>
+  `url("data:image/svg+xml;utf8,${encodeURIComponent(
+    `<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/><feComponentTransfer><feFuncR type='linear' slope='${slope}' intercept='${intercept}'/><feFuncG type='linear' slope='${slope}' intercept='${intercept}'/><feFuncB type='linear' slope='${slope}' intercept='${intercept}'/></feComponentTransfer></filter><rect width='100%' height='100%' filter='url(#f)'/></svg>`,
+  )}")`;
+const NOISE_CREAM = buildNoise(0.26, 0.74);
+const NOISE_ESPRESSO = buildNoise(0.4, 0);
+
 // The torn-edge SVG filter defs. These MUST be REAL DOM <filter> nodes so that
 // `filter: url(#torn-N)` actually resolves on web — react-native-svg's web build
 // does not reliably emit usable SVG filter primitives (FeDisplacementMap etc.),
@@ -153,25 +166,21 @@ export function TornSheet({
           StyleSheet.absoluteFill,
           faceRadius,
           { backgroundColor: face },
+          // Paper fibre baked into the face as a tiled noise background-image
+          // (rasterised once) and blended with the sheet colour. The torn
+          // displacement filter on this same View then warps the grain with the
+          // edge — giving visible structure WITHOUT a per-sheet live filter.
+          isWeb
+            ? webStyle({
+                backgroundImage: espresso ? NOISE_ESPRESSO : NOISE_CREAM,
+                backgroundBlendMode: espresso ? "screen" : "multiply",
+                backgroundSize: "170px 170px",
+              })
+            : {},
           webFilter(`url(#torn-${seed}) ${shadow}`),
           isWeb ? {} : styles.nativeFaceShadow,
         ]}
       />
-      {/* Paper fibre: grain noise clipped to the torn silhouette so the sheet
-          reads as textured paper rather than a flat single-colour fill. */}
-      {isWeb && (
-        <View
-          pointerEvents="none"
-          style={[
-            StyleSheet.absoluteFill,
-            webStyle({
-              filter: `url(#paper-grain) url(#torn-${seed})`,
-              opacity: espresso ? 0.16 : 0.11,
-              mixBlendMode: "multiply",
-            }),
-          ]}
-        />
-      )}
       <View style={[styles.content, contentStyle]}>{children}</View>
     </View>
   );

@@ -47,6 +47,19 @@ canonical, approved translation — copy its composition for any classic-theme s
   supplies the only edge; only use rounded corners on native (no filters there). If sheets ever look
   like cards again on web, first confirm `#torn-N` filters exist in the live DOM, not the palette.
 
+**Paper texture must be a rasterised background-image, NOT a per-sheet live filter:**
+- A live `feTurbulence` SVG filter applied to every TornSheet (e.g. an overlay with
+  `filter: url(#paper-grain) url(#torn-N)`) makes web scrolling janky and sections paint slowly —
+  turbulence is recomputed per element. It was ALSO too subtle to read as structure.
+- Working approach: bake the grain into the face as a tiled noise `background-image` (an SVG
+  `feTurbulence` data-URI built once via `buildNoise(slope,intercept)` in `components/TornPaper.tsx`),
+  composited with the sheet colour via `background-blend-mode` (`multiply` on cream, `screen` on
+  espresso). The browser rasterises it ONCE; the face's existing torn filter still warps the grain
+  with the edge. Visible texture, ~zero per-item cost.
+- **Why:** user reported both "Oberflächen nicht strukturiert" AND "Performance hakelig" from the same
+  live-filter overlay. **How to apply:** never add a live SVG filter that scales with list length;
+  prefer a single rasterised tile + blend mode. Keep only ONE global `Grain` live filter per screen.
+
 **Torn seed ids skip 10 — never derive seeds by raw arithmetic:**
 - `TORN_SEEDS` in `components/TornPaper.tsx` is `[1..9, 11..17]` — there is intentionally NO `torn-10`.
   Deriving a backing/under silhouette with `(seed + k) % 16 + 1` can land on `10`; `url(#torn-10)`
