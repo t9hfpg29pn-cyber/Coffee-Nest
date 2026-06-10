@@ -14,7 +14,6 @@ const isWeb = Platform.OS === "web";
 // Seeds available as `url(#torn-N)` filters. Each gives a different torn edge so
 // adjacent sheets never share an identical silhouette.
 const TORN_SEEDS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 17];
-const SEED_COUNT = 16;
 
 // Apply a raw CSS filter string on web only; no-op on native (graceful fallback
 // to softly rounded sheets handled by the caller's borderRadius).
@@ -61,7 +60,7 @@ export function Grain() {
         StyleSheet.absoluteFill,
         webStyle({
           filter: "url(#paper-grain)",
-          opacity: 0.05,
+          opacity: 0.08,
           mixBlendMode: "multiply",
         }),
       ]}
@@ -108,8 +107,13 @@ export function TornSheet({
     ? "drop-shadow(0 12px 20px rgba(74,48,24,0.24))"
     : "drop-shadow(0 10px 16px rgba(58,39,22,0.16))";
 
-  const backSeed = ((seed + 6) % SEED_COUNT) + 1;
-  const underSeed = ((seed + 3) % SEED_COUNT) + 1;
+  // Derive backing/underlayer silhouettes by indexing into TORN_SEEDS so the
+  // result is ALWAYS a defined filter id. Raw arithmetic (e.g. (seed+6)%16+1)
+  // could yield 10, but there is no torn-10 filter — an unresolved url(#torn-10)
+  // renders a plain rectangle and regresses the sheet back to a "card".
+  const seedIdx = Math.max(0, TORN_SEEDS.indexOf(seed));
+  const backSeed = TORN_SEEDS[(seedIdx + 6) % TORN_SEEDS.length];
+  const underSeed = TORN_SEEDS[(seedIdx + 3) % TORN_SEEDS.length];
 
   // On web the torn SVG displacement filter supplies the organic edge, so the
   // base shape is a SHARP rectangle (exactly like the mockup) — no radius, or it
@@ -153,6 +157,21 @@ export function TornSheet({
           isWeb ? {} : styles.nativeFaceShadow,
         ]}
       />
+      {/* Paper fibre: grain noise clipped to the torn silhouette so the sheet
+          reads as textured paper rather than a flat single-colour fill. */}
+      {isWeb && (
+        <View
+          pointerEvents="none"
+          style={[
+            StyleSheet.absoluteFill,
+            webStyle({
+              filter: `url(#paper-grain) url(#torn-${seed})`,
+              opacity: espresso ? 0.16 : 0.11,
+              mixBlendMode: "multiply",
+            }),
+          ]}
+        />
+      )}
       <View style={[styles.content, contentStyle]}>{children}</View>
     </View>
   );

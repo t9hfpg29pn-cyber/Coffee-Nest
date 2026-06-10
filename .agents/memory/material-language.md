@@ -47,6 +47,15 @@ canonical, approved translation — copy its composition for any classic-theme s
   supplies the only edge; only use rounded corners on native (no filters there). If sheets ever look
   like cards again on web, first confirm `#torn-N` filters exist in the live DOM, not the palette.
 
+**Torn seed ids skip 10 — never derive seeds by raw arithmetic:**
+- `TORN_SEEDS` in `components/TornPaper.tsx` is `[1..9, 11..17]` — there is intentionally NO `torn-10`.
+  Deriving a backing/under silhouette with `(seed + k) % 16 + 1` can land on `10`; `url(#torn-10)`
+  is unresolved, the View renders as a plain rectangle, and that single list item visually regresses
+  to a "card". Always pick back/under seeds by INDEXING into `TORN_SEEDS`
+  (`TORN_SEEDS[(idx + k) % TORN_SEEDS.length]`) so the result is guaranteed to be a defined filter id.
+- **Why:** `LIST_SEEDS` contains `3`, and `(3+6)%16+1 = 10` → the backing of every 10th roastery/coffee
+  sheet silently lost its torn edge. Found in code review, not visible in tsc.
+
 **CoffeeIcons.tsx prop gotcha (caused 2 build failures):**
 - Some exports are SCALE/STATE glyphs with a REQUIRED non-size prop, not generic icons:
   `AromaIcon` needs `step`, `ProcessingIcon` needs `method`, `RoastIcon` needs `level`,

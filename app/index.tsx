@@ -21,7 +21,7 @@ import { useUserNames } from "@/context/UserNamesContext";
 import { useThemeColors, useCardExtras } from "@/context/ThemeContext";
 import { PolyBackground, PolyActionButton } from "@/components/PolyBackground";
 import { TornDefs, TornSheet, TornBox, IconStamp, Grain } from "@/components/TornPaper";
-import { CupIcon, RoasteryIcon, GlobeIcon, GemIcon, OriginPinIcon, CompassIcon, TrophyIcon } from "@/components/CoffeeIcons";
+import { CupIcon, RoasteryIcon, GlobeIcon, CompassIcon } from "@/components/CoffeeIcons";
 
 const SERIF_BLACK = "PlayfairDisplay_800ExtraBold";
 const SERIF_BOLD = "PlayfairDisplay_700Bold";
@@ -29,8 +29,6 @@ const SERIF_MED = "PlayfairDisplay_500Medium";
 
 // Varied torn seeds so adjacent roastery sheets never share a silhouette.
 const LIST_SEEDS = [2, 5, 8, 12, 15, 7, 9, 13, 16, 3];
-// Rotating stamp glyphs so each roastery blatt feels hand-pressed & distinct.
-const STAMP_ICONS = [CupIcon, GemIcon, OriginPinIcon, CompassIcon, TrophyIcon];
 
 export default function RoasteriesScreen() {
   const insets = useSafeAreaInsets();
@@ -430,7 +428,6 @@ export default function RoasteriesScreen() {
             </View>
           )}
           renderItem={({ item, index }) => {
-            const StampIcon = STAMP_ICONS[index % STAMP_ICONS.length];
             const avg = avgRatings[item.id];
             return (
               <TornSheet
@@ -446,7 +443,7 @@ export default function RoasteriesScreen() {
               >
                 <View style={styles.roasteryRow}>
                   <IconStamp size={50} seed={(index % 8) + 1} tone="kraft" style={styles.roasteryStamp}>
-                    <StampIcon size={24} color={colors.espresso} />
+                    <RoasteryIcon size={24} color={colors.espresso} />
                   </IconStamp>
                   <View style={styles.roasteryContent}>
                     <Text style={[styles.roasteryName, { color: colors.ink, fontFamily: SERIF_BOLD }]} numberOfLines={1}>

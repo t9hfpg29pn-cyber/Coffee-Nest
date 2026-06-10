@@ -31,7 +31,7 @@ import {
 import { useUserNames } from "@/context/UserNamesContext";
 import { PolyBackground, PolyActionButton } from "@/components/PolyBackground";
 import { TornDefs, TornSheet, TornBox, IconStamp, Grain } from "@/components/TornPaper";
-import { CupIcon, GemIcon, OriginPinIcon, CompassIcon, TrophyIcon } from "@/components/CoffeeIcons";
+import { CupIcon } from "@/components/CoffeeIcons";
 import { useThemeColors, useCardExtras } from "@/context/ThemeContext";
 
 const SERIF_BLACK = "PlayfairDisplay_800ExtraBold";
@@ -40,8 +40,6 @@ const SERIF_MED = "PlayfairDisplay_500Medium";
 
 // Varied torn seeds so adjacent coffee sheets never share a silhouette.
 const LIST_SEEDS = [2, 5, 8, 12, 15, 7, 9, 13, 16, 3];
-// Rotating stamp glyphs so each coffee blatt feels hand-pressed & distinct.
-const STAMP_ICONS = [CupIcon, GemIcon, OriginPinIcon, CompassIcon, TrophyIcon];
 
 function CoffeeBeanIcon({ size = 18, color }: { size?: number; color: string }) {
   const h = Math.round(size * 1.2);
@@ -371,7 +369,6 @@ export default function RoasteryScreen() {
           ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
           showsVerticalScrollIndicator={false}
           renderItem={({ item, index }) => {
-            const StampIcon = STAMP_ICONS[index % STAMP_ICONS.length];
             return (
               <TornSheet
                 tone="cream"
@@ -389,7 +386,7 @@ export default function RoasteryScreen() {
               >
                 <View style={styles.coffeeRow}>
                   <IconStamp size={50} seed={(index % 8) + 1} tone="kraft" style={styles.coffeeStamp}>
-                    <StampIcon size={24} color={colors.espresso} />
+                    <CupIcon size={24} color={colors.espresso} />
                   </IconStamp>
                   <View style={styles.coffeeContent}>
                     <Text style={[styles.coffeeName, { color: colors.ink, fontFamily: SERIF_BOLD }]} numberOfLines={2}>
