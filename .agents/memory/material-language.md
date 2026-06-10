@@ -102,3 +102,19 @@ errors). Don't restart `Start Frontend` unless deps/error; the mockup-sandbox wo
 
 **History:** `PaperSurface`/`components/Paper.tsx` → `TornPaper.tsx` (solid+mask) → CURRENT
 texture-PNG system. Do not reintroduce `PaperSurface` or the solid-color/gradient/mask FACE for sheets.
+
+## Layout rule: the PAGE is the single paper surface (not every element)
+"Die Seite selbst ist die Papierfläche, NICHT jedes Element." Max 3 Ebenen (CATEGORIES, not
+individual sheets) visible at once: (1) dark coffee bg, (2) ONE large cream page TornSheet that
+fills the screen, (3) a few highlight/accent sheets. Reference = Apple Journal/Notes.
+
+**How to apply on a classic-theme list/detail screen:** wrap the WHOLE screen in ONE
+`<ScrollView>` → ONE `<TornSheet tone="cream" variant="main" peek={false} flat>` (the page). The
+masthead (kicker/title/filter/add) sits DIRECTLY on that page followed by a hairline rule
+(`styles.headerRule`); list entries are plain `Pressable` rows with `rowDivider` hairlines on the
+same page; loading/empty states render inside it too (so `centerState` must use `paddingVertical`,
+NOT `flex:1`, or it collapses to 0 height inside the page). Highlight tiles (Heute=espresso,
+Entdeckungen=cream wide) are the ONLY nested sheets allowed = the layer-3 category.
+**Why:** a standalone masthead TornSheet + separate list TornSheet = TWO page-papers in the
+"one große Papierfläche" category → architect FAIL ("4 paper planes at top"). Do NOT give the
+masthead its own sheet. Applies to `app/index.tsx` + `app/roastery/[id].tsx`.

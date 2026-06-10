@@ -3,7 +3,7 @@ import {
   View,
   Text,
   StyleSheet,
-  FlatList,
+  ScrollView,
   Pressable,
   TextInput,
   Modal,
@@ -30,16 +30,13 @@ import {
 } from "@/lib/storage";
 import { useUserNames } from "@/context/UserNamesContext";
 import { PolyBackground, PolyActionButton } from "@/components/PolyBackground";
-import { TornDefs, TornSheet, TornBox, IconStamp, Grain } from "@/components/TornPaper";
+import { TornDefs, TornSheet, TornBox, Grain } from "@/components/TornPaper";
 import { CupIcon } from "@/components/CoffeeIcons";
 import { useThemeColors, useCardExtras } from "@/context/ThemeContext";
 
 const SERIF_BLACK = "Fraunces_700Bold";
 const SERIF_BOLD = "Fraunces_600SemiBold";
 const SERIF_MED = "Inter_400Regular";
-
-// Varied torn seeds so adjacent coffee sheets never share a silhouette.
-const LIST_SEEDS = [2, 5, 8, 12, 15, 7, 9, 13, 16, 3];
 
 function CoffeeBeanIcon({ size = 18, color }: { size?: number; color: string }) {
   const h = Math.round(size * 1.2);
@@ -299,96 +296,90 @@ export default function RoasteryScreen() {
       <TornDefs />
       <Grain />
 
-      {/* Masthead — a large cream page bleeding to the top & side edges */}
-      <TornSheet
-        tone="cream"
-        seed={6}
-        rotate={0.4}
-        peek={false}
-        style={styles.masthead}
-        contentStyle={[styles.mastheadPad, { paddingTop: topPad + 22 }]}
+      <ScrollView
+        contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 0, paddingBottom: bottomPad + 48, flexGrow: 1 }}
+        showsVerticalScrollIndicator={false}
       >
-        <View style={styles.headerRow}>
-          <Pressable
-            onPress={() => router.back()}
-            style={({ pressed }) => [styles.backButton, { opacity: pressed ? 0.6 : 1 }]}
-          >
-            <Ionicons name="chevron-back" size={26} color={colors.ink} />
-          </Pressable>
-          <Pressable
-            onPress={openEditRoastery}
-            style={({ pressed }) => [styles.headerCenter, { opacity: pressed ? 0.7 : 1 }]}
-          >
-            <Text style={[styles.kicker, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
-              RÖSTEREI
-            </Text>
-            <View style={styles.titleRow}>
-              <Text
-                style={[styles.title, { color: colors.ink, fontFamily: SERIF_BLACK }]}
-                numberOfLines={2}
-              >
-                {roasteryName}
+        {/* The page itself IS the paper surface — ONE large cream sheet that
+            carries the masthead and the coffee list. */}
+        <TornSheet
+          tone="cream"
+          variant="main"
+          seed={6}
+          peek={false}
+          flat
+          contentStyle={[styles.pagePad, { paddingTop: topPad + 20 }]}
+        >
+          <View style={styles.headerRow}>
+            <Pressable
+              onPress={() => router.back()}
+              style={({ pressed }) => [styles.backButton, { opacity: pressed ? 0.6 : 1 }]}
+            >
+              <Ionicons name="chevron-back" size={26} color={colors.ink} />
+            </Pressable>
+            <Pressable
+              onPress={openEditRoastery}
+              style={({ pressed }) => [styles.headerCenter, { opacity: pressed ? 0.7 : 1 }]}
+            >
+              <Text style={[styles.kicker, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
+                RÖSTEREI
               </Text>
-              <Ionicons name="pencil-outline" size={16} color={colors.inkFaint} style={{ marginTop: 6 }} />
-            </View>
-          </Pressable>
-          <Pressable
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              setShowModal(true);
-            }}
-            style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
-          >
-            <TornBox color={colors.gold} seed={4} style={styles.addButton}>
-              <Ionicons name="add" size={26} color={colors.espresso} />
-            </TornBox>
-          </Pressable>
-        </View>
-      </TornSheet>
+              <View style={styles.titleRow}>
+                <Text
+                  style={[styles.title, { color: colors.ink, fontFamily: SERIF_BLACK }]}
+                  numberOfLines={2}
+                >
+                  {roasteryName}
+                </Text>
+                <Ionicons name="pencil-outline" size={16} color={colors.inkFaint} style={{ marginTop: 6 }} />
+              </View>
+            </Pressable>
+            <Pressable
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setShowModal(true);
+              }}
+              style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
+            >
+              <TornBox color={colors.gold} seed={4} style={styles.addButton}>
+                <Ionicons name="add" size={26} color={colors.espresso} />
+              </TornBox>
+            </Pressable>
+          </View>
 
-      {loading ? (
-        <View style={styles.centerState}>
-          <View style={[styles.skeletonCard, { backgroundColor: colors.surface }]} />
-          <View style={[styles.skeletonCard, { backgroundColor: colors.surface, opacity: 0.6 }]} />
-        </View>
-      ) : coffees.length === 0 ? (
-        <View style={styles.centerState}>
-          <Ionicons name="leaf-outline" size={52} color={colors.inkFaint} />
-          <Text style={[styles.emptyTitle, { color: colors.ink, fontFamily: SERIF_BOLD }]}>
-            Noch keine Kaffees
-          </Text>
-          <Text style={[styles.emptySubtitle, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
-            Tippe auf + um einen Kaffee hinzuzufügen
-          </Text>
-        </View>
-      ) : (
-        <FlatList
-          data={coffees}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={{ paddingHorizontal: 22, paddingTop: 28, paddingBottom: bottomPad + 48 }}
-          ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
-          showsVerticalScrollIndicator={false}
-          renderItem={({ item, index }) => {
-            return (
-              <TornSheet
-                tone="cream"
-                variant="long"
-                seed={LIST_SEEDS[index % LIST_SEEDS.length]}
-                rotate={index % 2 === 0 ? -0.7 : 0.8}
-                contentStyle={styles.coffeePad}
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  router.push({
-                    pathname: "/coffee/[id]",
-                    params: { id: item.id },
-                  });
-                }}
-                onLongPress={() => handleDelete(item)}
-              >
-                <View style={styles.coffeeRow}>
-                  <IconStamp size={50} seed={(index % 8) + 1} tone="kraft" style={styles.coffeeStamp}>
-                    <CupIcon size={24} color={colors.espresso} />
-                  </IconStamp>
+          <View style={[styles.headerRule, { backgroundColor: colors.hair }]} />
+
+          {loading ? (
+            <View style={styles.centerState}>
+              <View style={[styles.skeletonCard, { backgroundColor: colors.surface }]} />
+              <View style={[styles.skeletonCard, { backgroundColor: colors.surface, opacity: 0.6 }]} />
+            </View>
+          ) : coffees.length === 0 ? (
+            <View style={styles.centerState}>
+              <Ionicons name="leaf-outline" size={52} color={colors.inkFaint} />
+              <Text style={[styles.emptyTitle, { color: colors.ink, fontFamily: SERIF_BOLD }]}>
+                Noch keine Kaffees
+              </Text>
+              <Text style={[styles.emptySubtitle, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
+                Tippe auf + um einen Kaffee hinzuzufügen
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.listBlock}>
+            {coffees.map((item, index) => (
+              <View key={item.id}>
+                {index > 0 ? <View style={[styles.rowDivider, { backgroundColor: colors.hair }]} /> : null}
+                <Pressable
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    router.push({ pathname: "/coffee/[id]", params: { id: item.id } });
+                  }}
+                  onLongPress={() => handleDelete(item)}
+                  style={({ pressed }) => [styles.coffeeRow, { opacity: pressed ? 0.55 : 1 }]}
+                >
+                  <View style={styles.rowIcon}>
+                    <CupIcon size={26} color={colors.gold} />
+                  </View>
                   <View style={styles.coffeeContent}>
                     <Text style={[styles.coffeeName, { color: colors.ink, fontFamily: SERIF_BOLD }]} numberOfLines={2}>
                       {item.name}
@@ -440,12 +431,13 @@ export default function RoasteryScreen() {
                     </View>
                   </View>
                   <Ionicons name="chevron-forward" size={20} color={colors.inkFaint} style={{ marginTop: 4 }} />
-                </View>
-              </TornSheet>
-            );
-          }}
-        />
-      )}
+                </Pressable>
+              </View>
+            ))}
+            </View>
+          )}
+        </TornSheet>
+      </ScrollView>
 
       {/* Modal: Neuer Kaffee */}
       <Modal visible={showModal} animationType="slide" transparent presentationStyle="overFullScreen">
@@ -577,12 +569,16 @@ export default function RoasteryScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  masthead: {
-    marginTop: -48,
-  },
-  mastheadPad: {
+  pagePad: {
     paddingHorizontal: 20,
-    paddingBottom: 26,
+    paddingBottom: 10,
+  },
+  headerRule: {
+    height: StyleSheet.hairlineWidth,
+    marginTop: 22,
+  },
+  listBlock: {
+    marginTop: 18,
   },
   headerRow: {
     flexDirection: "row",
@@ -621,11 +617,11 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   centerState: {
-    flex: 1,
     justifyContent: "center",
     alignItems: "center",
     gap: 12,
-    paddingHorizontal: 40,
+    paddingHorizontal: 24,
+    paddingVertical: 72,
   },
   emptyTitle: {
     fontSize: 24,
@@ -643,16 +639,21 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     opacity: 0.5,
   },
-  coffeePad: {
-    paddingHorizontal: 18,
-    paddingVertical: 18,
+  // Kaffees — plain rows on the page, separated by hairline dividers
+  rowDivider: {
+    height: 1,
+    marginLeft: 44,
   },
   coffeeRow: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
+    paddingVertical: 18,
+    gap: 14,
   },
-  coffeeStamp: {
-    marginRight: 16,
+  rowIcon: {
+    width: 30,
+    alignItems: "center",
+    marginTop: 2,
   },
   coffeeContent: {
     flex: 1,

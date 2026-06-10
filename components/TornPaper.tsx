@@ -80,6 +80,7 @@ export function TornSheet({
   seed = 2,
   rotate = -0.6,
   peek = true,
+  flat = false,
   onPress,
   onLongPress,
   disabled,
@@ -93,6 +94,7 @@ export function TornSheet({
   seed?: number;
   rotate?: number;
   peek?: boolean;
+  flat?: boolean;
   onPress?: () => void;
   onLongPress?: () => void;
   disabled?: boolean;
@@ -131,7 +133,10 @@ export function TornSheet({
           alpha edge instead of a rectangle. */}
       <View
         pointerEvents="none"
-        style={[StyleSheet.absoluteFill, isWeb ? webStyle({ filter: shadow }) : styles.nativeFaceShadow]}
+        style={[
+          StyleSheet.absoluteFill,
+          isWeb ? webStyle({ filter: flat ? "none" : shadow }) : flat ? null : styles.nativeFaceShadow,
+        ]}
       >
         <Image
           source={tex}
