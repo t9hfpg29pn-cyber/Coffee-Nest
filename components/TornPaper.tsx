@@ -7,13 +7,6 @@ import {
   View,
   ViewStyle,
 } from "react-native";
-import Svg, {
-  Defs,
-  Filter,
-  FeTurbulence,
-  FeDisplacementMap,
-  FeColorMatrix,
-} from "react-native-svg";
 import { useThemeColors } from "@/context/ThemeContext";
 
 const isWeb = Platform.OS === "web";
@@ -33,51 +26,29 @@ function webStyle(value: Record<string, string | number>): ViewStyle {
   return isWeb ? (value as unknown as ViewStyle) : {};
 }
 
-// Inject the torn-edge SVG filter defs once near the app root. On web these
-// become document-global `url(#torn-N)` filters referenced by sheet faces and
-// backings. On native this renders an empty 0x0 svg (filters are a web effect).
+// The torn-edge SVG filter defs. These MUST be REAL DOM <filter> nodes so that
+// `filter: url(#torn-N)` actually resolves on web — react-native-svg's web build
+// does not reliably emit usable SVG filter primitives (FeDisplacementMap etc.),
+// which silently leaves every sheet as a plain rounded rectangle (= "card UI").
+// So on web we inject the exact raw SVG markup the approved mockup uses. On
+// native this is a no-op (filters are a web-only effect).
+const TORN_DEFS_HTML = `<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>${TORN_SEEDS.map(
+  (s) =>
+    `<filter id="torn-${s}" x="-12%" y="-12%" width="124%" height="124%"><feTurbulence type="fractalNoise" baseFrequency="0.013 0.016" numOctaves="3" seed="${s}" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="11" xChannelSelector="R" yChannelSelector="G"/></filter>`,
+).join("")}<filter id="paper-grain"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter></defs></svg>`;
+
 export function TornDefs() {
-  if (!isWeb) return null;
-  return (
-    <Svg width={0} height={0} style={styles.defs} pointerEvents="none" aria-hidden>
-      <Defs>
-        {TORN_SEEDS.map((s) => (
-          <Filter
-            key={s}
-            id={`torn-${s}`}
-            x="-12%"
-            y="-12%"
-            width="124%"
-            height="124%"
-          >
-            <FeTurbulence
-              type="fractalNoise"
-              baseFrequency="0.013 0.016"
-              numOctaves={3}
-              seed={s}
-              result="n"
-            />
-            <FeDisplacementMap
-              in="SourceGraphic"
-              in2="n"
-              scale={11}
-              xChannelSelector="R"
-              yChannelSelector="G"
-            />
-          </Filter>
-        ))}
-        <Filter id="paper-grain">
-          <FeTurbulence
-            type="fractalNoise"
-            baseFrequency="0.9"
-            numOctaves={2}
-            stitchTiles="stitch"
-          />
-          <FeColorMatrix type="saturate" values="0" />
-        </Filter>
-      </Defs>
-    </Svg>
-  );
+  React.useEffect(() => {
+    if (!isWeb || typeof document === "undefined") return;
+    if (document.getElementById("torn-paper-defs")) return;
+    const host = document.createElement("div");
+    host.id = "torn-paper-defs";
+    host.setAttribute("aria-hidden", "true");
+    host.style.cssText = "position:absolute;width:0;height:0;overflow:hidden";
+    host.innerHTML = TORN_DEFS_HTML;
+    document.body.appendChild(host);
+  }, []);
+  return null;
 }
 
 // A subtle paper-grain overlay. Web-only (relies on SVG filter + blend mode).
@@ -134,17 +105,17 @@ export function TornSheet({
   const face = espresso ? colors.espresso : colors.surface;
   const backing = espresso ? colors.espresso2 : colors.kraft;
   const shadow = espresso
-    ? "drop-shadow(0 12px 20px rgba(28,16,8,0.30))"
+    ? "drop-shadow(0 12px 20px rgba(74,48,24,0.24))"
     : "drop-shadow(0 10px 16px rgba(58,39,22,0.16))";
 
   const backSeed = ((seed + 6) % SEED_COUNT) + 1;
   const underSeed = ((seed + 3) % SEED_COUNT) + 1;
 
-  // Soft rounded corners so sheets still read as paper even if the torn SVG
-  // filter fails to apply on web (otherwise they collapse to hard rectangles).
-  // When the filter IS applied the displacement tears these edges anyway.
-  const faceRadius: ViewStyle = { borderRadius: isWeb ? 8 : 14 };
-  const backRadius: ViewStyle = { borderRadius: isWeb ? 10 : 16 };
+  // On web the torn SVG displacement filter supplies the organic edge, so the
+  // base shape is a SHARP rectangle (exactly like the mockup) — no radius, or it
+  // reads as a rounded card. On native (no filters) fall back to soft corners.
+  const faceRadius: ViewStyle = isWeb ? {} : { borderRadius: 14 };
+  const backRadius: ViewStyle = isWeb ? {} : { borderRadius: 16 };
 
   const inner = (
     <View style={[styles.container, style]}>
@@ -226,7 +197,7 @@ export function TornBox({
   radius?: number;
   style?: StyleProp<ViewStyle>;
 }) {
-  const r: ViewStyle = { borderRadius: radius };
+  const r: ViewStyle = isWeb ? {} : { borderRadius: radius };
   return (
     <View style={style}>
       <View

@@ -33,6 +33,20 @@ canonical, approved translation — copy its composition for any classic-theme s
   palette flip, audit every empty/loading state for cream-on-background text (it goes invisible).
   Bottom-sheet MODALS may keep a rounded elevated surface — that exception is fine.
 
+**Torn edges on RN-Web — the #1 "looks like card UI" cause:**
+- The torn silhouette is a CSS `filter: url(#torn-N)` displacement filter applied to plain Views.
+  It only works if real DOM `<filter>` defs with that id exist. `react-native-svg`'s web build does
+  NOT reliably emit usable filter primitives (`<Filter>`/`<FeTurbulence>`/`<FeDisplacementMap>`),
+  AND rendering a raw `React.createElement("div", {dangerouslySetInnerHTML})` through RNW's reconciler
+  throws "Invalid hook call". Working approach (`TornDefs` in `components/TornPaper.tsx`): inject the
+  raw SVG `<defs>` string into `document.body` once via `useEffect` + `host.innerHTML` (id-guarded).
+- **Why:** when the filter id doesn't resolve, every sheet falls back to a rounded rectangle with an
+  offset kraft block behind it = exactly a drop-shadow card. User read this as "80% card UI". The
+  palette being correct is NOT enough — the displacement filter MUST actually paint.
+- **How to apply:** on web keep the sheet base shape SHARP (borderRadius 0) so the displacement
+  supplies the only edge; only use rounded corners on native (no filters there). If sheets ever look
+  like cards again on web, first confirm `#torn-N` filters exist in the live DOM, not the palette.
+
 **CoffeeIcons.tsx prop gotcha (caused 2 build failures):**
 - Some exports are SCALE/STATE glyphs with a REQUIRED non-size prop, not generic icons:
   `AromaIcon` needs `step`, `ProcessingIcon` needs `method`, `RoastIcon` needs `level`,
