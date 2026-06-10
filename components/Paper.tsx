@@ -6,15 +6,16 @@ import {
   StyleProp,
   StyleSheet,
 } from "react-native";
-import Svg, { Path, Polygon } from "react-native-svg";
+import Svg, { Path } from "react-native-svg";
 import { useThemeColors } from "@/context/ThemeContext";
 
-type Tone = "raised" | "mid";
+type Tone = "raised" | "mid" | "dark";
 
-// A sheet of coffee-soaked paper. Depth comes from *visible* layering — a darker
-// backing sheet peeking out at an angle, asymmetric cut corners, a deckled
-// (torn) saturation band along the top edge, and a folded dog-ear — never from
-// drop shadows or 3D lift.
+// A sheet of paper laid on the table. It is NOT a UI card: depth comes from a
+// visibly OFFSET backing sheet in a contrasting tone (Flächenversatz) plus a
+// strong light/dark contrast — never from drop shadows, dog-ears or texture.
+// `tone="dark"` makes a dark espresso "feature" sheet (the showpiece layer)
+// whose backing is light, so it reads as the top of the stack.
 export function PaperSurface({
   children,
   onPress,
@@ -26,8 +27,7 @@ export function PaperSurface({
   tone = "raised",
   accentBorder,
   flip = false,
-  deckle = true,
-  dogEar = true,
+  layers = 1,
 }: {
   children: React.ReactNode;
   onPress?: () => void;
@@ -39,91 +39,76 @@ export function PaperSurface({
   tone?: Tone;
   accentBorder?: string;
   flip?: boolean;
-  deckle?: boolean;
-  dogEar?: boolean;
+  layers?: 1 | 2;
 }) {
   const colors = useThemeColors();
-  const sheetColor = tone === "mid" ? colors.surface : colors.surfaceElevated;
-  const borderColor = accentBorder ?? colors.border;
+  const isDark = tone === "dark";
+  const sheetColor = isDark
+    ? colors.heroSurface
+    : tone === "mid"
+    ? colors.surface
+    : colors.surfaceElevated;
+  const backingColor = isDark ? colors.heroBacking : colors.backdrop;
+  const borderColor = accentBorder ?? (isDark ? colors.heroBorder : colors.border);
 
-  // Asymmetric corners break the rectangle identity. flip mirrors the geometry
-  // so lists of cards read as a hand-laid collage, not a uniform grid.
-  const corners: ViewStyle = flip
+  // Large, varied, asymmetric corners cut the rectangle identity. flip mirrors
+  // the geometry so a list reads as hand-laid sheets, not a uniform grid.
+  const radii: ViewStyle = flip
     ? {
-        borderTopLeftRadius: 4,
-        borderTopRightRadius: 19,
-        borderBottomRightRadius: 5,
-        borderBottomLeftRadius: 16,
+        borderTopLeftRadius: 7,
+        borderTopRightRadius: 26,
+        borderBottomRightRadius: 11,
+        borderBottomLeftRadius: 22,
       }
     : {
-        borderTopLeftRadius: 19,
-        borderTopRightRadius: 4,
-        borderBottomRightRadius: 16,
-        borderBottomLeftRadius: 5,
+        borderTopLeftRadius: 26,
+        borderTopRightRadius: 7,
+        borderBottomRightRadius: 22,
+        borderBottomLeftRadius: 11,
       };
 
-  const rot = flip ? "-0.8deg" : "0.8deg";
+  // Backing peeks toward the bottom and one side. flip sends it to the other
+  // side so adjacent sheets lean apart.
+  const nearOffset: ViewStyle = flip
+    ? { top: 10, bottom: -10, left: -8, right: 8 }
+    : { top: 10, bottom: -10, left: 8, right: -8 };
+  const nearRot = flip ? "-1.3deg" : "1.3deg";
+  const farOffset: ViewStyle = flip
+    ? { top: -9, bottom: 9, left: 9, right: -9 }
+    : { top: -9, bottom: 9, left: -9, right: 9 };
+  const farRot = flip ? "2.6deg" : "-2.6deg";
 
   const sheet = (
     <View style={styles.stack}>
-      {/* Backing sheet — a darker, soaked layer peeking out at an angle */}
+      {layers >= 2 && (
+        <View
+          pointerEvents="none"
+          style={[
+            styles.layer,
+            radii,
+            farOffset,
+            { backgroundColor: backingColor, transform: [{ rotate: farRot }] },
+          ]}
+        />
+      )}
       <View
         pointerEvents="none"
         style={[
-          styles.backing,
-          corners,
-          {
-            backgroundColor: colors.backdrop,
-            transform: [{ rotate: rot }],
-          },
+          styles.layer,
+          radii,
+          nearOffset,
+          { backgroundColor: backingColor, transform: [{ rotate: nearRot }] },
         ]}
       />
-      {/* Main sheet */}
       <View
         style={[
           styles.sheet,
-          corners,
+          radii,
           { backgroundColor: sheetColor, borderColor },
           contentStyle,
         ]}
       >
-        {deckle && (
-          <View pointerEvents="none" style={styles.deckle}>
-            <Svg
-              width="100%"
-              height="100%"
-              viewBox="0 0 100 12"
-              preserveAspectRatio="none"
-            >
-              <Path
-                d="M0,0 H100 V6 C88,9 78,4 66,7 C54,10 44,5 32,8 C20,11 10,5 0,8 Z"
-                fill={colors.tint}
-                fillOpacity={0.14}
-              />
-            </Svg>
-          </View>
-        )}
         {children}
-        {dogEar && (
-          <View
-            pointerEvents="none"
-            style={[styles.dogEar, flip ? { left: 0 } : { right: 0 }]}
-          >
-            <Svg width="20" height="20" viewBox="0 0 20 20">
-              {flip ? (
-                <>
-                  <Polygon points="0,0 0,20 20,0" fill={colors.backdrop} />
-                  <Polygon points="0,0 20,0 0,9" fill={colors.tint} fillOpacity={0.18} />
-                </>
-              ) : (
-                <>
-                  <Polygon points="20,0 20,20 0,0" fill={colors.backdrop} />
-                  <Polygon points="20,0 0,0 20,9" fill={colors.tint} fillOpacity={0.18} />
-                </>
-              )}
-            </Svg>
-          </View>
-        )}
       </View>
     </View>
   );
@@ -169,29 +154,12 @@ const styles = StyleSheet.create({
   stack: {
     position: "relative",
   },
-  backing: {
+  layer: {
     position: "absolute",
-    left: 6,
-    right: -6,
-    top: 7,
-    bottom: -7,
   },
   sheet: {
     borderWidth: 1,
     overflow: "hidden",
-  },
-  deckle: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 12,
-  },
-  dogEar: {
-    position: "absolute",
-    top: 0,
-    width: 20,
-    height: 20,
   },
   tornDivider: {
     height: 6,

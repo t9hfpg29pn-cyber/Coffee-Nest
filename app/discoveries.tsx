@@ -139,8 +139,7 @@ function CategoryCard({
   return (
     <PaperSurface
       onPress={onPress}
-      tone="mid"
-      dogEar={false}
+      tone="raised"
       style={styles.categoryCardOuter}
       contentStyle={styles.categoryCard}
     >
@@ -456,31 +455,31 @@ export default function DiscoveriesScreen() {
               {/* GEMEINSAMER FAVORIT — Mittelpunkt des Profils */}
               {user2active && sharedFav && (
                 <View style={styles.heroWrap}>
-                  <PaperSurface tone="mid" accentBorder={colors.tint} contentStyle={styles.heroCard}>
-                    <Text style={[styles.heroLabel, { color: colors.tint, fontFamily: "Inter_700Bold" }]}>
+                  <PaperSurface tone="dark" layers={2} contentStyle={styles.heroCard}>
+                    <Text style={[styles.heroLabel, { color: colors.heroTint, fontFamily: "Inter_700Bold" }]}>
                       GEMEINSAMER FAVORIT
                     </Text>
-                    <Text style={[styles.heroName, { color: colors.text, fontFamily: "Inter_700Bold" }]} numberOfLines={2}>
+                    <Text style={[styles.heroName, { color: colors.heroText, fontFamily: "Inter_700Bold" }]} numberOfLines={2}>
                       {sharedFav.name}
                     </Text>
                     {sharedFav.roasteryName ? (
-                      <Text style={[styles.heroRoastery, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]} numberOfLines={1}>
+                      <Text style={[styles.heroRoastery, { color: colors.heroTextSub, fontFamily: "Inter_400Regular" }]} numberOfLines={1}>
                         {sharedFav.roasteryName}
                       </Text>
                     ) : null}
                     <View style={styles.heroRatings}>
                       <View style={styles.heroRatingItem}>
-                        <HaseIcon size={18} color={colors.tint} />
-                        <Text style={[styles.heroRatingText, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                        <HaseIcon size={18} color={colors.heroTint} />
+                        <Text style={[styles.heroRatingText, { color: colors.heroTextSub, fontFamily: "Inter_400Regular" }]}>
                           {name1}{" "}
-                          <Text style={{ color: colors.tint, fontFamily: "Inter_700Bold" }}>{sharedFav.haseRating}</Text>
+                          <Text style={{ color: colors.heroTint, fontFamily: "Inter_700Bold" }}>{sharedFav.haseRating}</Text>
                         </Text>
                       </View>
                       <View style={styles.heroRatingItem}>
-                        <DodoIcon size={18} color={colors.tint} />
-                        <Text style={[styles.heroRatingText, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                        <DodoIcon size={18} color={colors.heroTint} />
+                        <Text style={[styles.heroRatingText, { color: colors.heroTextSub, fontFamily: "Inter_400Regular" }]}>
                           {name2}{" "}
-                          <Text style={{ color: colors.tint, fontFamily: "Inter_700Bold" }}>{sharedFav.dodoRating}</Text>
+                          <Text style={{ color: colors.heroTint, fontFamily: "Inter_700Bold" }}>{sharedFav.dodoRating}</Text>
                         </Text>
                       </View>
                     </View>
@@ -628,13 +627,13 @@ export default function DiscoveriesScreen() {
         </PaperSurface>
 
         {/* ── AROMEN ────────────────────────────────────────────────── */}
-        <PaperSurface>
+        <PaperSurface tone="dark">
           <View style={styles.sectionHeader}>
             <View style={{ flex: 1 }}>
-              <Text style={[styles.sectionLabel, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
+              <Text style={[styles.sectionLabel, { color: colors.heroTextSub, fontFamily: "Inter_600SemiBold" }]}>
                 AROMEN
               </Text>
-              <Text style={[styles.sectionSubtitle, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+              <Text style={[styles.sectionSubtitle, { color: colors.heroTextSub, fontFamily: "Inter_400Regular" }]}>
                 Entdeckte Geschmackswelten
               </Text>
             </View>
@@ -659,13 +658,13 @@ export default function DiscoveriesScreen() {
         </PaperSurface>
 
         {/* ── AUFBEREITUNGEN ────────────────────────────────────────── */}
-        <PaperSurface flip>
+        <PaperSurface tone="dark" flip>
           <View style={styles.sectionHeader}>
             <View style={{ flex: 1 }}>
-              <Text style={[styles.sectionLabel, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
+              <Text style={[styles.sectionLabel, { color: colors.heroTextSub, fontFamily: "Inter_600SemiBold" }]}>
                 AUFBEREITUNGEN
               </Text>
-              <Text style={[styles.sectionSubtitle, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+              <Text style={[styles.sectionSubtitle, { color: colors.heroTextSub, fontFamily: "Inter_400Regular" }]}>
                 Entdeckte Verarbeitungsmethoden
               </Text>
             </View>

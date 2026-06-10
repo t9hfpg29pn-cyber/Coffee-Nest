@@ -325,10 +325,10 @@ export default function RoasteriesScreen() {
           ListHeaderComponent={() => (
             <View>
               {!factDismissed && discoveryFact ? (
-                <PaperSurface accentBorder={colors.tint} style={{ marginBottom: 12 }}>
-                  <View style={[styles.todayCardHeader, { borderBottomColor: colors.border }]}>
-                    <CompassIcon size={16} color={colors.tint} />
-                    <Text style={[styles.todayCardLabel, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
+                <PaperSurface tone="dark" style={{ marginBottom: 14 }}>
+                  <View style={[styles.todayCardHeader, { borderBottomColor: colors.heroBorder }]}>
+                    <CompassIcon size={16} color={colors.heroTint} />
+                    <Text style={[styles.todayCardLabel, { color: colors.heroTextSub, fontFamily: "Inter_600SemiBold" }]}>
                       HEUTE ENTDECKT
                     </Text>
                     <View style={styles.todayCardActions}>
@@ -341,7 +341,7 @@ export default function RoasteriesScreen() {
                         hitSlop={8}
                         style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
                       >
-                        <Text style={[styles.todayCardToggle, { color: colors.textSecondary, fontFamily: "Inter_600SemiBold" }]}>
+                        <Text style={[styles.todayCardToggle, { color: colors.heroTextSub, fontFamily: "Inter_600SemiBold" }]}>
                           {factCollapsed ? "Mehr anzeigen" : "Weniger anzeigen"}
                         </Text>
                       </Pressable>
@@ -353,13 +353,13 @@ export default function RoasteriesScreen() {
                         hitSlop={8}
                         style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
                       >
-                        <Feather name="x" size={13} color={colors.textSecondary} />
+                        <Feather name="x" size={13} color={colors.heroTextSub} />
                       </Pressable>
                     </View>
                   </View>
                   {!factCollapsed && (
-                    <View style={[styles.todayCardBody, { borderTopColor: colors.border }]}>
-                      <Text style={[styles.todayCardText, { color: colors.text, fontFamily: "Inter_500Medium" }]}>
+                    <View style={[styles.todayCardBody, { borderTopColor: colors.heroBorder }]}>
+                      <Text style={[styles.todayCardText, { color: colors.heroText, fontFamily: "Inter_500Medium" }]}>
                         {discoveryFact.text}
                       </Text>
                     </View>

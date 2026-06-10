@@ -18,7 +18,7 @@ const ThemeContext = createContext<ThemeContextType>({
 });
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [design, setDesignState] = useState<DesignMode>("lowpoly");
+  const [design, setDesignState] = useState<DesignMode>("classic");
 
   useEffect(() => {
     AsyncStorage.getItem(DESIGN_KEY).then((raw) => {
@@ -44,10 +44,11 @@ export function useTheme() {
 
 export function useThemeColors() {
   const { design } = useContext(ThemeContext);
-  const colorScheme = useColorScheme();
 
   if (design === "lowpoly") return Colors.lowpoly;
-  return colorScheme === "dark" ? Colors.dark : Colors.light;
+  // "Klassisch" is the warm cream cut-paper look — always light, regardless of
+  // the system scheme, so it reads as the intended default everywhere.
+  return Colors.light;
 }
 
 // Material language — surfaces read as soft, layered paper rather than floating
