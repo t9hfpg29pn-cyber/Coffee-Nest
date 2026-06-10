@@ -19,11 +19,14 @@ import * as Sharing from "expo-sharing";
 import * as DocumentPicker from "expo-document-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useUserNames } from "@/context/UserNamesContext";
-import { PolyBackground, PolyActionButton } from "@/components/PolyBackground";
-import { PaperSurface } from "@/components/Paper";
+import { PolyBackground } from "@/components/PolyBackground";
+import { TornDefs, TornSheet, TornBox, Grain, Hairline } from "@/components/TornPaper";
 import { getRoasteries, getAllCoffees, getGrinders, saveGrinders, normalizeGrinders, DEFAULT_GRINDERS, Grinder, GrinderDesign } from "@/lib/storage";
 import { useTheme, useThemeColors, useCardExtras, DesignMode } from "@/context/ThemeContext";
 import { CupIcon, GemIcon, GrinderIcon } from "@/components/CoffeeIcons";
+
+const SERIF_BLACK = "PlayfairDisplay_800ExtraBold";
+const SERIF_BOLD = "PlayfairDisplay_700Bold";
 
 function showAlert(title: string, message: string, buttons?: { text: string; style?: string; onPress?: () => void }[]) {
   if (Platform.OS === "web") {
@@ -249,33 +252,33 @@ export default function SettingsScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <PolyBackground />
+      <TornDefs />
+      <Grain />
       <View style={[styles.header, { paddingTop: topPad + 16 }]}>
         <Pressable
           onPress={() => router.back()}
           style={({ pressed }) => [styles.backBtn, { opacity: pressed ? 0.6 : 1 }]}
           hitSlop={12}
         >
-          <Ionicons name="chevron-back" size={24} color={colors.text} />
+          <Ionicons name="chevron-back" size={24} color={colors.ink} />
         </Pressable>
-        <Text style={[styles.headerTitle, { color: colors.text, fontFamily: "Inter_700Bold" }]}>
+        <Text style={[styles.headerTitle, { color: colors.ink, fontFamily: SERIF_BLACK }]}>
           Einstellungen
         </Text>
         <Pressable
           onPress={isDirty ? handleSave : undefined}
-          style={({ pressed }) => [
-            styles.saveBtn,
-            {
-              borderRadius: design === "lowpoly" ? 5 : 20,
-              opacity: isDirty ? (pressed ? 0.7 : 1) : 0.3,
-              backgroundColor: colors.tint,
-            },
-          ]}
+          style={({ pressed }) => ({ opacity: isDirty ? (pressed ? 0.7 : 1) : 0.3 })}
           disabled={!isDirty}
         >
-          <Text style={[styles.saveBtnText, { fontFamily: "Inter_600SemiBold" }]}>
-            Speichern
-          </Text>
+          <TornBox color={colors.gold} seed={4} style={styles.saveBtn}>
+            <Text style={[styles.saveBtnText, { fontFamily: "Inter_600SemiBold" }]}>
+              Speichern
+            </Text>
+          </TornBox>
         </Pressable>
+      </View>
+      <View style={styles.headerRuleWrap}>
+        <Hairline />
       </View>
 
       <ScrollView
@@ -284,8 +287,8 @@ export default function SettingsScreen() {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <PaperSurface style={styles.section}>
-          <Text style={[styles.sectionLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
+        <TornSheet tone="cream" seed={6} rotate={-0.7} style={styles.section}>
+          <Text style={[styles.sectionLabel, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
             DESIGN
           </Text>
           <View style={styles.designRow}>
@@ -302,22 +305,22 @@ export default function SettingsScreen() {
                   style={({ pressed }) => [
                     styles.designOption,
                     {
-                      backgroundColor: active ? colors.tint : colors.surface,
-                      borderColor: active ? colors.tint : colors.border,
+                      backgroundColor: active ? colors.gold : colors.surface,
+                      borderColor: active ? colors.gold : colors.border,
                       opacity: pressed ? 0.8 : 1,
                     },
                   ]}
                 >
                   {mode === "classic" ? (
-                    <CupIcon size={18} color={active ? "#fff" : colors.text} />
+                    <CupIcon size={18} color={active ? "#fff" : colors.ink} />
                   ) : (
-                    <GemIcon size={18} color={active ? "#fff" : colors.text} />
+                    <GemIcon size={18} color={active ? "#fff" : colors.ink} />
                   )}
                   <Text
                     style={[
                       styles.designLabel,
                       {
-                        color: active ? "#fff" : colors.text,
+                        color: active ? "#fff" : colors.ink,
                         fontFamily: active ? "Inter_700Bold" : "Inter_500Medium",
                       },
                     ]}
@@ -328,38 +331,38 @@ export default function SettingsScreen() {
               );
             })}
           </View>
-          <Text style={[styles.designHint, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+          <Text style={[styles.designHint, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
             {design === "lowpoly"
               ? "Warm · geometrisch · facettiert"
               : "Warm · klassisch · Kaffeefarben"}
           </Text>
-        </PaperSurface>
+        </TornSheet>
 
-        <Text style={[styles.hint, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+        <Text style={[styles.hint, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
           Das Design wird sofort überall in der App angewendet.
         </Text>
 
-        <PaperSurface style={[styles.section, { marginTop: 16 }]} flip>
-          <Text style={[styles.sectionLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
+        <TornSheet tone="cream" seed={12} rotate={0.8} style={[styles.section, { marginTop: 16 }]}>
+          <Text style={[styles.sectionLabel, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
             BENUTZER
           </Text>
 
-          <View style={[styles.fieldRow, { borderBottomColor: user2active || showAddUser2 ? colors.border : "transparent" }]}>
-            <View style={[styles.avatar, { backgroundColor: colors.tint + "22" }]}>
-              <Text style={[styles.avatarText, { color: colors.tint, fontFamily: "Inter_700Bold" }]}>
+          <View style={[styles.fieldRow, { borderBottomColor: user2active || showAddUser2 ? colors.hair : "transparent" }]}>
+            <View style={[styles.avatar, { backgroundColor: colors.gold + "22" }]}>
+              <Text style={[styles.avatarText, { color: colors.gold, fontFamily: SERIF_BOLD }]}>
                 {(draft1.trim()[0] ?? "?").toUpperCase()}
               </Text>
             </View>
             <View style={styles.fieldContent}>
-              <Text style={[styles.fieldHint, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+              <Text style={[styles.fieldHint, { color: colors.inkFaint, fontFamily: "Inter_400Regular" }]}>
                 Person 1
               </Text>
               <TextInput
                 value={draft1}
                 onChangeText={setDraft1}
-                style={[styles.input, { color: colors.text, fontFamily: "Inter_500Medium", borderRadius: cardExtras.cardRadius }]}
+                style={[styles.input, { color: colors.ink, fontFamily: "Inter_500Medium", borderRadius: cardExtras.cardRadius }]}
                 placeholder="Hase"
-                placeholderTextColor={colors.textSecondary}
+                placeholderTextColor={colors.inkFaint}
                 maxLength={20}
                 returnKeyType="next"
                 autoCorrect={false}
@@ -369,21 +372,21 @@ export default function SettingsScreen() {
 
           {user2active ? (
             <View style={[styles.fieldRow, { borderBottomColor: "transparent" }]}>
-              <View style={[styles.avatar, { backgroundColor: colors.tint + "22" }]}>
-                <Text style={[styles.avatarText, { color: colors.tint, fontFamily: "Inter_700Bold" }]}>
+              <View style={[styles.avatar, { backgroundColor: colors.gold + "22" }]}>
+                <Text style={[styles.avatarText, { color: colors.gold, fontFamily: SERIF_BOLD }]}>
                   {(draft2.trim()[0] ?? "?").toUpperCase()}
                 </Text>
               </View>
               <View style={styles.fieldContent}>
-                <Text style={[styles.fieldHint, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                <Text style={[styles.fieldHint, { color: colors.inkFaint, fontFamily: "Inter_400Regular" }]}>
                   Person 2
                 </Text>
                 <TextInput
                   value={draft2}
                   onChangeText={setDraft2}
-                  style={[styles.input, { color: colors.text, fontFamily: "Inter_500Medium", borderRadius: cardExtras.cardRadius }]}
+                  style={[styles.input, { color: colors.ink, fontFamily: "Inter_500Medium", borderRadius: cardExtras.cardRadius }]}
                   placeholder="Dodo"
-                  placeholderTextColor={colors.textSecondary}
+                  placeholderTextColor={colors.inkFaint}
                   maxLength={20}
                   returnKeyType="done"
                   onSubmitEditing={isDirty ? handleSave : undefined}
@@ -400,21 +403,21 @@ export default function SettingsScreen() {
             </View>
           ) : showAddUser2 ? (
             <View style={[styles.fieldRow, { borderBottomColor: "transparent" }]}>
-              <View style={[styles.avatar, { backgroundColor: colors.border }]}>
-                <Text style={[styles.avatarText, { color: colors.textSecondary, fontFamily: "Inter_700Bold" }]}>
+              <View style={[styles.avatar, { backgroundColor: colors.kraft }]}>
+                <Text style={[styles.avatarText, { color: colors.inkSoft, fontFamily: SERIF_BOLD }]}>
                   {(newUser2Draft.trim()[0] ?? "+").toUpperCase()}
                 </Text>
               </View>
               <View style={styles.fieldContent}>
-                <Text style={[styles.fieldHint, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                <Text style={[styles.fieldHint, { color: colors.inkFaint, fontFamily: "Inter_400Regular" }]}>
                   Person 2
                 </Text>
                 <TextInput
                   value={newUser2Draft}
                   onChangeText={setNewUser2Draft}
-                  style={[styles.input, { color: colors.text, fontFamily: "Inter_500Medium", borderRadius: cardExtras.cardRadius }]}
+                  style={[styles.input, { color: colors.ink, fontFamily: "Inter_500Medium", borderRadius: cardExtras.cardRadius }]}
                   placeholder="Name eingeben"
-                  placeholderTextColor={colors.textSecondary}
+                  placeholderTextColor={colors.inkFaint}
                   maxLength={20}
                   returnKeyType="done"
                   onSubmitEditing={handleAddUser2}
@@ -423,10 +426,10 @@ export default function SettingsScreen() {
                 />
               </View>
               <Pressable onPress={handleAddUser2} hitSlop={8} style={{ padding: 6, marginLeft: 4 }}>
-                <Ionicons name="checkmark" size={20} color={colors.tint} />
+                <Ionicons name="checkmark" size={20} color={colors.gold} />
               </Pressable>
               <Pressable onPress={() => { setShowAddUser2(false); setNewUser2Draft(""); }} hitSlop={8} style={{ padding: 6 }}>
-                <Ionicons name="close" size={18} color={colors.textSecondary} />
+                <Ionicons name="close" size={18} color={colors.inkFaint} />
               </Pressable>
             </View>
           ) : (
@@ -434,22 +437,22 @@ export default function SettingsScreen() {
               onPress={() => setShowAddUser2(true)}
               style={({ pressed }) => [styles.addUserRow, { opacity: pressed ? 0.6 : 1 }]}
             >
-              <View style={[styles.avatar, { backgroundColor: colors.border }]}>
-                <Ionicons name="add" size={18} color={colors.textSecondary} />
+              <View style={[styles.avatar, { backgroundColor: colors.kraft }]}>
+                <Ionicons name="add" size={18} color={colors.inkSoft} />
               </View>
-              <Text style={[styles.addUserText, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+              <Text style={[styles.addUserText, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
                 Person 2 hinzufügen
               </Text>
             </Pressable>
           )}
-        </PaperSurface>
+        </TornSheet>
 
-        <Text style={[styles.hint, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+        <Text style={[styles.hint, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
           Die Namen werden überall in der App verwendet und lokal gespeichert.
         </Text>
 
-        <PaperSurface style={[styles.section, { marginTop: 16 }]}>
-          <Text style={[styles.sectionLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
+        <TornSheet tone="cream" seed={8} rotate={-0.8} style={[styles.section, { marginTop: 16 }]}>
+          <Text style={[styles.sectionLabel, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
             KAFFEEMÜHLEN
           </Text>
 
@@ -459,13 +462,13 @@ export default function SettingsScreen() {
               style={[
                 styles.grinderRow,
                 {
-                  borderBottomColor: colors.border,
+                  borderBottomColor: colors.hair,
                   borderBottomWidth: idx < grinders.length - 1 ? 1 : 0,
                 },
               ]}
             >
-              <GrinderIcon design={g.design} size={22} color={colors.tint} />
-              <Text style={[styles.grinderName, { color: colors.text, fontFamily: "Inter_500Medium" }]}>
+              <GrinderIcon design={g.design} size={22} color={colors.gold} />
+              <Text style={[styles.grinderName, { color: colors.ink, fontFamily: "Inter_500Medium" }]}>
                 {g.name}
               </Text>
               <Pressable
@@ -473,13 +476,13 @@ export default function SettingsScreen() {
                 hitSlop={12}
                 style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
               >
-                <Ionicons name="close-circle" size={20} color={colors.textSecondary} />
+                <Ionicons name="close-circle" size={20} color={colors.inkFaint} />
               </Pressable>
             </View>
           ))}
 
           {grinders.length < 3 && (
-            <View style={{ borderTopColor: colors.border, borderTopWidth: grinders.length > 0 ? 1 : 0, paddingTop: grinders.length > 0 ? 12 : 0, gap: 10 }}>
+            <View style={{ borderTopColor: colors.hair, borderTopWidth: grinders.length > 0 ? 1 : 0, paddingTop: grinders.length > 0 ? 12 : 0, gap: 10 }}>
               <View style={{ flexDirection: "row", gap: 8 }}>
                 {(["commandante", "niche"] as GrinderDesign[]).map((d) => {
                   const active = newGrinderDesign === d;
@@ -495,14 +498,14 @@ export default function SettingsScreen() {
                         gap: 6,
                         paddingVertical: 8,
                         borderRadius: design === "lowpoly" ? 5 : 10,
-                        backgroundColor: active ? colors.tint : colors.surface,
+                        backgroundColor: active ? colors.gold : colors.surface,
                         borderWidth: 1.5,
-                        borderColor: active ? colors.tint : colors.border,
+                        borderColor: active ? colors.gold : colors.border,
                         opacity: pressed ? 0.8 : 1,
                       })}
                     >
-                      <GrinderIcon design={d} size={20} color={active ? "#fff" : colors.text} />
-                      <Text style={{ color: active ? "#fff" : colors.text, fontFamily: active ? "Inter_600SemiBold" : "Inter_500Medium", fontSize: 13 }}>
+                      <GrinderIcon design={d} size={20} color={active ? "#fff" : colors.ink} />
+                      <Text style={{ color: active ? "#fff" : colors.ink, fontFamily: active ? "Inter_600SemiBold" : "Inter_500Medium", fontSize: 13 }}>
                         {d === "niche" ? "Niche" : "Commandante"}
                       </Text>
                     </Pressable>
@@ -513,9 +516,9 @@ export default function SettingsScreen() {
                 <TextInput
                   value={newGrinder}
                   onChangeText={setNewGrinder}
-                  style={[styles.grinderInput, { color: colors.text, fontFamily: "Inter_400Regular" }]}
+                  style={[styles.grinderInput, { color: colors.ink, fontFamily: "Inter_400Regular" }]}
                   placeholder="Neue Mühle..."
-                  placeholderTextColor={colors.textSecondary}
+                  placeholderTextColor={colors.inkFaint}
                   maxLength={30}
                   returnKeyType="done"
                   onSubmitEditing={handleAddGrinder}
@@ -524,33 +527,31 @@ export default function SettingsScreen() {
                 <Pressable
                   onPress={handleAddGrinder}
                   disabled={!newGrinder.trim()}
-                  style={({ pressed }) => [
-                    styles.addGrinderBtn,
-                    {
-                      backgroundColor: colors.tint,
-                      opacity: newGrinder.trim() ? (pressed ? 0.7 : 1) : 0.3,
-                    },
-                  ]}
+                  style={({ pressed }) => ({
+                    opacity: newGrinder.trim() ? (pressed ? 0.7 : 1) : 0.3,
+                  })}
                 >
-                  <Ionicons name="add" size={18} color="#fff" />
+                  <TornBox color={colors.gold} seed={11} style={styles.addGrinderBtn}>
+                    <Ionicons name="add" size={18} color="#fff" />
+                  </TornBox>
                 </Pressable>
               </View>
             </View>
           )}
 
           {grinders.length === 3 && (
-            <Text style={[styles.grinderLimit, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+            <Text style={[styles.grinderLimit, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
               Maximal 3 Mühlen möglich
             </Text>
           )}
-        </PaperSurface>
+        </TornSheet>
 
-        <Text style={[styles.hint, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+        <Text style={[styles.hint, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
           Wähle beim Kaffee die verwendete Mühle aus.
         </Text>
 
-        <PaperSurface style={[styles.section, { marginTop: 16 }]} flip>
-          <Text style={[styles.sectionLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
+        <TornSheet tone="cream" seed={15} rotate={0.7} style={[styles.section, { marginTop: 16 }]}>
+          <Text style={[styles.sectionLabel, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
             DATENSICHERUNG
           </Text>
 
@@ -559,21 +560,21 @@ export default function SettingsScreen() {
             disabled={exporting}
             style={({ pressed }) => [
               styles.dataRow,
-              { borderBottomColor: colors.border, opacity: pressed || exporting ? 0.6 : 1 },
+              { borderBottomColor: colors.hair, opacity: pressed || exporting ? 0.6 : 1 },
             ]}
           >
-            <View style={[styles.dataIcon, { backgroundColor: colors.tint + "20" }]}>
-              <Ionicons name="arrow-up-circle-outline" size={22} color={colors.tint} />
+            <View style={[styles.dataIcon, { backgroundColor: colors.gold + "20" }]}>
+              <Ionicons name="arrow-up-circle-outline" size={22} color={colors.gold} />
             </View>
             <View style={styles.fieldContent}>
-              <Text style={[styles.dataTitle, { color: colors.text, fontFamily: "Inter_600SemiBold" }]}>
+              <Text style={[styles.dataTitle, { color: colors.ink, fontFamily: "Inter_600SemiBold" }]}>
                 Daten exportieren
               </Text>
-              <Text style={[styles.dataSubtitle, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+              <Text style={[styles.dataSubtitle, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
                 Röstereien, Kaffees und Mühlen als JSON speichern
               </Text>
             </View>
-            <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
+            <Ionicons name="chevron-forward" size={16} color={colors.inkFaint} />
           </Pressable>
 
           <Pressable
@@ -588,18 +589,18 @@ export default function SettingsScreen() {
               <Ionicons name="arrow-down-circle-outline" size={22} color="#E05252" />
             </View>
             <View style={styles.fieldContent}>
-              <Text style={[styles.dataTitle, { color: colors.text, fontFamily: "Inter_600SemiBold" }]}>
+              <Text style={[styles.dataTitle, { color: colors.ink, fontFamily: "Inter_600SemiBold" }]}>
                 Daten importieren
               </Text>
-              <Text style={[styles.dataSubtitle, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+              <Text style={[styles.dataSubtitle, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
                 Backup laden – überschreibt alle vorhandenen Daten
               </Text>
             </View>
-            <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
+            <Ionicons name="chevron-forward" size={16} color={colors.inkFaint} />
           </Pressable>
-        </PaperSurface>
+        </TornSheet>
 
-        <Text style={[styles.hint, { color: colors.textSecondary, fontFamily: "Inter_400Regular", marginTop: 8 }]}>
+        <Text style={[styles.hint, { color: colors.inkSoft, fontFamily: "Inter_400Regular", marginTop: 8 }]}>
           Exportiere regelmäßig ein Backup um Datenverlust zu vermeiden.
         </Text>
 
@@ -622,35 +623,40 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingHorizontal: 24,
+    paddingBottom: 16,
     gap: 12,
+  },
+  headerRuleWrap: {
+    paddingHorizontal: 24,
+    marginBottom: 8,
   },
   backBtn: {
     marginRight: 4,
   },
   headerTitle: {
     flex: 1,
-    fontSize: 22,
+    fontSize: 30,
+    lineHeight: 36,
   },
   saveBtn: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
+    width: 112,
+    height: 40,
   },
   saveBtnText: {
     color: "#fff",
     fontSize: 14,
   },
   section: {
-    marginHorizontal: 20,
+    marginHorizontal: 22,
     marginBottom: 8,
   },
   sectionLabel: {
-    fontSize: 11,
-    letterSpacing: 1.5,
+    fontSize: 10,
+    letterSpacing: 2.6,
+    textTransform: "uppercase",
     paddingHorizontal: 16,
-    paddingTop: 14,
+    paddingTop: 16,
     paddingBottom: 10,
   },
   fieldRow: {

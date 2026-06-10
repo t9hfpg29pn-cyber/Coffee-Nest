@@ -24,7 +24,13 @@ import { getCoffeeById, updateCoffee, deleteCoffee, getGrinders, Coffee, GrindSe
 import { useUserNames } from "@/context/UserNamesContext";
 import { useThemeColors, useCardExtras, useTheme } from "@/context/ThemeContext";
 import { PolyBackground, PolyActionButton } from "@/components/PolyBackground";
-import { PaperSurface } from "@/components/Paper";
+import { TornDefs, TornSheet, TornBox, Grain, Hairline } from "@/components/TornPaper";
+
+const SERIF_BLACK = "PlayfairDisplay_800ExtraBold";
+const SERIF_BOLD = "PlayfairDisplay_700Bold";
+const SERIF_MED = "PlayfairDisplay_500Medium";
+
+const SECTION_SEEDS = [2, 5, 8, 12, 15, 7, 9];
 
 function RatingSlider({
   label,
@@ -307,11 +313,11 @@ function SectionHeader({ title, color }: { title: string; color: string }) {
     <Text
       style={{
         color,
-        fontFamily: "Inter_700Bold",
-        fontSize: 13,
-        letterSpacing: 1.2,
-        marginTop: 8,
-        marginBottom: 2,
+        fontFamily: "Inter_600SemiBold",
+        fontSize: 10,
+        letterSpacing: 2.6,
+        textTransform: "uppercase",
+        marginBottom: 4,
       }}
     >
       {title}
@@ -980,6 +986,8 @@ export default function CoffeeDetailScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <PolyBackground />
+      <TornDefs />
+      <Grain />
       <View style={[styles.header, { paddingTop: topPad + 12 }]}>
         <Pressable
           onPress={() => {
@@ -994,9 +1002,9 @@ export default function CoffeeDetailScreen() {
           }}
           style={({ pressed }) => [styles.backButton, { opacity: pressed ? 0.6 : 1 }]}
         >
-          <Ionicons name="chevron-back" size={26} color={colors.text} />
+          <Ionicons name="chevron-back" size={26} color={colors.ink} />
         </Pressable>
-        <Text style={[styles.headerTitle, { color: colors.text, fontFamily: "Inter_700Bold" }]} numberOfLines={1}>
+        <Text style={[styles.headerTitle, { color: colors.ink, fontFamily: SERIF_BOLD }]} numberOfLines={1}>
           {name || "Kaffee"}
         </Text>
         <Pressable

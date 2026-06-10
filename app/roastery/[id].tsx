@@ -30,8 +30,15 @@ import {
 } from "@/lib/storage";
 import { useUserNames } from "@/context/UserNamesContext";
 import { PolyBackground, PolyActionButton } from "@/components/PolyBackground";
-import { PaperSurface } from "@/components/Paper";
+import { TornDefs, TornSheet, TornBox, IconStamp, Grain, Hairline } from "@/components/TornPaper";
 import { useThemeColors, useCardExtras } from "@/context/ThemeContext";
+
+const SERIF_BLACK = "PlayfairDisplay_800ExtraBold";
+const SERIF_BOLD = "PlayfairDisplay_700Bold";
+const SERIF_MED = "PlayfairDisplay_500Medium";
+
+// Varied torn seeds so adjacent coffee sheets never share a silhouette.
+const LIST_SEEDS = [2, 5, 8, 12, 15, 7, 9, 13, 16, 3];
 
 function CoffeeBeanIcon({ size = 18, color }: { size?: number; color: string }) {
   const h = Math.round(size * 1.2);
@@ -288,28 +295,30 @@ export default function RoasteryScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <PolyBackground />
+      <TornDefs />
+      <Grain />
       <View style={[styles.header, { paddingTop: topPad + 12 }]}>
         <Pressable
           onPress={() => router.back()}
           style={({ pressed }) => [styles.backButton, { opacity: pressed ? 0.6 : 1 }]}
         >
-          <Ionicons name="chevron-back" size={26} color={colors.text} />
+          <Ionicons name="chevron-back" size={26} color={colors.ink} />
         </Pressable>
         <Pressable
           onPress={openEditRoastery}
           style={({ pressed }) => [styles.headerCenter, { opacity: pressed ? 0.7 : 1 }]}
         >
-          <Text style={[styles.headerLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
+          <Text style={[styles.headerLabel, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
             RÖSTEREI
           </Text>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
             <Text
-              style={[styles.headerTitle, { color: colors.text, fontFamily: "Inter_700Bold" }]}
+              style={[styles.headerTitle, { color: colors.ink, fontFamily: SERIF_BOLD }]}
               numberOfLines={1}
             >
               {roasteryName}
             </Text>
-            <Ionicons name="pencil-outline" size={16} color={colors.textSecondary} style={{ marginBottom: 2 }} />
+            <Ionicons name="pencil-outline" size={16} color={colors.inkFaint} style={{ marginBottom: 4 }} />
           </View>
         </Pressable>
         <Pressable
@@ -317,13 +326,15 @@ export default function RoasteryScreen() {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             setShowModal(true);
           }}
-          style={({ pressed }) => [
-            styles.addButton,
-            { backgroundColor: colors.tint, opacity: pressed ? 0.85 : 1 },
-          ]}
+          style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
         >
-          <Ionicons name="add" size={22} color="#fff" />
+          <TornBox color={colors.gold} seed={4} style={styles.addButton}>
+            <Ionicons name="add" size={22} color="#fff" />
+          </TornBox>
         </Pressable>
+      </View>
+      <View style={styles.headerRuleWrap}>
+        <Hairline />
       </View>
 
       {loading ? (
@@ -333,11 +344,11 @@ export default function RoasteryScreen() {
         </View>
       ) : coffees.length === 0 ? (
         <View style={styles.centerState}>
-          <Ionicons name="leaf-outline" size={52} color={colors.textSecondary} />
-          <Text style={[styles.emptyTitle, { color: colors.text, fontFamily: "Inter_600SemiBold" }]}>
+          <Ionicons name="leaf-outline" size={52} color={colors.inkFaint} />
+          <Text style={[styles.emptyTitle, { color: colors.ink, fontFamily: SERIF_BOLD }]}>
             Noch keine Kaffees
           </Text>
-          <Text style={[styles.emptySubtitle, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+          <Text style={[styles.emptySubtitle, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
             Tippe auf + um einen Kaffee hinzuzufügen
           </Text>
         </View>
@@ -345,10 +356,14 @@ export default function RoasteryScreen() {
         <FlatList
           data={coffees}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={{ padding: 20, paddingBottom: bottomPad + 20 }}
-          ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+          contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: bottomPad + 40 }}
+          ItemSeparatorComponent={() => <View style={{ height: 24 }} />}
           renderItem={({ item, index }) => (
-            <PaperSurface
+            <TornSheet
+              tone="cream"
+              seed={LIST_SEEDS[index % LIST_SEEDS.length]}
+              rotate={index % 2 === 0 ? -0.7 : 0.8}
+              contentStyle={styles.card}
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 router.push({
@@ -357,80 +372,80 @@ export default function RoasteryScreen() {
                 });
               }}
               onLongPress={() => handleDelete(item)}
-              contentStyle={styles.card}
-              flip={index % 2 === 1}
             >
               <View style={styles.cardTop}>
-                <View style={[styles.cardIcon, { backgroundColor: colors.tint + "20" }]}>
-                  <CoffeeBeanIcon size={18} color={colors.tint} />
-                </View>
+                <IconStamp size={40} seed={9}>
+                  <CoffeeBeanIcon size={18} color={colors.goldLight} />
+                </IconStamp>
                 <View style={styles.cardMain}>
-                  <Text style={[styles.cardTitle, { color: colors.text, fontFamily: "Inter_600SemiBold" }]}>
+                  <Text style={[styles.cardTitle, { color: colors.ink, fontFamily: SERIF_BOLD }]}>
                     {item.name}
                   </Text>
                   {item.aromaDescription ? (
                     <Text
                       numberOfLines={1}
                       ellipsizeMode="tail"
-                      style={[styles.cardAroma, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}
+                      style={[styles.cardAroma, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}
                     >
                       {item.aromaDescription}
                     </Text>
                   ) : item.pricePerKg ? (
-                    <Text style={[styles.cardPrice, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
+                    <Text style={[styles.cardPrice, { color: colors.inkSoft, fontFamily: "Inter_500Medium" }]}>
                       {formatPrice(item.pricePerKg)} €/kg
                     </Text>
                   ) : null}
                 </View>
-                <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
+                <Ionicons name="chevron-forward" size={18} color={colors.inkFaint} />
               </View>
-              <View style={[styles.cardDivider, { backgroundColor: colors.border }]} />
+              <View style={styles.cardHair}>
+                <Hairline />
+              </View>
               <View style={styles.cardRatings}>
                 <View style={styles.ratingRow}>
-                  <Text style={[styles.ratingLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
+                  <Text style={[styles.ratingLabel, { color: colors.inkSoft, fontFamily: "Inter_500Medium" }]}>
                     {name1}
                   </Text>
                   <View style={styles.ratingValue}>
                     {item.haseRating !== null ? (
                       <>
-                        <Text style={[styles.ratingNum, { color: colors.tint, fontFamily: "Inter_700Bold" }]}>
+                        <Text style={[styles.ratingNum, { color: colors.gold, fontFamily: SERIF_BOLD }]}>
                           {item.haseRating}
                         </Text>
-                        <Text style={[styles.ratingMax, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                        <Text style={[styles.ratingMax, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
                           /10
                         </Text>
                       </>
                     ) : (
-                      <Text style={[styles.ratingNum, { color: colors.textSecondary, fontFamily: "Inter_400Regular", opacity: 0.4 }]}>–</Text>
+                      <Text style={[styles.ratingNum, { color: colors.inkFaint, fontFamily: SERIF_BOLD, opacity: 0.5 }]}>–</Text>
                     )}
                   </View>
                 </View>
                 {user2active && (
                   <>
-                    <View style={[styles.ratingDivider, { backgroundColor: colors.border }]} />
+                    <View style={[styles.ratingDivider, { backgroundColor: colors.hair }]} />
                     <View style={styles.ratingRow}>
-                      <Text style={[styles.ratingLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
+                      <Text style={[styles.ratingLabel, { color: colors.inkSoft, fontFamily: "Inter_500Medium" }]}>
                         {name2}
                       </Text>
                       <View style={styles.ratingValue}>
                         {item.dodoRating !== null ? (
                           <>
-                            <Text style={[styles.ratingNum, { color: colors.tint, fontFamily: "Inter_700Bold" }]}>
+                            <Text style={[styles.ratingNum, { color: colors.gold, fontFamily: SERIF_BOLD }]}>
                               {item.dodoRating}
                             </Text>
-                            <Text style={[styles.ratingMax, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                            <Text style={[styles.ratingMax, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
                               /10
                             </Text>
                           </>
                         ) : (
-                          <Text style={[styles.ratingNum, { color: colors.textSecondary, fontFamily: "Inter_400Regular", opacity: 0.4 }]}>–</Text>
+                          <Text style={[styles.ratingNum, { color: colors.inkFaint, fontFamily: SERIF_BOLD, opacity: 0.5 }]}>–</Text>
                         )}
                       </View>
                     </View>
                   </>
                 )}
               </View>
-            </PaperSurface>
+            </TornSheet>
           )}
         />
       )}
@@ -441,10 +456,10 @@ export default function RoasteryScreen() {
           <Pressable style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)" }} onPress={() => setShowModal(false)} />
           <View style={[styles.modalSheet, { backgroundColor: colors.surfaceElevated, paddingBottom: bottomPad + 20 }]}>
             <View style={styles.modalHandle} />
-            <Text style={[styles.modalTitle, { color: colors.text, fontFamily: "Inter_700Bold" }]}>
+            <Text style={[styles.modalTitle, { color: colors.ink, fontFamily: SERIF_BOLD }]}>
               Neuer Kaffee
             </Text>
-            <Text style={[styles.inputLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
+            <Text style={[styles.inputLabel, { color: colors.inkSoft, fontFamily: "Inter_500Medium" }]}>
               Name *
             </Text>
             <TextInput
@@ -489,10 +504,10 @@ export default function RoasteryScreen() {
           />
           <View style={[styles.modalSheet, { backgroundColor: colors.surfaceElevated, paddingBottom: bottomPad + 20 }]}>
             <View style={styles.modalHandle} />
-            <Text style={[styles.modalTitle, { color: colors.text, fontFamily: "Inter_700Bold" }]}>
+            <Text style={[styles.modalTitle, { color: colors.ink, fontFamily: SERIF_BOLD }]}>
               Rösterei bearbeiten
             </Text>
-            <Text style={[styles.inputLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
+            <Text style={[styles.inputLabel, { color: colors.inkSoft, fontFamily: "Inter_500Medium" }]}>
               Name *
             </Text>
             <TextInput
@@ -513,7 +528,7 @@ export default function RoasteryScreen() {
               autoFocus
               returnKeyType="next"
             />
-            <Text style={[styles.inputLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
+            <Text style={[styles.inputLabel, { color: colors.inkSoft, fontFamily: "Inter_500Medium" }]}>
               Ort
             </Text>
             <TextInput
@@ -568,7 +583,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "flex-end",
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     paddingBottom: 16,
     gap: 8,
   },
@@ -577,22 +592,26 @@ const styles = StyleSheet.create({
     height: 36,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 2,
+    marginBottom: 4,
   },
   headerCenter: { flex: 1 },
   headerLabel: {
-    fontSize: 11,
-    letterSpacing: 1.5,
-    marginBottom: 2,
+    fontSize: 10,
+    letterSpacing: 2.6,
+    textTransform: "uppercase",
+    marginBottom: 4,
   },
   headerTitle: {
-    fontSize: 28,
-    lineHeight: 34,
+    fontSize: 30,
+    lineHeight: 36,
+  },
+  headerRuleWrap: {
+    paddingHorizontal: 24,
+    marginBottom: 4,
   },
   addButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 46,
+    height: 46,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 2,
@@ -621,29 +640,22 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginBottom: 12,
   },
-  card: {},
+  card: {
+    paddingHorizontal: 22,
+    paddingVertical: 18,
+  },
   cardTop: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 16,
-    gap: 12,
+    gap: 14,
   },
-  cardIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  cardMain: { flex: 1, gap: 2 },
-  cardTitle: { fontSize: 16 },
-  cardAroma: { fontSize: 12, opacity: 0.75 },
+  cardMain: { flex: 1, gap: 3 },
+  cardTitle: { fontSize: 22, lineHeight: 26 },
+  cardAroma: { fontSize: 12.5, opacity: 0.85 },
   cardPrice: { fontSize: 13 },
-  cardDivider: { height: 1, marginHorizontal: 16 },
+  cardHair: { marginVertical: 16 },
   cardRatings: {
     flexDirection: "row",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
     gap: 0,
   },
   ratingRow: {

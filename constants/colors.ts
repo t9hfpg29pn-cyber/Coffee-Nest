@@ -5,33 +5,51 @@ const darkRoast = "#1A0F08";
 const lightCream = "#FBF6EE";
 const warmGray = "#8B7355";
 
-// Cut-paper material system. Surfaces are sheets of paper laid on a warm field —
-// depth comes from CONTRAST + a visibly offset backing sheet, never from drop
-// shadows. Four tones per theme:
-//   • background      (Ebene 1) — the warm field / table
-//   • backdrop        — the backing sheet that peeks out behind a light card
-//   • surface / surfaceElevated (Ebene 2) — light paper sheets
-//   • hero*           (Ebene 3) — dark espresso "feature" paper for showpieces,
-//     with its OWN light backing + light text so it reads as a top layer.
+// Torn-paper material system ("Paper Layers"). Surfaces are sheets of paper torn
+// and laid on a warm field — depth comes from CONTRAST + a visibly offset kraft
+// backing that peeks behind each sheet, never from floating UI cards.
+//   • background       (Ebene 1) — the warm paper field / table
+//   • backdrop / kraft — the kraft backing sheet peeking behind a cream sheet
+//   • surface / surfaceElevated (Ebene 2) — light cream paper sheets
+//   • hero* / espresso* (Ebene 3) — dark espresso "feature" sheets (showpieces)
+//     with their own darker backing + cream text, so they read as the top layer.
+//   • ink* — text tones on cream; creamText* — text tones on espresso.
 export default {
   light: {
-    background: "#E7DAC1",
-    backdrop: "#CBB48C",
-    surface: "#F7F0E2",
-    surfaceElevated: "#FFFDF7",
-    text: "#3B2517",
-    textSecondary: "#8C7152",
-    tint: caramel,
-    accent: caramel,
-    border: "#E2D0AE",
-    tabIconDefault: warmGray,
-    tabIconSelected: caramel,
-    heroSurface: "#43291A",
-    heroBacking: "#F0E4CF",
-    heroText: "#F6ECD9",
-    heroTextSub: "#CBB08D",
-    heroBorder: "#5C3E28",
-    heroTint: "#E3AC5E",
+    background: "#E9DDC9",
+    backdrop: "#CBAB7B",
+    surface: "#F4EAD5",
+    surfaceElevated: "#FAF3E5",
+    text: "#3A2716",
+    textSecondary: "#7A6447",
+    tint: "#B07526",
+    accent: "#B07526",
+    border: "#DCC8A2",
+    tabIconDefault: "#A38C70",
+    tabIconSelected: "#B07526",
+    heroSurface: "#6E4A2A",
+    heroBacking: "#5A3B20",
+    heroText: "#F6EEDD",
+    heroTextSub: "#E2D1B2",
+    heroBorder: "#815A36",
+    heroTint: "#E0A646",
+    // Paper-layers tokens
+    paperBg2: "#E2D4BC",
+    kraft: "#CBAB7B",
+    kraftDeep: "#B68F58",
+    espresso: "#6E4A2A",
+    espresso2: "#5A3B20",
+    espresso3: "#815A36",
+    gold: "#B07526",
+    goldLight: "#E0A646",
+    ink: "#3A2716",
+    inkSoft: "#7A6447",
+    inkFaint: "#A38C70",
+    creamText: "#F6EEDD",
+    creamTextSoft: "#E2D1B2",
+    creamTextFaint: "#C6AF8C",
+    hair: "rgba(58, 39, 22, 0.14)",
+    hairCream: "rgba(246, 238, 221, 0.22)",
   },
   dark: {
     background: "#160C06",
@@ -46,11 +64,27 @@ export default {
     tabIconDefault: "#6B5540",
     tabIconSelected: caramel,
     heroSurface: "#0E0703",
-    heroBacking: "#5A3D27",
+    heroBacking: "#3A2414",
     heroText: cream,
     heroTextSub: "#BFA078",
     heroBorder: "#6B4124",
     heroTint: "#E3AC5E",
+    paperBg2: "#1E1109",
+    kraft: "#4A3018",
+    kraftDeep: "#5A3B20",
+    espresso: "#33200F",
+    espresso2: "#1E1109",
+    espresso3: "#4A3018",
+    gold: "#C8873A",
+    goldLight: "#E3AC5E",
+    ink: cream,
+    inkSoft: "#A89070",
+    inkFaint: "#7A6347",
+    creamText: cream,
+    creamTextSoft: "#BFA078",
+    creamTextFaint: "#8F7656",
+    hair: "rgba(245, 236, 215, 0.12)",
+    hairCream: "rgba(245, 236, 215, 0.16)",
   },
   lowpoly: {
     background: "#150a03",
@@ -65,11 +99,27 @@ export default {
     tabIconDefault: "#8b5a30",
     tabIconSelected: "#e1a24a",
     heroSurface: "#0d0502",
-    heroBacking: "#8a5026",
+    heroBacking: "#3a1d0d",
     heroText: "#f4e8dc",
     heroTextSub: "#caa58b",
     heroBorder: "#a8662f",
     heroTint: "#e1a24a",
+    paperBg2: "#1d0e05",
+    kraft: "#5e3417",
+    kraftDeep: "#3a1d0d",
+    espresso: "#5e3417",
+    espresso2: "#3a1d0d",
+    espresso3: "#8a5026",
+    gold: "#e1a24a",
+    goldLight: "#f0c074",
+    ink: "#f4e8dc",
+    inkSoft: "#caa58b",
+    inkFaint: "#8b6a48",
+    creamText: "#f4e8dc",
+    creamTextSoft: "#caa58b",
+    creamTextFaint: "#a07f5c",
+    hair: "rgba(244, 232, 220, 0.14)",
+    hairCream: "rgba(244, 232, 220, 0.18)",
   },
   espresso,
   caramel,

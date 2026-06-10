@@ -5,6 +5,11 @@ import {
   Inter_700Bold,
   useFonts,
 } from "@expo-google-fonts/inter";
+import {
+  PlayfairDisplay_500Medium,
+  PlayfairDisplay_700Bold,
+  PlayfairDisplay_800ExtraBold,
+} from "@expo-google-fonts/playfair-display";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect } from "react";
@@ -67,6 +72,9 @@ export default function RootLayout() {
     Inter_500Medium,
     Inter_600SemiBold,
     Inter_700Bold,
+    PlayfairDisplay_500Medium,
+    PlayfairDisplay_700Bold,
+    PlayfairDisplay_800ExtraBold,
   });
 
   useEffect(() => {
