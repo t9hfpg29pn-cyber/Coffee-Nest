@@ -1,6 +1,7 @@
 import { useEffect, useState, type ComponentType } from "react";
 
 import { modules as discoveredModules } from "./.generated/mockup-components";
+import { PaperDefs } from "./PaperDefs";
 
 type ModuleMap = Record<string, () => Promise<Record<string, unknown>>>;
 
@@ -131,16 +132,19 @@ function getPreviewPath(): string | null {
 function App() {
   const previewPath = getPreviewPath();
 
-  if (previewPath) {
-    return (
-      <PreviewRenderer
-        componentPath={previewPath}
-        modules={discoveredModules}
-      />
-    );
-  }
-
-  return <Gallery />;
+  return (
+    <>
+      <PaperDefs />
+      {previewPath ? (
+        <PreviewRenderer
+          componentPath={previewPath}
+          modules={discoveredModules}
+        />
+      ) : (
+        <Gallery />
+      )}
+    </>
+  );
 }
 
 export default App;
