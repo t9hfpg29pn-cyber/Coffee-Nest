@@ -1,0 +1,88 @@
+Ich habe die Datei paper-native.tsx hochgeladen – sie enthält das
+KOMPLETTE Papier-Design-System für die Expo-App (PaperCard-Komponente
+auf react-native-svg-Basis, Farb-Tokens, eingebettete Original-Texturen,
+fertige UI-Stile). Lege sie an einen passenden Ort im Quellcode der
+Expo-App (z.B. neben den bestehenden Theme-Dateien) und korrigiere nur
+die Import-Pfade, NICHT den Inhalt.
+
+EINRICHTUNG:
+1. Stelle sicher, dass react-native-svg installiert ist
+   (expo install react-native-svg), sonst installieren.
+2. Installiere @expo-google-fonts/fraunces und lade die Schnitte
+   Fraunces_500Medium, Fraunces_600SemiBold, Fraunces_700Bold beim
+   App-Start (useFonts), mit Lade-Schutz bis die Schrift bereit ist.
+3. Prüfe, dass der Web-Build (build:web) weiterhin durchläuft, denn
+   die App wird als PWA aus web-dist ausgeliefert.
+
+BASIS-REGELN für das Coffee-Nest-Papier-Design in der EXPO-APP
+(gelten immer):
+
+MATERIAL:
+M1. Verwende AUSSCHLIESSLICH die Bausteine aus der hochgeladenen Datei
+    paper-native.tsx: die PaperCard-Komponente, die COLORS-Tokens, die
+    fertigen ui.*-Stile und die eingebetteten TEXTURES. Erfinde KEINE
+    eigenen Texturen, Verläufe, Filter, Schatten oder Kartenstile.
+    Die mockup-sandbox dient als visuelle Referenz für das Zielbild.
+M2. Keine Emojis. Icons nur einfarbig (lucide-react-native oder die
+    vorhandene Icon-Bibliothek der App), strokeWidth 1.75. Icon-Farben
+    nur aus COLORS (Standard accent300, auf Kacheln accent400, auf
+    dunklen Karten accent100). Löschen-Icons: COLORS.danger.
+M3. Keine Farben außerhalb der COLORS-Tokens aus paper-native.tsx.
+M4. Schrift Fraunces über @expo-google-fonts/fraunces laden
+    (Fraunces_500Medium, Fraunces_600SemiBold, Fraunces_700Bold) und
+    für Titel (ui.display) und Eyebrows (ui.eyebrow) verwenden.
+
+STRUKTUR (das war bisher der größte Fehler):
+S1. EINE Sektion = EINE PaperCard. Der KOMPLETTE Inhalt der Sektion
+    (Titel UND alle Zeilen UND alle Buttons) liegt INNERHALB derselben
+    Karte. NIEMALS ein Papierfetzen nur hinter der Überschrift, während
+    der Rest des Inhalts außerhalb liegt.
+S2. Inhalte dürfen die Karte nicht überragen: PaperCard hat bereits
+    20px Innenabstand – nie unter 16px reduzieren (die Wellenform
+    schneidet 2-3% vom Rand ab). Knopfreihen (z.B. Bewertung 0-10):
+    flexWrap "wrap", damit nichts über den Rand hinausragt.
+S3. Karten überlappen sich NICHT. Einzige Ausnahme: das Hero-Muster
+    auf der Startseite (dunkle Karte ragt mit marginBottom: -14 ÜBER
+    die Statistik-Karte; Statistik-Karte mit zIndex: 1, ihr Inhalt
+    beginnt erst unterhalb der Überlappung). Alle anderen Karten:
+    einfacher vertikaler Stapel mit 14-16px Abstand.
+S4. Seiten-Header (Eyebrow "COFFEE NEST" + großer Seitentitel +
+    Zurück-Pfeil) liegen DIREKT auf dem App-Hintergrund (ui.appBg,
+    Farbe COLORS.paperDim). KEIN Papier und KEIN dunkler Block
+    hinter dem Header.
+S5. Wellenform (PaperCard) nur für: Sektions-Karten, Listen-Karten,
+    Icon-Kacheln (variant="tile"), Chips (variant="chip").
+    Eingabefelder, Bewertungs-Knöpfe, Schalter, Buttons: NUR die
+    ruhigen Stile ui.input, ui.btnPrimary, ui.btnSecondary, ui.rate
+    (weiche Rundung, keine Welle).
+S6. Benachbarte PaperCards rotieren die shape-Prop 1 -> 2 -> 3 -> 1.
+
+AUFRÄUMEN:
+A1. Entferne auf dem bearbeiteten Screen ALLE alten Papier-/Textur-/
+    Design-Reste (auch das alte TornPaper-System des "Klassisch"-Themes
+    auf diesem Screen), dunkle Header-Blöcke und überlappende
+    Fragmente, bevor du neu baust.
+A2. Logik, Daten, State, Navigation, AsyncStorage: NICHT anfassen.
+    Nur die Optik.
+
+AUFGABE – NUR der Röstereien-Listen-Screen der EXPO-APP:
+1. Header nach Regel S4: Eyebrow "COFFEE NEST" (ui.eyebrow), Titel
+   "Röstereien" (ui.display, ca. 32). Rechts: "Alle"-Chip
+   (<PaperCard variant="chip" shape={3} shadow={0}> mit kompaktem
+   contentStyle padding 8/16) und Plus-Button (<PaperCard
+   variant="chip" shape={2} shadow={0}>, 44x44, Plus-Icon).
+2. Dunkle Hero-Karte "Heute entdeckt": <PaperCard variant="dark"
+   shape={1} shadow={2}>. KOMPLETTER Inhalt (Eyebrow mit
+   ui.eyebrowOnDark, Text in COLORS.paperLight, "Weniger anzeigen",
+   Schließen-X) in der Karte.
+3. Statistik-Karte "Entdeckungen": <PaperCard variant="light" shape={2}
+   shadow={2}> nach dem Hero-Überlapp-Muster aus Regel S3. Drei Spalten
+   mit Icons Coffee/Factory/Globe, Trennlinien COLORS.dividerSoft.
+   Alle drei Zahlen müssen vollständig sichtbar sein.
+4. Rösterei-Liste: pro Rösterei eine <PaperCard variant="light"
+   shadow={1}>, shape rotierend nach S6, innen links Icon-Kachel
+   <PaperCard variant="tile" shape={2} shadow={0}> (52x52, Coffee-Icon),
+   rechts ChevronRight.
+
+Ändere keinen anderen Screen. Liste am Ende auf, welche Alt-Stile du
+auf diesem Screen entfernt hast und ob der Web-Build sauber läuft.

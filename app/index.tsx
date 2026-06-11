@@ -9,30 +9,43 @@ import {
   Modal,
   Alert,
   Platform,
-  Image,
 } from "react-native";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useFocusEffect } from "expo-router";
-import { Ionicons, Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getRoasteries, saveRoastery, deleteRoastery, getCoffees, Roastery, getDiscoveryStats, DiscoveryStats, getDiscoveryFact, DiscoveryFact } from "@/lib/storage";
+import {
+  Plus,
+  Coffee,
+  Factory,
+  Globe,
+  ChevronRight,
+  ChevronDown,
+  ChevronUp,
+  X,
+  Check,
+  Settings as SettingsIcon,
+} from "lucide-react-native";
+import {
+  getRoasteries,
+  saveRoastery,
+  deleteRoastery,
+  getCoffees,
+  Roastery,
+  getDiscoveryStats,
+  DiscoveryStats,
+  getDiscoveryFact,
+  DiscoveryFact,
+} from "@/lib/storage";
 import { useUserNames } from "@/context/UserNamesContext";
-import { useThemeColors, useCardExtras } from "@/context/ThemeContext";
-import { PolyBackground, PolyActionButton } from "@/components/PolyBackground";
-import { TornDefs, TornSheet, TornBox, Grain } from "@/components/TornPaper";
-import { CupIcon, RoasteryIcon, GlobeIcon, CompassIcon } from "@/components/CoffeeIcons";
-import { paper02CardTexture } from "@/assets/textures";
+import { PaperCard, COLORS, FONTS, ui } from "@/theme/paper-native";
 
-const SERIF_BLACK = "Fraunces_700Bold";
-const SERIF_BOLD = "Fraunces_600SemiBold";
-const SERIF_MED = "Inter_400Regular";
+const STROKE = 1.75;
+const LIST_SHAPES: Array<1 | 2 | 3> = [1, 2, 3];
 
 export default function RoasteriesScreen() {
   const insets = useSafeAreaInsets();
-  const colors = useThemeColors();
-  const cardExtras = useCardExtras();
 
   const { name1, name2, user2active } = useUserNames();
   const [roasteries, setRoasteries] = useState<Roastery[]>([]);
@@ -132,7 +145,7 @@ export default function RoasteriesScreen() {
   };
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
-  const bottomPad = Platform.OS === "web" ? 0 : insets.bottom;
+  const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
 
   const openDropdown = () => {
     filterBtnRef.current?.measureInWindow((x, y, _w, h) => {
@@ -141,6 +154,8 @@ export default function RoasteriesScreen() {
     });
   };
 
+  const heroShown = !factDismissed && !!discoveryFact;
+
   const renderScore = (avg: { hase: number | null; dodo: number | null }) => {
     const showHase = avg.hase !== null;
     const showDodo = user2active && avg.dodo !== null;
@@ -148,15 +163,13 @@ export default function RoasteriesScreen() {
     return (
       <View style={styles.scoreRow}>
         {showHase && (
-          <Text style={[styles.scoreText, { color: colors.gold, fontFamily: "Inter_500Medium" }]}>
+          <Text style={styles.scoreText}>
             {name1} {avg.hase!.toFixed(1)}
           </Text>
         )}
-        {showHase && showDodo && (
-          <Text style={[styles.scoreDivider, { color: colors.inkFaint, fontFamily: "Inter_400Regular" }]}>|</Text>
-        )}
+        {showHase && showDodo && <Text style={styles.scoreDot}>·</Text>}
         {showDodo && (
-          <Text style={[styles.scoreText, { color: colors.gold, fontFamily: "Inter_500Medium" }]}>
+          <Text style={styles.scoreText}>
             {name2} {avg.dodo!.toFixed(1)}
           </Text>
         )}
@@ -165,109 +178,105 @@ export default function RoasteriesScreen() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <PolyBackground />
-      <TornDefs />
-      <Grain />
-
+    <View style={ui.appBg}>
       <ScrollView
-        contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 0, paddingBottom: bottomPad + 48, flexGrow: 1 }}
+        contentContainerStyle={{
+          paddingHorizontal: 20,
+          paddingTop: topPad + 8,
+          paddingBottom: bottomPad + 48,
+          flexGrow: 1,
+        }}
         showsVerticalScrollIndicator={false}
       >
-        {/* The page itself IS the paper surface — ONE large cream sheet that
-            carries the masthead, the highlight planes and the roastery list.
-            Hierarchy comes from type + hairline rules, never stacked cards. */}
-        <TornSheet
-          tone="cream"
-          variant="main"
-          seed={6}
-          peek={false}
-          flat
-          contentStyle={[styles.pagePad, { paddingTop: topPad + 20 }]}
-        >
-          <View style={styles.headerRow}>
-            <View style={styles.headerLeft}>
-              <Text style={[styles.kicker, { color: colors.inkFaint, fontFamily: "Inter_500Medium" }]}>
-                COFFEE NEST
-              </Text>
-              <Text style={[styles.title, { color: colors.ink, fontFamily: SERIF_BLACK }]}>
-                Röstereien
-              </Text>
-            </View>
-            <View style={styles.headerActions}>
-              {!loading && cities.length >= 2 && (
-                <Pressable
-                  ref={filterBtnRef}
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    openDropdown();
-                  }}
-                  style={({ pressed }) => [
-                    styles.filterChip,
-                    {
-                      backgroundColor: selectedCity ? colors.gold : colors.paperBg2,
-                      opacity: pressed ? 0.85 : 1,
-                    },
-                  ]}
-                >
-                  <Text style={[styles.filterChipText, { color: selectedCity ? colors.creamText : colors.ink, fontFamily: "Inter_600SemiBold" }]}>
-                    {selectedCity ?? "Alle"}
-                  </Text>
-                  <Ionicons name="chevron-down" size={12} color={selectedCity ? colors.creamText : colors.inkSoft} />
-                </Pressable>
-              )}
+        {/* ---------- Seiten-Header: direkt auf ui.appBg, kein Papier ---------- */}
+        <View style={styles.headerRow}>
+          <View style={styles.headerLeft}>
+            <Text style={ui.eyebrow}>COFFEE NEST</Text>
+            <Text style={styles.title}>Röstereien</Text>
+          </View>
+          <View style={styles.headerActions}>
+            {!loading && cities.length >= 2 && (
               <Pressable
-                testID="add-roastery-btn"
+                ref={filterBtnRef}
                 onPress={() => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  setShowModal(true);
+                  openDropdown();
                 }}
                 style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
               >
-                <TornBox color={colors.gold} seed={4} style={styles.addButton}>
-                  <Ionicons name="add" size={26} color={colors.espresso} />
-                </TornBox>
+                <PaperCard variant="chip" shape={3} shadow={0} contentStyle={styles.chipPad}>
+                  <View style={styles.chipInner}>
+                    <Text style={styles.chipText}>{selectedCity ?? "Alle"}</Text>
+                    <ChevronDown size={14} color={COLORS.coffee800} strokeWidth={STROKE} />
+                  </View>
+                </PaperCard>
               </Pressable>
-            </View>
+            )}
+            <Pressable
+              testID="add-roastery-btn"
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setShowModal(true);
+              }}
+              style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
+            >
+              <PaperCard variant="chip" shape={2} shadow={0} style={styles.plusOuter} contentStyle={styles.plusPad}>
+                <Plus size={22} color={COLORS.coffee800} strokeWidth={STROKE} />
+              </PaperCard>
+            </Pressable>
           </View>
+        </View>
 
-          <View style={[styles.headerRule, { backgroundColor: colors.hair }]} />
+        {loading ? (
+          <View style={styles.skeletonBlock}>
+            {[0, 1, 2].map((i) => (
+              <PaperCard
+                key={i}
+                variant="light"
+                shape={LIST_SHAPES[i % LIST_SHAPES.length]}
+                shadow={1}
+                style={[styles.skeletonCard, { opacity: 1 - i * 0.3 }]}
+                contentStyle={styles.skeletonPad}
+              />
+            ))}
+          </View>
+        ) : roasteries.length === 0 ? (
+          <View style={styles.centerState}>
+            <Coffee size={52} color={COLORS.accent300} strokeWidth={STROKE} />
+            <Text style={styles.emptyTitle}>Noch keine Röstereien</Text>
+            <Text style={styles.emptySubtitle}>
+              Tippe auf + um deine erste Rösterei hinzuzufügen
+            </Text>
+          </View>
+        ) : filteredRoasteries.length === 0 ? (
+          <View style={styles.centerState}>
+            <Globe size={52} color={COLORS.accent300} strokeWidth={STROKE} />
+            <Text style={styles.emptyTitle}>Keine Röstereien in {selectedCity}</Text>
+          </View>
+        ) : (
+          <View style={styles.body}>
+            {/* ---------- Hero-Karte "Heute entdeckt" (dunkel) ---------- */}
+            {heroShown && (
+              <View style={styles.heroWrap}>
+                <PaperCard variant="dark" shape={1} shadow={2}>
+                  <View style={styles.heroHeader}>
+                    <Text style={[ui.eyebrow, ui.eyebrowOnDark]}>HEUTE ENTDECKT</Text>
+                    <Pressable
+                      onPress={() => {
+                        setFactDismissed(true);
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      }}
+                      hitSlop={10}
+                      style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
+                    >
+                      <X size={20} color={COLORS.accent100} strokeWidth={STROKE} />
+                    </Pressable>
+                  </View>
 
-          {loading ? (
-        <View style={styles.centerState}>
-          <View style={[styles.skeletonCard, { backgroundColor: colors.surface }]} />
-          <View style={[styles.skeletonCard, { backgroundColor: colors.surface, opacity: 0.6 }]} />
-          <View style={[styles.skeletonCard, { backgroundColor: colors.surface, opacity: 0.3 }]} />
-        </View>
-      ) : roasteries.length === 0 ? (
-        <View style={styles.centerState}>
-          <Ionicons name="cafe-outline" size={52} color={colors.inkFaint} />
-          <Text style={[styles.emptyTitle, { color: colors.ink, fontFamily: SERIF_BOLD }]}>
-            Noch keine Röstereien
-          </Text>
-          <Text style={[styles.emptySubtitle, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
-            Tippe auf + um deine erste Rösterei hinzuzufügen
-          </Text>
-        </View>
-      ) : filteredRoasteries.length === 0 ? (
-        <View style={styles.centerState}>
-          <Ionicons name="location-outline" size={52} color={colors.inkFaint} />
-          <Text style={[styles.emptyTitle, { color: colors.ink, fontFamily: SERIF_BOLD }]}>
-            Keine Röstereien in {selectedCity}
-          </Text>
-        </View>
-      ) : (
-        <View style={styles.body}>
-          {!factDismissed && discoveryFact ? (
-            <TornSheet tone="espresso" seed={3} rotate={-0.8} contentStyle={styles.notePad} style={styles.noteSheet}>
-              <View style={[styles.noteMotif, { pointerEvents: "none" }]}>
-                <CompassIcon size={92} color={colors.gold} />
-              </View>
-              <View style={styles.todayHeaderRow}>
-                <Text style={[styles.sectionLabel, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
-                  HEUTE ENTDECKT
-                </Text>
-                <View style={styles.todayActions}>
+                  {!factCollapsed && discoveryFact && (
+                    <Text style={styles.heroText}>{discoveryFact.text}</Text>
+                  )}
+
                   <Pressable
                     onPress={() => {
                       const next = !factCollapsed;
@@ -275,129 +284,119 @@ export default function RoasteriesScreen() {
                       AsyncStorage.setItem("discovery_card_collapsed", next ? "true" : "false");
                     }}
                     hitSlop={8}
-                    style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
+                    style={({ pressed }) => [styles.heroToggleRow, { opacity: pressed ? 0.6 : 1 }]}
                   >
-                    <Text style={[styles.todayToggle, { color: colors.inkSoft, fontFamily: "Inter_600SemiBold" }]}>
+                    <Text style={styles.heroToggle}>
                       {factCollapsed ? "Mehr anzeigen" : "Weniger anzeigen"}
                     </Text>
+                    {factCollapsed ? (
+                      <ChevronDown size={15} color={COLORS.accent100} strokeWidth={STROKE} />
+                    ) : (
+                      <ChevronUp size={15} color={COLORS.accent100} strokeWidth={STROKE} />
+                    )}
                   </Pressable>
-                  <Pressable
-                    onPress={() => {
-                      setFactDismissed(true);
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    }}
-                    hitSlop={8}
-                    style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
-                  >
-                    <Feather name="x" size={15} color={colors.inkFaint} />
-                  </Pressable>
+                </PaperCard>
+              </View>
+            )}
+
+            {/* ---------- Statistik-Karte "Entdeckungen" (Hero-Überlapp) ---------- */}
+            <Pressable
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                router.push("/discoveries");
+              }}
+              style={({ pressed }) => [styles.statsWrap, { opacity: pressed ? 0.95 : 1 }]}
+            >
+              <PaperCard
+                variant="light"
+                shape={2}
+                shadow={2}
+                contentStyle={{ padding: 20, paddingTop: heroShown ? 34 : 22 }}
+              >
+                <Text style={[ui.eyebrow, styles.statsEyebrow]}>ENTDECKUNGEN</Text>
+                <View style={styles.statsRow}>
+                  {[
+                    { v: discoveryStats?.coffeeCount ?? 0, l: "Kaffees", Icon: Coffee },
+                    { v: discoveryStats?.roasteryCount ?? 0, l: "Röstereien", Icon: Factory },
+                    { v: discoveryStats?.countryCount ?? 0, l: "Herkunftsländer", Icon: Globe },
+                  ].map((s, i) => (
+                    <View
+                      key={s.l}
+                      style={[
+                        styles.statCol,
+                        i > 0 && { borderLeftWidth: 1, borderLeftColor: COLORS.dividerSoft },
+                      ]}
+                    >
+                      <s.Icon size={22} color={COLORS.accent300} strokeWidth={STROKE} />
+                      <Text style={styles.statValue}>{s.v}</Text>
+                      <Text style={styles.statLabel}>{s.l}</Text>
+                    </View>
+                  ))}
                 </View>
-              </View>
-              {!factCollapsed && (
-                <Text style={[styles.todayText, { color: colors.ink, fontFamily: SERIF_MED }]}>
-                  {discoveryFact.text}
-                </Text>
-              )}
-            </TornSheet>
-          ) : null}
+              </PaperCard>
+            </Pressable>
 
-          <Pressable
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              router.push("/discoveries");
-            }}
-            style={({ pressed }) => ({ opacity: pressed ? 0.95 : 1 })}
-          >
-            <TornSheet tone="cream" variant="wide" seed={11} rotate={0.6} contentStyle={styles.statsPad} style={styles.statsSheet}>
-              <View style={styles.discoveryHeader}>
-                <Text style={[styles.sectionLabel, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
-                  ENTDECKUNGEN
-                </Text>
-                <Ionicons name="chevron-forward" size={16} color={colors.inkFaint} />
-              </View>
-              <View style={styles.discoveryStats}>
-                {[
-                  { v: discoveryStats?.coffeeCount ?? 0, l: "Kaffees", Icon: CupIcon },
-                  { v: discoveryStats?.roasteryCount ?? 0, l: "Röstereien", Icon: RoasteryIcon },
-                  { v: discoveryStats?.countryCount ?? 0, l: "Herkunftsländer", Icon: GlobeIcon },
-                ].map((s) => (
-                  <View key={s.l} style={styles.discoveryStat}>
-                    <s.Icon size={26} color={colors.gold} />
-                    <Text style={[styles.discoveryStatValue, { color: colors.ink, fontFamily: "Inter_700Bold" }]}>
-                      {s.v}
-                    </Text>
-                    <Text style={[styles.discoveryStatLabel, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
-                      {s.l}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            </TornSheet>
-          </Pressable>
-
-          {/* Röstereien — each entry is a standalone, clean index card */}
-          <View style={styles.listBlock}>
-            {filteredRoasteries.map((item) => {
-              const avg = avgRatings[item.id];
-              const count = coffeeCounts[item.id] ?? 0;
-              return (
-                <Pressable
-                  key={item.id}
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    router.push({ pathname: "/roastery/[id]", params: { id: item.id, name: item.name } });
-                  }}
-                  onLongPress={() => handleDelete(item)}
-                  style={({ pressed }) => [
-                    styles.roasteryCard,
-                    {
-                      backgroundColor: colors.surfaceElevated,
-                      opacity: pressed ? 0.9 : 1,
-                    },
-                  ]}
-                >
-                  <View style={styles.cardSurface}>
-                    <Image
-                      source={paper02CardTexture}
-                      resizeMode="stretch"
-                      style={styles.cardTextureFill}
-                    />
-                    <View style={[styles.cardIcon, { backgroundColor: colors.gold + "1F" }]}>
-                      <RoasteryIcon size={28} color={colors.gold} />
-                    </View>
-                    <View style={styles.cardContent}>
-                      <Text style={[styles.cardName, { color: colors.ink, fontFamily: SERIF_BOLD }]} numberOfLines={1}>
-                        {item.name}
-                      </Text>
-                      <Text style={[styles.cardMeta, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]} numberOfLines={1}>
-                        {item.location ? `${item.location} · ` : ""}{count} {count === 1 ? "Kaffee" : "Kaffees"}
-                      </Text>
-                      {avg ? renderScore(avg) : null}
-                    </View>
-                    <Ionicons name="chevron-forward" size={20} color={colors.inkFaint} />
-                  </View>
-                </Pressable>
-              );
-            })}
+            {/* ---------- Rösterei-Liste ---------- */}
+            <View style={styles.listBlock}>
+              {filteredRoasteries.map((item, i) => {
+                const avg = avgRatings[item.id];
+                const count = coffeeCounts[item.id] ?? 0;
+                return (
+                  <Pressable
+                    key={item.id}
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      router.push({ pathname: "/roastery/[id]", params: { id: item.id, name: item.name } });
+                    }}
+                    onLongPress={() => handleDelete(item)}
+                    style={({ pressed }) => ({ opacity: pressed ? 0.9 : 1 })}
+                  >
+                    <PaperCard
+                      variant="light"
+                      shape={LIST_SHAPES[i % LIST_SHAPES.length]}
+                      shadow={1}
+                      contentStyle={styles.listPad}
+                    >
+                      <View style={styles.listRow}>
+                        <PaperCard
+                          variant="tile"
+                          shape={2}
+                          shadow={0}
+                          style={styles.tileOuter}
+                          contentStyle={styles.tilePad}
+                        >
+                          <Coffee size={24} color={COLORS.accent400} strokeWidth={STROKE} />
+                        </PaperCard>
+                        <View style={styles.listText}>
+                          <Text style={styles.cardName} numberOfLines={1}>
+                            {item.name}
+                          </Text>
+                          <Text style={styles.cardMeta} numberOfLines={1}>
+                            {item.location ? `${item.location} · ` : ""}
+                            {count} {count === 1 ? "Kaffee" : "Kaffees"}
+                          </Text>
+                          {avg ? renderScore(avg) : null}
+                        </View>
+                        <ChevronRight size={20} color={COLORS.accent300} strokeWidth={STROKE} />
+                      </View>
+                    </PaperCard>
+                  </Pressable>
+                );
+              })}
+            </View>
           </View>
-        </View>
-          )}
-        </TornSheet>
+        )}
       </ScrollView>
 
-      {/* Dropdown Modal */}
+      {/* ---------- Stadt-Filter Dropdown ---------- */}
       <Modal visible={showDropdown} transparent animationType="fade">
         <Pressable style={styles.dropdownOverlay} onPress={() => setShowDropdown(false)}>
-          <View
-            style={[
-              styles.dropdownMenu,
-              {
-                top: dropdownPos.top,
-                left: dropdownPos.left,
-                backgroundColor: colors.surfaceElevated,
-                borderColor: colors.border,
-              },
-            ]}
+          <PaperCard
+            variant="light"
+            shape={2}
+            shadow={2}
+            style={[styles.dropdownMenu, { top: dropdownPos.top, left: dropdownPos.left }]}
+            contentStyle={styles.dropdownContent}
           >
             <Pressable
               onPress={() => {
@@ -407,29 +406,13 @@ export default function RoasteriesScreen() {
               }}
               style={({ pressed }) => [
                 styles.dropdownItem,
-                {
-                  backgroundColor: !selectedCity
-                    ? colors.tint + "18"
-                    : pressed
-                    ? colors.surface
-                    : "transparent",
-                },
+                { backgroundColor: pressed ? COLORS.paperDim : "transparent" },
               ]}
             >
-              <Text
-                style={[
-                  styles.dropdownItemText,
-                  {
-                    color: !selectedCity ? colors.tint : colors.text,
-                    fontFamily: !selectedCity ? "Inter_600SemiBold" : "Inter_400Regular",
-                  },
-                ]}
-              >
+              <Text style={[styles.dropdownItemText, !selectedCity && styles.dropdownItemTextActive]}>
                 Alle
               </Text>
-              {!selectedCity && (
-                <Ionicons name="checkmark" size={15} color={colors.tint} />
-              )}
+              {!selectedCity && <Check size={15} color={COLORS.accent400} strokeWidth={STROKE} />}
             </Pressable>
             {cities.map((city, idx) => (
               <Pressable
@@ -442,104 +425,65 @@ export default function RoasteriesScreen() {
                 style={({ pressed }) => [
                   styles.dropdownItem,
                   idx < cities.length - 1 && styles.dropdownItemBorder,
-                  {
-                    backgroundColor:
-                      selectedCity === city
-                        ? colors.tint + "18"
-                        : pressed
-                        ? colors.surface
-                        : "transparent",
-                    borderTopColor: colors.border,
-                  },
+                  { backgroundColor: pressed ? COLORS.paperDim : "transparent" },
                 ]}
               >
-                <Text
-                  style={[
-                    styles.dropdownItemText,
-                    {
-                      color: selectedCity === city ? colors.tint : colors.text,
-                      fontFamily: selectedCity === city ? "Inter_600SemiBold" : "Inter_400Regular",
-                    },
-                  ]}
-                >
+                <Text style={[styles.dropdownItemText, selectedCity === city && styles.dropdownItemTextActive]}>
                   {city}
                 </Text>
-                {selectedCity === city && (
-                  <Ionicons name="checkmark" size={15} color={colors.tint} />
-                )}
+                {selectedCity === city && <Check size={15} color={COLORS.accent400} strokeWidth={STROKE} />}
               </Pressable>
             ))}
-          </View>
+          </PaperCard>
         </Pressable>
       </Modal>
 
+      {/* ---------- Neue Rösterei ---------- */}
       <Modal visible={showModal} animationType="slide" transparent presentationStyle="overFullScreen">
         <KeyboardAvoidingView behavior="padding" style={{ flex: 1, justifyContent: "flex-end" }}>
-          <Pressable style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)" }} onPress={() => setShowModal(false)} />
-        <View style={[styles.modalSheet, { backgroundColor: colors.surfaceElevated, paddingBottom: bottomPad + 20 }]}>
-          <View style={[styles.modalHandle, { backgroundColor: colors.border }]} />
-          <Text style={[styles.modalTitle, { color: colors.ink, fontFamily: SERIF_BOLD }]}>
-            Neue Rösterei
-          </Text>
+          <Pressable style={styles.modalScrim} onPress={() => setShowModal(false)} />
+          <View style={[ui.sheet, { paddingBottom: bottomPad + 24 }]}>
+            <View style={ui.sheetHandle} />
+            <Text style={styles.modalTitle}>Neue Rösterei</Text>
 
-          <Text style={[styles.inputLabel, { color: colors.inkSoft, fontFamily: "Inter_500Medium" }]}>
-            Name *
-          </Text>
-          <TextInput
-            style={[
-              styles.input,
-              {
-                backgroundColor: colors.surface,
-                borderColor: colors.border,
-                color: colors.text,
-                fontFamily: "Inter_400Regular",
-                borderRadius: cardExtras.cardRadius,
-              },
-            ]}
-            placeholder="z.B. Bonanza Coffee"
-            placeholderTextColor={colors.textSecondary}
-            value={newName}
-            onChangeText={setNewName}
-            autoFocus
-          />
+            <Text style={ui.label}>Name *</Text>
+            <TextInput
+              style={[ui.input, styles.inputSpacing]}
+              placeholder="z.B. Bonanza Coffee"
+              placeholderTextColor={COLORS.coffee600}
+              value={newName}
+              onChangeText={setNewName}
+              autoFocus
+            />
 
-          <Text style={[styles.inputLabel, { color: colors.inkSoft, fontFamily: "Inter_500Medium" }]}>
-            Ort (optional)
-          </Text>
-          <TextInput
-            style={[
-              styles.input,
-              {
-                backgroundColor: colors.surface,
-                borderColor: colors.border,
-                color: colors.text,
-                fontFamily: "Inter_400Regular",
-                borderRadius: cardExtras.cardRadius,
-              },
-            ]}
-            placeholder="z.B. Berlin"
-            placeholderTextColor={colors.textSecondary}
-            value={newLocation}
-            onChangeText={setNewLocation}
-            returnKeyType="done"
-            onSubmitEditing={handleAdd}
-          />
+            <Text style={ui.label}>Ort (optional)</Text>
+            <TextInput
+              style={[ui.input, styles.inputSpacing]}
+              placeholder="z.B. Berlin"
+              placeholderTextColor={COLORS.coffee600}
+              value={newLocation}
+              onChangeText={setNewLocation}
+              returnKeyType="done"
+              onSubmitEditing={handleAdd}
+            />
 
-          <PolyActionButton
-            onPress={handleAdd}
-            disabled={!newName.trim()}
-            color={newName.trim() ? colors.tint : colors.border}
-            style={styles.saveButton}
-          >
-            <Text style={[styles.saveButtonText, { fontFamily: "Inter_600SemiBold" }]}>
-              Hinzufügen
-            </Text>
-          </PolyActionButton>
-        </View>
+            <Pressable
+              onPress={handleAdd}
+              disabled={!newName.trim()}
+              style={({ pressed }) => [
+                ui.btnPrimary,
+                styles.saveButton,
+                !newName.trim() && ui.btnDisabled,
+                { opacity: pressed && newName.trim() ? 0.9 : 1 },
+              ]}
+            >
+              <Text style={ui.btnPrimaryText}>Hinzufügen</Text>
+            </Pressable>
+          </View>
         </KeyboardAvoidingView>
       </Modal>
 
-      {/* Floating settings button */}
+      {/* ---------- Einstellungen ---------- */}
       <Pressable
         onPress={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -547,309 +491,182 @@ export default function RoasteriesScreen() {
         }}
         style={({ pressed }) => [
           styles.fabSettings,
-          {
-            backgroundColor: colors.espresso,
-            bottom: bottomPad + 20,
-            opacity: pressed ? 0.8 : 1,
-          },
+          { bottom: bottomPad + 20, opacity: pressed ? 0.8 : 1 },
         ]}
         hitSlop={8}
       >
-        <Ionicons name="settings-outline" size={20} color={colors.goldLight} />
+        <PaperCard variant="dark" shape={1} shadow={2} style={styles.fabCard} contentStyle={styles.fabPad}>
+          <SettingsIcon size={20} color={COLORS.accent100} strokeWidth={STROKE} />
+        </PaperCard>
       </Pressable>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  pagePad: {
-    paddingHorizontal: 24,
-    paddingBottom: 10,
-  },
-  headerRule: {
-    height: StyleSheet.hairlineWidth,
-    marginTop: 22,
-  },
-  body: {
-    paddingTop: 24,
-  },
-  listBlock: {
-    marginTop: 4,
-  },
   headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
+    marginBottom: 22,
   },
-  headerLeft: {
-    flex: 1,
+  headerLeft: { flex: 1, minWidth: 0 },
+  title: {
+    fontFamily: FONTS.display,
+    fontSize: 32,
+    lineHeight: 36,
+    color: COLORS.coffee800,
+    marginTop: 6,
   },
   headerActions: {
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-    marginTop: 6,
+    marginTop: 4,
+    flexShrink: 0,
   },
-  kicker: {
-    fontSize: 11,
-    letterSpacing: 3,
-    marginBottom: 4,
+
+  chipPad: { paddingVertical: 8, paddingHorizontal: 16 },
+  chipInner: { flexDirection: "row", alignItems: "center", gap: 6 },
+  chipText: {
+    fontFamily: "Inter_600SemiBold",
+    fontSize: 14,
+    color: COLORS.coffee800,
   },
-  title: {
-    fontSize: 40,
-    lineHeight: 46,
+  plusOuter: { width: 44, height: 44 },
+  plusPad: { flex: 1, alignItems: "center", justifyContent: "center", padding: 0 },
+
+  body: {},
+
+  heroWrap: { marginBottom: -14, zIndex: 0 },
+  heroHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
-  filterChip: {
+  heroText: {
+    fontFamily: "Inter_400Regular",
+    fontSize: 15,
+    lineHeight: 23,
+    color: COLORS.paperLight,
+    marginTop: 10,
+  },
+  heroToggleRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
-    paddingHorizontal: 13,
-    paddingVertical: 8,
-    borderRadius: 18,
-  },
-  filterChipText: {
-    fontSize: 13,
-  },
-  addButton: {
-    width: 48,
-    height: 48,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  fabSettings: {
-    position: "absolute",
-    right: 20,
-    width: 46,
-    height: 46,
-    borderRadius: 23,
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-
-  // Heute entdeckt note
-  noteSheet: {
-    marginBottom: 26,
-  },
-  notePad: {
-    paddingHorizontal: 22,
-    paddingVertical: 22,
-    overflow: "hidden",
-  },
-  noteMotif: {
-    position: "absolute",
-    right: -14,
-    bottom: -18,
-    opacity: 0.5,
-  },
-  sectionLabel: {
-    fontSize: 10,
-    letterSpacing: 2.6,
-  },
-  todayHeaderRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  todayActions: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
-  },
-  todayToggle: {
-    fontSize: 11,
-  },
-  todayText: {
-    fontSize: 19,
-    lineHeight: 28,
     marginTop: 14,
-    maxWidth: "82%",
+  },
+  heroToggle: {
+    fontFamily: "Inter_600SemiBold",
+    fontSize: 13,
+    color: COLORS.accent100,
   },
 
-  // Entdeckungen stats sheet
-  statsSheet: {
-    marginBottom: 30,
-  },
-  statsPad: {
-    paddingHorizontal: 24,
-    paddingTop: 18,
-    paddingBottom: 24,
-  },
-  discoveryHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 18,
-  },
-  discoveryStats: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  discoveryStat: {
+  statsWrap: { zIndex: 1 },
+  statsEyebrow: { textAlign: "center" },
+  statsRow: { flexDirection: "row", marginTop: 18 },
+  statCol: {
     flex: 1,
-    alignItems: "center",
-    gap: 6,
-  },
-  discoveryStatValue: {
-    fontSize: 34,
-    lineHeight: 38,
-  },
-  discoveryStatLabel: {
-    fontSize: 12,
-  },
-
-  // Röstereien — standalone cards printed on the real PAPER-02 sheet texture
-  roasteryCard: {
-    borderRadius: 20,
-    marginBottom: 14,
-    shadowColor: "#2C1810",
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.08,
-    shadowRadius: 14,
-    elevation: 2,
-  },
-  cardSurface: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 16,
-    paddingVertical: 20,
-    paddingHorizontal: 18,
-    borderRadius: 20,
-    overflow: "hidden",
-  },
-  cardTextureFill: {
-    ...StyleSheet.absoluteFillObject,
-    width: "100%",
-    height: "100%",
-  },
-  cardIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
+    gap: 7,
+    paddingHorizontal: 6,
   },
-  cardContent: {
-    flex: 1,
+  statValue: {
+    fontFamily: FONTS.displayBold,
+    fontSize: 28,
+    lineHeight: 30,
+    color: COLORS.coffee800,
   },
+  statLabel: {
+    fontFamily: "Inter_400Regular",
+    fontSize: 12,
+    color: COLORS.coffee600,
+    textAlign: "center",
+  },
+
+  listBlock: { marginTop: 16, gap: 14 },
+  listPad: { padding: 20 },
+  listRow: { flexDirection: "row", alignItems: "center", gap: 16 },
+  tileOuter: { width: 52, height: 52 },
+  tilePad: { flex: 1, alignItems: "center", justifyContent: "center", padding: 0 },
+  listText: { flex: 1, minWidth: 0 },
   cardName: {
-    fontSize: 22,
-    lineHeight: 27,
+    fontFamily: FONTS.display,
+    fontSize: 19,
+    lineHeight: 23,
+    color: COLORS.coffee800,
   },
   cardMeta: {
+    fontFamily: "Inter_400Regular",
     fontSize: 13,
+    color: COLORS.coffee600,
     marginTop: 3,
   },
-  scoreRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginTop: 8,
-  },
+  scoreRow: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 6 },
   scoreText: {
-    fontSize: 14,
+    fontFamily: "Inter_500Medium",
+    fontSize: 12.5,
+    color: COLORS.accent400,
   },
-  scoreDivider: {
-    fontSize: 14,
-    opacity: 0.7,
-  },
+  scoreDot: { fontSize: 12.5, color: COLORS.dividerSoft },
 
-  // States
   centerState: {
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: 24,
-    paddingVertical: 72,
+    paddingTop: 80,
     gap: 12,
   },
-  skeletonCard: {
-    width: "86%",
-    height: 96,
-    borderRadius: 16,
-    opacity: 0.5,
-  },
+  skeletonBlock: { marginTop: 4 },
+  skeletonCard: { height: 84, marginBottom: 14 },
+  skeletonPad: { flex: 1, padding: 0 },
   emptyTitle: {
-    fontSize: 24,
-    textAlign: "center",
+    fontFamily: FONTS.display,
+    fontSize: 20,
+    color: COLORS.coffee800,
+    marginTop: 4,
   },
   emptySubtitle: {
+    fontFamily: "Inter_400Regular",
     fontSize: 14,
+    color: COLORS.coffee600,
     textAlign: "center",
-    lineHeight: 20,
+    maxWidth: 260,
   },
 
-  // Dropdown
-  dropdownOverlay: {
-    flex: 1,
-  },
+  dropdownOverlay: { flex: 1 },
   dropdownMenu: {
     position: "absolute",
-    minWidth: 180,
-    borderRadius: 14,
-    borderWidth: 1,
-    paddingVertical: 6,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.18,
-    shadowRadius: 16,
-    elevation: 8,
+    minWidth: 170,
   },
+  dropdownContent: { padding: 8 },
   dropdownItem: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    gap: 16,
+    paddingVertical: 11,
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 12,
   },
-  dropdownItemBorder: {
-    borderTopWidth: StyleSheet.hairlineWidth,
-  },
-  dropdownItemText: {
-    fontSize: 15,
-  },
+  dropdownItemBorder: { borderBottomWidth: 1, borderBottomColor: COLORS.dividerSoft },
+  dropdownItemText: { fontFamily: "Inter_400Regular", fontSize: 15, color: COLORS.coffee700 },
+  dropdownItemTextActive: { fontFamily: "Inter_600SemiBold", color: COLORS.accent400 },
 
-  // Modal
-  modalSheet: {
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    paddingHorizontal: 24,
-    paddingTop: 12,
-  },
-  modalHandle: {
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    alignSelf: "center",
-    marginBottom: 20,
-  },
+  modalScrim: { flex: 1, backgroundColor: COLORS.coffee900, opacity: 0.45 },
   modalTitle: {
-    fontSize: 24,
-    marginBottom: 20,
+    fontFamily: FONTS.display,
+    fontSize: 22,
+    color: COLORS.coffee800,
+    marginBottom: 18,
   },
-  inputLabel: {
-    fontSize: 13,
-    marginBottom: 8,
-    marginTop: 4,
+  inputSpacing: { marginBottom: 16 },
+  saveButton: { marginTop: 6 },
+
+  fabSettings: {
+    position: "absolute",
+    right: 20,
   },
-  input: {
-    height: 50,
-    borderWidth: 1,
-    paddingHorizontal: 16,
-    fontSize: 16,
-    marginBottom: 16,
-  },
-  saveButton: {
-    marginTop: 8,
-    marginBottom: 8,
-  },
-  saveButtonText: {
-    color: "#FFF8EC",
-    fontSize: 16,
-  },
+  fabCard: { width: 48, height: 48 },
+  fabPad: { flex: 1, alignItems: "center", justifyContent: "center", padding: 0 },
 });
