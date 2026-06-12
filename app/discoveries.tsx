@@ -33,7 +33,7 @@ import {
 import { useThemeColors, useCardExtras, useTheme } from "@/context/ThemeContext";
 import { useUserNames } from "@/context/UserNamesContext";
 import { PolyBackground } from "@/components/PolyBackground";
-import { TornDefs, TornSheet, Grain, Hairline, IconStamp } from "@/components/TornPaper";
+import { TornDefs, TornSheet, StretchSheet, Grain, Hairline, IconStamp } from "@/components/TornPaper";
 import { CoffeeOriginMap } from "@/components/CoffeeOriginMap";
 import { COFFEE_WORLD_MAP } from "@/constants/coffeeMap";
 import {
@@ -469,15 +469,15 @@ export default function DiscoveriesScreen() {
               {/* GEMEINSAMER FAVORIT — espresso feature plane */}
               {user2active && sharedFav && (
                 <View style={styles.heroWrap}>
-                  <TornSheet tone="espresso" seed={4} rotate={-0.9} contentStyle={styles.heroCard}>
+                  <StretchSheet variant="gradient" contentStyle={styles.heroCard}>
                     <Text style={[styles.heroLabel, { color: colors.gold, fontFamily: "Inter_600SemiBold" }]}>
                       GEMEINSAMER FAVORIT
                     </Text>
-                    <Text style={[styles.heroName, { color: colors.ink, fontFamily: SERIF_BOLD }]} numberOfLines={2}>
+                    <Text style={[styles.heroName, { color: "#FBF1DF", fontFamily: SERIF_BOLD }]} numberOfLines={2}>
                       {sharedFav.name}
                     </Text>
                     {sharedFav.roasteryName ? (
-                      <Text style={[styles.heroRoastery, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]} numberOfLines={1}>
+                      <Text style={[styles.heroRoastery, { color: "rgba(251,241,223,0.85)", fontFamily: "Inter_400Regular" }]} numberOfLines={1}>
                         {sharedFav.roasteryName}
                       </Text>
                     ) : null}
@@ -498,7 +498,7 @@ export default function DiscoveriesScreen() {
                         </Text>
                       </View>
                     </View>
-                  </TornSheet>
+                  </StretchSheet>
                 </View>
               )}
 
@@ -645,7 +645,7 @@ export default function DiscoveriesScreen() {
         </TornSheet>
 
         {/* ── AROMEN — cream collectible chips ──────────────────────── */}
-        <TornSheet tone="espresso" seed={5} rotate={-0.7} contentStyle={styles.sheetPad}>
+        <StretchSheet variant="cutout" contentStyle={styles.sheetPad}>
           <Text style={[styles.sectionLabel, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
             AROMEN
           </Text>
@@ -670,10 +670,10 @@ export default function DiscoveriesScreen() {
               />
             ))}
           </View>
-        </TornSheet>
+        </StretchSheet>
 
         {/* ── AUFBEREITUNGEN — cream collectible chips ──────────────── */}
-        <TornSheet tone="espresso" seed={11} rotate={0.7} contentStyle={styles.sheetPad}>
+        <StretchSheet variant="cutout" contentStyle={styles.sheetPad}>
           <Text style={[styles.sectionLabel, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
             AUFBEREITUNGEN
           </Text>
@@ -698,7 +698,7 @@ export default function DiscoveriesScreen() {
               />
             ))}
           </View>
-        </TornSheet>
+        </StretchSheet>
       </ScrollView>
 
       {/* ── Country detail sheet ──────────────────────────────────────── */}

@@ -8,6 +8,7 @@ import {
   View,
   ViewStyle,
 } from "react-native";
+import { Asset } from "expo-asset";
 import { useThemeColors } from "@/context/ThemeContext";
 import {
   SHEET_TEXTURES,
@@ -109,7 +110,7 @@ export function TornSheet({
   // The torn silhouette comes from the PNG's own transparent alpha edge.
   const v: SheetVariant = variant ?? (tone === "espresso" ? "hero" : "main");
   const tex = SHEET_TEXTURES[v];
-  const heavy = v === "hero" || v === "accent";
+  const heavy = v === "hero" || v === "accent" || v === "gradient";
   const flip = seed % 2 === 0; // mirror the silhouette so adjacent sheets differ
   const shadow = heavy
     ? "drop-shadow(0 12px 22px rgba(20,12,6,0.42))"
@@ -168,6 +169,51 @@ export function TornSheet({
   return (
     <View testID={testID} style={styles.wrap}>
       {inner}
+    </View>
+  );
+}
+
+export function StretchSheet({
+  children,
+  variant,
+  style,
+  contentStyle,
+  testID,
+}: {
+  children: React.ReactNode;
+  variant: SheetVariant;
+  style?: StyleProp<ViewStyle>;
+  contentStyle?: StyleProp<ViewStyle>;
+  testID?: string;
+}) {
+  const tex = SHEET_TEXTURES[variant];
+  if (isWeb) {
+    const uri = Asset.fromModule(tex).uri;
+    return (
+      <View testID={testID} style={styles.wrap}>
+        <View
+          style={[
+            styles.container,
+            webStyle({
+              backgroundImage: `url("${uri}")`,
+              backgroundSize: "100% 100%",
+              backgroundRepeat: "no-repeat",
+              filter: "drop-shadow(0 10px 18px rgba(20,12,6,0.34))",
+            }),
+            style,
+          ]}
+        >
+          <View style={[styles.content, contentStyle]}>{children}</View>
+        </View>
+      </View>
+    );
+  }
+  return (
+    <View testID={testID} style={styles.wrap}>
+      <View style={[styles.container, style]}>
+        <Image source={tex} resizeMode="stretch" style={StyleSheet.absoluteFill} />
+        <View style={[styles.content, contentStyle]}>{children}</View>
+      </View>
     </View>
   );
 }

@@ -28,6 +28,8 @@ export const paperStainedTexture = require("./paper_stained.png");
 export const accentSectionTexture = require("./accent_section.png");
 export const accentTileTexture = require("./accent_tile.png");
 export const accentButtonTexture = require("./accent_button.png");
+export const sheetCutoutTexture = require("./sheet_cutout.png");
+export const sheetGradientTexture = require("./sheet_gradient.png");
 
 // Sheet-shape lookup. A TornSheet picks its background from here by `variant`.
 export const SHEET_TEXTURES = {
@@ -38,6 +40,8 @@ export const SHEET_TEXTURES = {
   long: paperLongTexture,
   hero: paperStainedTexture,
   accent: accentSectionTexture,
+  cutout: sheetCutoutTexture,
+  gradient: sheetGradientTexture,
 } as const;
 
 export type SheetVariant = keyof typeof SHEET_TEXTURES;
