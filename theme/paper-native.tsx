@@ -137,7 +137,9 @@ export function PaperCard({
 /* ---------- Fertige UI-Stile ----------
    Kleine Bedienelemente bekommen KEINE Welle – nur ruhige Rundungen. */
 export const ui = StyleSheet.create({
-  appBg: { flex: 1, backgroundColor: COLORS.paperDim },
+  // Page background is now the tiled paper texture rendered globally behind the
+  // navigator (see PaperBackground). Screens stay transparent so it shows.
+  appBg: { flex: 1, backgroundColor: "transparent" },
 
   eyebrow: {
     fontFamily: FONTS.eyebrow,

@@ -1,6 +1,7 @@
 import React from "react";
 import {
   Image,
+  ImageBackground,
   Platform,
   Pressable,
   StyleProp,
@@ -15,6 +16,7 @@ import {
   SheetVariant,
   accentButtonTexture,
   iconTileTextures,
+  paperBgTexture,
 } from "@/assets/textures";
 
 const isWeb = Platform.OS === "web";
@@ -65,6 +67,44 @@ export function Grain() {
           mixBlendMode: "multiply",
         }),
       ]}
+    />
+  );
+}
+
+// Whole-app page background: the user's real kraft-paper photo, tiled at its
+// native resolution so the texture fully covers the screen without being
+// stretched/upscaled (which would soften it). On web we hand the tiling to the
+// DOM (background-repeat) using the asset URI — RN Web does not tile <Image>
+// reliably; on native we use ImageBackground with resizeMode="repeat".
+let paperBgUri: string | null = null;
+function paperBgCssUri(): string {
+  if (paperBgUri) return paperBgUri;
+  paperBgUri = Asset.fromModule(paperBgTexture).uri;
+  return paperBgUri;
+}
+
+export function PaperBackground() {
+  if (isWeb) {
+    return (
+      <View
+        pointerEvents="none"
+        style={[
+          StyleSheet.absoluteFill,
+          webStyle({
+            backgroundImage: `url("${paperBgCssUri()}")`,
+            backgroundRepeat: "repeat",
+            backgroundSize: "auto",
+          }),
+        ]}
+      />
+    );
+  }
+  return (
+    <ImageBackground
+      pointerEvents="none"
+      source={paperBgTexture}
+      resizeMode="repeat"
+      style={StyleSheet.absoluteFill}
     />
   );
 }

@@ -17,6 +17,10 @@
 
 export const coffeeBgTexture = require("./coffee_bg.png");
 
+// Whole-app page background — the user's real kraft-paper photo, tiled at its
+// native resolution behind every screen (replaces the old solid beige fill).
+export const paperBgTexture = require("./paper_bg.png");
+
 export const paperMainTexture = require("./paper_main.png");
 export const paperWideTexture = require("./paper_wide.png");
 // PAPER-02 opaque interior swatch — printed-paper fill for the roastery card.
