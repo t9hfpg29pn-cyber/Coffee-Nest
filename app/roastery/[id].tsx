@@ -31,13 +31,9 @@ import {
 import { useUserNames } from "@/context/UserNamesContext";
 import { PaperCard, COLORS, FONTS, ui } from "@/theme/paper-native";
 import { PaperTile, navTileSource } from "@/components/PaperTiles";
-import { TemplateCard } from "@/components/TornPaper";
-import { cardCoffeeTexture } from "@/assets/textures";
 
 const STROKE = 1.75;
 const LIST_SHAPES: Array<1 | 2 | 3> = [1, 2, 3];
-// Aspect ratio of the coffee label template, trimmed to the card+shadow (1934×497).
-const CARD_COFFEE_AR = 1934 / 497;
 
 function CoffeeBeanIcon({ size = 18, color }: { size?: number; color: string }) {
   const h = Math.round(size * 1.2);
@@ -366,25 +362,37 @@ export default function RoasteryScreen() {
                 onLongPress={() => handleDelete(item)}
                 style={({ pressed }) => ({ opacity: pressed ? 0.9 : 1 })}
               >
-                <TemplateCard
-                  source={cardCoffeeTexture}
-                  aspectRatio={CARD_COFFEE_AR}
-                  contentStyle={styles.coffeeCardText}
+                <PaperCard
+                  variant="light"
+                  shape={LIST_SHAPES[i % LIST_SHAPES.length]}
+                  shadow={2}
+                  contentStyle={styles.cardContent}
                 >
-                  <Text style={styles.cardName} numberOfLines={2}>
-                    {item.name}
-                  </Text>
-                  {item.aromaDescription ? (
-                    <Text style={styles.cardMeta} numberOfLines={1} ellipsizeMode="tail">
-                      {item.aromaDescription}
-                    </Text>
-                  ) : item.pricePerKg ? (
-                    <Text style={styles.cardMeta} numberOfLines={1}>
-                      {formatPrice(item.pricePerKg)} €/kg
-                    </Text>
-                  ) : null}
-                  {renderScore(item)}
-                </TemplateCard>
+                  <View style={styles.listRow}>
+                    <PaperTile source={navTileSource("coffee")} size={60} />
+                    <View style={styles.listText}>
+                      <Text style={styles.cardName} numberOfLines={1}>
+                        {item.name}
+                      </Text>
+                      {item.pricePerKg ? (
+                        <Text style={styles.cardMeta} numberOfLines={1}>
+                          {formatPrice(item.pricePerKg)} €/kg
+                        </Text>
+                      ) : item.aromaDescription ? (
+                        <Text style={styles.cardMeta} numberOfLines={1} ellipsizeMode="tail">
+                          {item.aromaDescription}
+                        </Text>
+                      ) : null}
+                      {renderScore(item)}
+                    </View>
+                    <Ionicons
+                      name="chevron-forward"
+                      size={22}
+                      color={COLORS.accent300}
+                      style={styles.chevron}
+                    />
+                  </View>
+                </PaperCard>
               </Pressable>
             ))}
           </View>
@@ -519,35 +527,30 @@ const styles = StyleSheet.create({
   addPad: { flex: 1, alignItems: "center", justifyContent: "center", padding: 0 },
 
   listBlock: { marginTop: 4, gap: 14 },
-  // Text overlay for the coffee label card: clear the baked-in cup icon on the
-  // left (~27%); no chevron on this template, so only a small right margin.
-  coffeeCardText: {
-    paddingLeft: "27%",
-    paddingRight: "6%",
-    justifyContent: "center",
-  },
-  listPad: { padding: 20 },
+  cardContent: { paddingVertical: 18, paddingHorizontal: 20 },
   listRow: { flexDirection: "row", alignItems: "center", gap: 16 },
   listText: { flex: 1, minWidth: 0 },
   cardName: {
-    fontFamily: FONTS.display,
-    fontSize: 19,
-    lineHeight: 23,
+    fontFamily: FONTS.displayBold,
+    fontSize: 22,
+    lineHeight: 27,
     color: COLORS.coffee800,
   },
   cardMeta: {
-    fontFamily: "Inter_400Regular",
-    fontSize: 13,
+    fontFamily: FONTS.display,
+    fontSize: 15,
+    lineHeight: 19,
     color: COLORS.coffee600,
     marginTop: 3,
   },
-  scoreRow: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 6 },
+  scoreRow: { flexDirection: "row", alignItems: "center", gap: 7, marginTop: 5 },
   scoreText: {
-    fontFamily: "Inter_500Medium",
-    fontSize: 12.5,
-    color: COLORS.accent400,
+    fontFamily: FONTS.display,
+    fontSize: 15,
+    color: COLORS.accent300,
   },
-  scoreDot: { fontSize: 12.5, color: COLORS.dividerSoft },
+  scoreDot: { fontSize: 15, color: COLORS.accent200 },
+  chevron: { marginLeft: 2 },
 
   centerState: {
     alignItems: "center",

@@ -37,13 +37,10 @@ import {
 import { useUserNames } from "@/context/UserNamesContext";
 import { PaperCard, COLORS, FONTS, ui } from "@/theme/paper-native";
 import { PaperTile, navTileSource } from "@/components/PaperTiles";
-import { TemplateCard } from "@/components/TornPaper";
-import { cardRoasteryTexture } from "@/assets/textures";
+import { Ionicons } from "@expo/vector-icons";
 
 const STROKE = 1.75;
 const LIST_SHAPES: Array<1 | 2 | 3> = [1, 2, 3];
-// Aspect ratio of the roastery label template, trimmed to the card+shadow (1847×527).
-const CARD_ROASTERY_AR = 1847 / 527;
 
 export default function RoasteriesScreen() {
   const insets = useSafeAreaInsets();
@@ -352,20 +349,32 @@ export default function RoasteriesScreen() {
                     onLongPress={() => handleDelete(item)}
                     style={({ pressed }) => ({ opacity: pressed ? 0.9 : 1 })}
                   >
-                    <TemplateCard
-                      source={cardRoasteryTexture}
-                      aspectRatio={CARD_ROASTERY_AR}
-                      contentStyle={styles.roasteryCardText}
+                    <PaperCard
+                      variant="light"
+                      shape={LIST_SHAPES[i % LIST_SHAPES.length]}
+                      shadow={2}
+                      contentStyle={styles.cardContent}
                     >
-                      <Text style={styles.cardName} numberOfLines={1}>
-                        {item.name}
-                      </Text>
-                      <Text style={styles.cardMeta} numberOfLines={1}>
-                        {item.location ? `${item.location} · ` : ""}
-                        {count} {count === 1 ? "Kaffee" : "Kaffees"}
-                      </Text>
-                      {avg ? renderScore(avg) : null}
-                    </TemplateCard>
+                      <View style={styles.listRow}>
+                        <PaperTile source={navTileSource("roastery")} size={60} />
+                        <View style={styles.listText}>
+                          <Text style={styles.cardName} numberOfLines={1}>
+                            {item.name}
+                          </Text>
+                          <Text style={styles.cardMeta} numberOfLines={1}>
+                            {item.location ? `${item.location} · ` : ""}
+                            {count} {count === 1 ? "Kaffee" : "Kaffees"}
+                          </Text>
+                          {avg ? renderScore(avg) : null}
+                        </View>
+                        <Ionicons
+                          name="chevron-forward"
+                          size={22}
+                          color={COLORS.accent300}
+                          style={styles.chevron}
+                        />
+                      </View>
+                    </PaperCard>
                   </Pressable>
                 );
               })}
@@ -573,37 +582,30 @@ const styles = StyleSheet.create({
   },
 
   listBlock: { marginTop: 16, gap: 14 },
-  // Text overlay for the roastery label card: clear the baked-in factory icon on
-  // the left (~27%) and the baked-in chevron on the right (~15%), centred.
-  roasteryCardText: {
-    paddingLeft: "27%",
-    paddingRight: "15%",
-    justifyContent: "center",
-  },
-  listPad: { padding: 20 },
+  cardContent: { paddingVertical: 18, paddingHorizontal: 20 },
   listRow: { flexDirection: "row", alignItems: "center", gap: 16 },
-  tileOuter: { width: 52, height: 52 },
-  tilePad: { flex: 1, alignItems: "center", justifyContent: "center", padding: 0 },
   listText: { flex: 1, minWidth: 0 },
   cardName: {
-    fontFamily: FONTS.display,
-    fontSize: 19,
-    lineHeight: 23,
+    fontFamily: FONTS.displayBold,
+    fontSize: 22,
+    lineHeight: 27,
     color: COLORS.coffee800,
   },
   cardMeta: {
-    fontFamily: "Inter_400Regular",
-    fontSize: 13,
+    fontFamily: FONTS.display,
+    fontSize: 15,
+    lineHeight: 19,
     color: COLORS.coffee600,
     marginTop: 3,
   },
-  scoreRow: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 6 },
+  scoreRow: { flexDirection: "row", alignItems: "center", gap: 7, marginTop: 5 },
   scoreText: {
-    fontFamily: "Inter_500Medium",
-    fontSize: 12.5,
-    color: COLORS.accent400,
+    fontFamily: FONTS.display,
+    fontSize: 15,
+    color: COLORS.accent300,
   },
-  scoreDot: { fontSize: 12.5, color: COLORS.dividerSoft },
+  scoreDot: { fontSize: 15, color: COLORS.accent200 },
+  chevron: { marginLeft: 2 },
 
   centerState: {
     alignItems: "center",
