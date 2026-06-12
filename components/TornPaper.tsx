@@ -100,12 +100,13 @@ export function PaperBackground() {
     );
   }
   return (
-    <ImageBackground
-      pointerEvents="none"
-      source={paperBgTexture}
-      resizeMode="repeat"
-      style={StyleSheet.absoluteFill}
-    />
+    <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+      <ImageBackground
+        source={paperBgTexture}
+        resizeMode="repeat"
+        style={StyleSheet.absoluteFill}
+      />
+    </View>
   );
 }
 
@@ -254,6 +255,50 @@ export function StretchSheet({
         <Image source={tex} resizeMode="stretch" style={StyleSheet.absoluteFill} />
         <View style={[styles.content, contentStyle]}>{children}</View>
       </View>
+    </View>
+  );
+}
+
+// A ready-made label card whose artwork (icon + any baked-in chrome like a
+// chevron) IS the full image. The card scales to its parent's width and keeps
+// the artwork's own aspect ratio (no distortion); callers overlay only text.
+// Web uses a stretched DOM background (RN Web won't size a big <Image> to the
+// box); native uses a stretched <Image>.
+export function TemplateCard({
+  source,
+  aspectRatio,
+  contentStyle,
+  style,
+  children,
+}: {
+  source: number;
+  aspectRatio: number;
+  contentStyle?: StyleProp<ViewStyle>;
+  style?: StyleProp<ViewStyle>;
+  children?: React.ReactNode;
+}) {
+  if (isWeb) {
+    const uri = Asset.fromModule(source).uri;
+    return (
+      <View
+        style={[
+          { width: "100%", aspectRatio },
+          webStyle({
+            backgroundImage: `url("${uri}")`,
+            backgroundSize: "100% 100%",
+            backgroundRepeat: "no-repeat",
+          }),
+          style,
+        ]}
+      >
+        <View style={[StyleSheet.absoluteFill, contentStyle]}>{children}</View>
+      </View>
+    );
+  }
+  return (
+    <View style={[{ width: "100%", aspectRatio }, style]}>
+      <Image source={source} resizeMode="stretch" style={StyleSheet.absoluteFill} />
+      <View style={[StyleSheet.absoluteFill, contentStyle]}>{children}</View>
     </View>
   );
 }

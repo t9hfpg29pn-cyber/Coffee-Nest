@@ -4,4 +4,5 @@
 - [Paper-native material language](material-language.md) — ONE design now (theme/paper-native.tsx PaperCard, app/index.tsx canonical); lowpoly/torn-paper retired except app/discoveries.tsx; nav is Stack-only.
 - [Frameless PNG icon tiles](material-language.md) — PaperTiles.tsx tiles are the bare button (NO border/box/IconStamp wrapper); can't tint → select via scale+opacity+gold underline+label, never a ring.
 - [RN Web paper-sheet stretch](rnweb-paper-sheet-stretch.md) — absoluteFill <Image stretch> renders large PNGs at intrinsic size on web (bleeds over siblings); use CSS background-size:100% 100% (StretchSheet) + Asset.fromModule().uri.
+- [Card-template PNG processing](card-template-processing.md) — label-card templates ship opaque cream surround that clashes as a rectangle on tiled bg; flood-fill transparent at LOW fuzz (~4%) + vertical-only trim (keep full width so padding % stay valid).
 - [Expo Go connect on Replit](expo-go-replit-connect.md) — device "Could not connect" = Expo advertises <domain>:8081 but 8081→external 80; set EXPO_PACKAGER_PROXY_URL=https://$REPLIT_DEV_DOMAIN in Start Frontend cmd.

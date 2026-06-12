@@ -16,7 +16,6 @@ import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useLocalSearchParams, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { ChevronRight } from "lucide-react-native";
 import Svg, { Path } from "react-native-svg";
 import * as Haptics from "expo-haptics";
 import {
@@ -32,9 +31,13 @@ import {
 import { useUserNames } from "@/context/UserNamesContext";
 import { PaperCard, COLORS, FONTS, ui } from "@/theme/paper-native";
 import { PaperTile, navTileSource } from "@/components/PaperTiles";
+import { TemplateCard } from "@/components/TornPaper";
+import { cardCoffeeTexture } from "@/assets/textures";
 
 const STROKE = 1.75;
 const LIST_SHAPES: Array<1 | 2 | 3> = [1, 2, 3];
+// Aspect ratio of the coffee label template, trimmed to the card+shadow (1934×497).
+const CARD_COFFEE_AR = 1934 / 497;
 
 function CoffeeBeanIcon({ size = 18, color }: { size?: number; color: string }) {
   const h = Math.round(size * 1.2);
@@ -363,32 +366,25 @@ export default function RoasteryScreen() {
                 onLongPress={() => handleDelete(item)}
                 style={({ pressed }) => ({ opacity: pressed ? 0.9 : 1 })}
               >
-                <PaperCard
-                  variant="light"
-                  shape={LIST_SHAPES[i % LIST_SHAPES.length]}
-                  shadow={1}
-                  contentStyle={styles.listPad}
+                <TemplateCard
+                  source={cardCoffeeTexture}
+                  aspectRatio={CARD_COFFEE_AR}
+                  contentStyle={styles.coffeeCardText}
                 >
-                  <View style={styles.listRow}>
-                    <PaperTile source={navTileSource("coffee")} size={52} />
-                    <View style={styles.listText}>
-                      <Text style={styles.cardName} numberOfLines={2}>
-                        {item.name}
-                      </Text>
-                      {item.aromaDescription ? (
-                        <Text style={styles.cardMeta} numberOfLines={1} ellipsizeMode="tail">
-                          {item.aromaDescription}
-                        </Text>
-                      ) : item.pricePerKg ? (
-                        <Text style={styles.cardMeta} numberOfLines={1}>
-                          {formatPrice(item.pricePerKg)} €/kg
-                        </Text>
-                      ) : null}
-                      {renderScore(item)}
-                    </View>
-                    <ChevronRight size={20} color={COLORS.accent300} strokeWidth={STROKE} />
-                  </View>
-                </PaperCard>
+                  <Text style={styles.cardName} numberOfLines={2}>
+                    {item.name}
+                  </Text>
+                  {item.aromaDescription ? (
+                    <Text style={styles.cardMeta} numberOfLines={1} ellipsizeMode="tail">
+                      {item.aromaDescription}
+                    </Text>
+                  ) : item.pricePerKg ? (
+                    <Text style={styles.cardMeta} numberOfLines={1}>
+                      {formatPrice(item.pricePerKg)} €/kg
+                    </Text>
+                  ) : null}
+                  {renderScore(item)}
+                </TemplateCard>
               </Pressable>
             ))}
           </View>
@@ -523,6 +519,13 @@ const styles = StyleSheet.create({
   addPad: { flex: 1, alignItems: "center", justifyContent: "center", padding: 0 },
 
   listBlock: { marginTop: 4, gap: 14 },
+  // Text overlay for the coffee label card: clear the baked-in cup icon on the
+  // left (~27%); no chevron on this template, so only a small right margin.
+  coffeeCardText: {
+    paddingLeft: "27%",
+    paddingRight: "6%",
+    justifyContent: "center",
+  },
   listPad: { padding: 20 },
   listRow: { flexDirection: "row", alignItems: "center", gap: 16 },
   listText: { flex: 1, minWidth: 0 },

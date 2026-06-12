@@ -17,7 +17,6 @@ import * as Haptics from "expo-haptics";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   Plus,
-  ChevronRight,
   ChevronDown,
   ChevronUp,
   X,
@@ -38,9 +37,13 @@ import {
 import { useUserNames } from "@/context/UserNamesContext";
 import { PaperCard, COLORS, FONTS, ui } from "@/theme/paper-native";
 import { PaperTile, navTileSource } from "@/components/PaperTiles";
+import { TemplateCard } from "@/components/TornPaper";
+import { cardRoasteryTexture } from "@/assets/textures";
 
 const STROKE = 1.75;
 const LIST_SHAPES: Array<1 | 2 | 3> = [1, 2, 3];
+// Aspect ratio of the roastery label template, trimmed to the card+shadow (1847×527).
+const CARD_ROASTERY_AR = 1847 / 527;
 
 export default function RoasteriesScreen() {
   const insets = useSafeAreaInsets();
@@ -349,27 +352,20 @@ export default function RoasteriesScreen() {
                     onLongPress={() => handleDelete(item)}
                     style={({ pressed }) => ({ opacity: pressed ? 0.9 : 1 })}
                   >
-                    <PaperCard
-                      variant="light"
-                      shape={LIST_SHAPES[i % LIST_SHAPES.length]}
-                      shadow={1}
-                      contentStyle={styles.listPad}
+                    <TemplateCard
+                      source={cardRoasteryTexture}
+                      aspectRatio={CARD_ROASTERY_AR}
+                      contentStyle={styles.roasteryCardText}
                     >
-                      <View style={styles.listRow}>
-                        <PaperTile source={navTileSource("roastery")} size={52} />
-                        <View style={styles.listText}>
-                          <Text style={styles.cardName} numberOfLines={1}>
-                            {item.name}
-                          </Text>
-                          <Text style={styles.cardMeta} numberOfLines={1}>
-                            {item.location ? `${item.location} · ` : ""}
-                            {count} {count === 1 ? "Kaffee" : "Kaffees"}
-                          </Text>
-                          {avg ? renderScore(avg) : null}
-                        </View>
-                        <ChevronRight size={20} color={COLORS.accent300} strokeWidth={STROKE} />
-                      </View>
-                    </PaperCard>
+                      <Text style={styles.cardName} numberOfLines={1}>
+                        {item.name}
+                      </Text>
+                      <Text style={styles.cardMeta} numberOfLines={1}>
+                        {item.location ? `${item.location} · ` : ""}
+                        {count} {count === 1 ? "Kaffee" : "Kaffees"}
+                      </Text>
+                      {avg ? renderScore(avg) : null}
+                    </TemplateCard>
                   </Pressable>
                 );
               })}
@@ -577,6 +573,13 @@ const styles = StyleSheet.create({
   },
 
   listBlock: { marginTop: 16, gap: 14 },
+  // Text overlay for the roastery label card: clear the baked-in factory icon on
+  // the left (~27%) and the baked-in chevron on the right (~15%), centred.
+  roasteryCardText: {
+    paddingLeft: "27%",
+    paddingRight: "15%",
+    justifyContent: "center",
+  },
   listPad: { padding: 20 },
   listRow: { flexDirection: "row", alignItems: "center", gap: 16 },
   tileOuter: { width: 52, height: 52 },

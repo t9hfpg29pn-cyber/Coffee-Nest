@@ -21,6 +21,13 @@ export const coffeeBgTexture = require("./coffee_bg.png");
 // native resolution behind every screen (replaces the old solid beige fill).
 export const paperBgTexture = require("./paper_bg.png");
 
+// Pre-made list-item label cards from the user's design templates. The icon
+// (factory / cup) — and, for the roastery card, the ">" chevron — are baked
+// into the artwork. Screens use these directly and only overlay the per-item
+// text. card_roastery.png is 1847×852, card_coffee.png is 1934×813.
+export const cardRoasteryTexture = require("./card_roastery.png");
+export const cardCoffeeTexture = require("./card_coffee.png");
+
 export const paperMainTexture = require("./paper_main.png");
 export const paperWideTexture = require("./paper_wide.png");
 // PAPER-02 opaque interior swatch — printed-paper fill for the roastery card.
