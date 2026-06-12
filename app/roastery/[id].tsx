@@ -135,12 +135,6 @@ function showAlert(title: string, message: string, buttons?: { text: string; sty
   }
 }
 
-function formatPrice(raw: string): string {
-  const num = parseFloat(raw.replace(",", "."));
-  if (isNaN(num)) return raw;
-  return num.toFixed(2).replace(".", ",");
-}
-
 export default function RoasteryScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
@@ -374,11 +368,7 @@ export default function RoasteryScreen() {
                       <Text style={styles.cardName} numberOfLines={1}>
                         {item.name}
                       </Text>
-                      {item.pricePerKg ? (
-                        <Text style={styles.cardMeta} numberOfLines={1}>
-                          {formatPrice(item.pricePerKg)} €/kg
-                        </Text>
-                      ) : item.aromaDescription ? (
+                      {item.aromaDescription ? (
                         <Text style={styles.cardMeta} numberOfLines={1} ellipsizeMode="tail">
                           {item.aromaDescription}
                         </Text>
