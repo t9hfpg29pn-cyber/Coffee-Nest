@@ -158,6 +158,17 @@ classic theme is paper-material while lowpoly is tintable-vector, so a fixed-ink
 classic. **How to apply:** new paper-tile slots must gate on theme, signal state via ring+tint, and
 render the tile bare (no IconStamp wrapper).
 
+**CRITICAL extraction rule — strip the German caption band under every tile.** Each tile in the
+source sheets has an explanatory German caption BELOW it (e.g. "Kaffeebohne", "Schokolade", "Niche
+Zero (Elektrische Mühle)"). The user wants ONLY the tile, never the caption — this was rejected
+TWICE when captions leaked in, so treat it as a hard requirement. Why it leaks: the dark-threshold
+connected-component detector merges tile+caption into one box, so a naive crop swallows the text. The
+fix (`tile_bottom()` in `scripts/extract_icons.py`) cuts at the near-empty row gap between tile and
+caption, guarded to the lower half of the tile so internal icon gaps (slider lines, funnel tips)
+don't amputate the glyph. **Always re-verify the per-sheet montages
+(`python3 scripts/extract_icons.py nav actions rkc grinders cat` → /tmp/icon_extract/*_montage.png)
+BEFORE `save`** — a clean montage is the only proof the captions are gone.
+
 ## Roastery card prints on the REAL PAPER-02 asset (not solid fill)
 The user demanded the home roastery card use the actual "PAPER-02 – Wide Paper Sheet (Sektionen)"
 element from the design-system template as a real image asset, NOT a CSS/SVG/color approximation.

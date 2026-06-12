@@ -54,12 +54,39 @@ def sort_grid(tiles, row_tol=40):
     return rows
 
 
+def tile_bottom(crop, thr, eps=0.05, gap_min=4):
+    """Find the row where the icon tile ends and the caption gap begins.
+
+    The template tiles sit ABOVE a German caption, separated by a band of
+    near-empty rows. We scan the per-row dark coverage, find the first run of
+    >= gap_min near-empty rows that lies in the lower part of the content span,
+    and return that row so the caption (and everything below) is dropped.
+    Internal icon gaps (e.g. slider lines) are ignored by the lower-part guard.
+    """
+    gray = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY)
+    cov = (gray < thr).mean(axis=1)
+    idx = np.where(cov > eps)[0]
+    if len(idx) == 0:
+        return crop.shape[0]
+    start, last = int(idx[0]), int(idx[-1])
+    span = max(1, last - start)
+    # Scan downward for the first gap_min-row window whose mean coverage is
+    # near zero (tolerating a few faint stray pixels, e.g. a tapering funnel
+    # tip) that lies in the lower half of the content span -> caption gap.
+    for r in range(start, len(cov) - gap_min + 1):
+        win = cov[r:r + gap_min]
+        if win.mean() < 0.04 and win.max() < 0.12 and (r - start) >= 0.5 * span:
+            return r
+    return crop.shape[0]
+
+
 def crop_tile(img, box, thr=216, pad=10, feather=3):
     x, y, ww, hh, cx, cy = box
     H, W = img.shape[:2]
     x0 = max(0, x - pad); y0 = max(0, y - pad)
     x1 = min(W, x + ww + pad); y1 = min(H, y + hh + pad)
     crop = img[y0:y1, x0:x1]
+    crop = crop[:tile_bottom(crop, thr)]
     gray = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY)
     m = (gray < thr).astype(np.uint8) * 255
     k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 9))
