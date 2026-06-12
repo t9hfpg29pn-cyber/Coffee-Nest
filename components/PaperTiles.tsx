@@ -46,9 +46,11 @@ const GRINDER: Record<string, any> = {
   commandante: require("@/assets/textures/icons/grinder_commandante.png"),
 };
 
-// Navigation / content icons — same hand-crafted paper tiles (cream tile +
-// brown glyph + baked shadow). Used full-surface as their own button/holder;
-// never wrap these in another tile, card or border.
+// Navigation / content icons. coffee + roastery are CUT-THROUGH stencils:
+// transparent PNGs of just the brown glyph (kraft texture shows through it, no
+// cream tile, no baked shadow) so they read as printed/die-cut directly into
+// whatever surface they sit on — never wrap them in a tile, card or border.
+// The remaining icons are still the hand-crafted cream-tile stamps.
 const NAV: Record<string, any> = {
   roastery: require("@/assets/textures/icons/nav_roastery.png"),
   coffee: require("@/assets/textures/icons/nav_coffee.png"),

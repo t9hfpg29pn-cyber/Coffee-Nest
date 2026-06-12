@@ -39,6 +39,17 @@ rendered by `components/PaperTiles.tsx` `PaperTile` (`{source, size=40, style?:I
 `roastTileSource(level)`, `processTileSource(method)`, `grindTileSource(step)`,
 `grinderTileSource(design)`, and `navTileSource(name)` (roastery/coffee/worldmap/compass/discoveries/
 favorite/profile/search/settings — nav+content icons).
+- **nav coffee + roastery are CUT-THROUGH stencils, NOT cream-tile stamps** (user: icon must look
+  "durch die Kachel hindurch gedruckt", not on its own raised tile). They're transparent PNGs of just
+  the brown glyph (kraft texture shows through; factory windows left transparent), so they read as
+  die-cut into whatever surface they sit on. Do NOT revert these two to the cream-tile+shadow look.
+  The rest of the nav/category PNGs are still cream-tile stamps.
+- **Extracting a colored stencil from a kraft template PNG: use FLOOD-FILL alpha, never a grayscale
+  CopyOpacity mask.** `magick src -alpha set -fuzz ~32% -fill none -draw "alpha X,Y floodfill"` from all
+  4 corners → trim → resize → `-extent` square → `png32:out`. The `\( +clone -colorspace Gray -negate
+  -level \) -compose CopyOpacity` approach BLACKENS the RGB (you lose the brown, get a black silhouette).
+  IMv7: `magick` + `+repage` (not `convert`/`+repaint`); verify by compositing on `#F2EBDC` and READING
+  the PNG (screenshot proxy is usually down).
 - **The PNG tile IS the button. NEVER wrap it in a bordered View, a colored View, a
   `PaperCard variant="tile"`, or an `IconStamp`.** That framing is the exact thing the user rejected
   (repeatedly). Bare full-surface only.
