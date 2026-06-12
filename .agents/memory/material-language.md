@@ -39,17 +39,25 @@ rendered by `components/PaperTiles.tsx` `PaperTile` (`{source, size=40, style?:I
 `roastTileSource(level)`, `processTileSource(method)`, `grindTileSource(step)`,
 `grinderTileSource(design)`, and `navTileSource(name)` (roastery/coffee/worldmap/compass/discoveries/
 favorite/profile/search/settings — nav+content icons).
-- **nav coffee + roastery are CUT-THROUGH stencils, NOT cream-tile stamps** (user: icon must look
-  "durch die Kachel hindurch gedruckt", not on its own raised tile). They're transparent PNGs of just
-  the brown glyph (kraft texture shows through; factory windows left transparent), so they read as
-  die-cut into whatever surface they sit on. Do NOT revert these two to the cream-tile+shadow look.
-  The rest of the nav/category PNGs are still cream-tile stamps.
-- **Extracting a colored stencil from a kraft template PNG: use FLOOD-FILL alpha, never a grayscale
-  CopyOpacity mask.** `magick src -alpha set -fuzz ~32% -fill none -draw "alpha X,Y floodfill"` from all
-  4 corners → trim → resize → `-extent` square → `png32:out`. The `\( +clone -colorspace Gray -negate
-  -level \) -compose CopyOpacity` approach BLACKENS the RGB (you lose the brown, get a black silhouette).
-  IMv7: `magick` + `+repage` (not `convert`/`+repaint`); verify by compositing on `#F2EBDC` and READING
-  the PNG (screenshot proxy is usually down).
+- **nav coffee + roastery are BROWN LINE-ART cut-throughs, NOT cream-tile stamps and NOT filled
+  silhouettes** (user: "durch die Kachel hindurch gedruckt … vollständig durchscheinend"). KEY INSIGHT
+  about the templates: the cup/factory INTERIOR is kraft-cream (≈239,209,169 — same as the paper), only
+  the OUTLINES/strokes are brown (≈152,103,41). So the correct icon keeps only the dark brown lines and
+  leaves ALL light pixels (cup body + factory windows + surrounding kraft) TRANSPARENT, so the card kraft
+  shows through the whole body. A FILLED silhouette or an eroded flood-fill BOTH get rejected.
+- **Extraction recipe (the one that works): write the alpha via `-fx`, never CopyOpacity/CopyAlpha.**
+  `magick raw.png -alpha set -channel A -fx "((0.80 - intensity)/0.38)*0.92" +channel -trim +repage
+  -resize 200x200 -background none -gravity center -extent 240x240 png32:out.png`. The fx maps
+  negLum=(1-intensity) through a level (lo 0.20, hi 0.58) × opacity, dark lines→opaque brown,
+  light→transparent. `-channel A -fx` ONLY touches alpha so the original brown RGB is preserved.
+  **IMv7 gotcha (cost ~6 attempts): both `-compose CopyOpacity` AND `-compose CopyAlpha` DESATURATE the
+  visible pixels to gray/black** (loading a separate grayscale mask, or `-draw floodfill`/`-opaque` ops
+  on a Gray-colorspace clone, drag the colored base to gray; `-colorspace sRGB` on the mask does NOT
+  fix it). Flood-fill alpha also fails: high fuzz erodes the glyph into holes (the rejected "grungy"
+  look). Use the `-fx` method.
+- **Verify by READING, not screenshot** (proxy down): sample the real card bg first
+  (`magick screenshot -crop … -resize 1x1 -format "%[pixel:p{0,0}]"` → card is ≈srgb(227,207,176) tan,
+  NOT flat #F2EBDC), composite the icon on that tan, append beside a crop of the template, and read.
 - **The PNG tile IS the button. NEVER wrap it in a bordered View, a colored View, a
   `PaperCard variant="tile"`, or an `IconStamp`.** That framing is the exact thing the user rejected
   (repeatedly). Bare full-surface only.
