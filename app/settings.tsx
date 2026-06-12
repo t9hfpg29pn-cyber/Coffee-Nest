@@ -24,6 +24,7 @@ import { TornDefs, TornSheet, TornBox, IconStamp, Grain, Hairline } from "@/comp
 import { getRoasteries, getAllCoffees, getGrinders, saveGrinders, normalizeGrinders, DEFAULT_GRINDERS, Grinder, GrinderDesign } from "@/lib/storage";
 import { useTheme, useThemeColors, useCardExtras, DesignMode } from "@/context/ThemeContext";
 import { CupIcon, GemIcon, GrinderIcon } from "@/components/CoffeeIcons";
+import { PaperTile, grinderTileSource } from "@/components/PaperTiles";
 
 const SERIF_BLACK = "Fraunces_700Bold";
 const SERIF_BOLD = "Fraunces_600SemiBold";
@@ -524,14 +525,18 @@ export default function SettingsScreen() {
                         gap: 6,
                         paddingVertical: 9,
                         borderRadius: design === "lowpoly" ? 5 : 10,
-                        backgroundColor: active ? colors.gold : colors.paperBg2,
-                        borderWidth: 1.5,
+                        backgroundColor: active ? (design === "lowpoly" ? colors.gold : colors.gold + "22") : colors.paperBg2,
+                        borderWidth: active ? 2 : 1.5,
                         borderColor: active ? colors.gold : colors.border,
                         opacity: pressed ? 0.8 : 1,
                       })}
                     >
-                      <GrinderIcon design={d} size={20} color={active ? colors.creamText : colors.ink} />
-                      <Text style={{ color: active ? colors.creamText : colors.ink, fontFamily: active ? "Inter_600SemiBold" : "Inter_500Medium", fontSize: 13 }}>
+                      {design === "lowpoly" ? (
+                        <GrinderIcon design={d} size={20} color={active ? colors.creamText : colors.ink} />
+                      ) : (
+                        <PaperTile source={grinderTileSource(d)} size={24} style={{ opacity: active ? 1 : 0.92 }} />
+                      )}
+                      <Text style={{ color: design === "lowpoly" ? (active ? colors.creamText : colors.ink) : colors.ink, fontFamily: active ? "Inter_600SemiBold" : "Inter_500Medium", fontSize: 13 }}>
                         {d === "niche" ? "Niche" : "Commandante"}
                       </Text>
                     </Pressable>

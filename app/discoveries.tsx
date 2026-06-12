@@ -43,6 +43,7 @@ import {
   HaseIcon,
   DodoIcon,
 } from "@/components/CoffeeIcons";
+import { PaperTile, aromaTileSource, processTileSource } from "@/components/PaperTiles";
 import Colors from "@/constants/colors";
 
 const SERIF_BLACK = "Fraunces_700Bold";
@@ -132,7 +133,7 @@ function DuoColumn({
 
 // ─── Aroma / Aufbereitung collection card — cream torn sheet w/ icon stamp ────
 function CategoryCard({
-  icon, cat, name1, name2, user2active, colors, seed, onPress,
+  icon, cat, name1, name2, user2active, colors, seed, onPress, bareIcon,
 }: {
   icon: React.ReactNode;
   cat: CategoryDiscovery;
@@ -142,6 +143,7 @@ function CategoryCard({
   colors: ThemeColors;
   seed: number;
   onPress: () => void;
+  bareIcon?: boolean;
 }) {
   return (
     <View style={styles.chipOuter}>
@@ -154,9 +156,13 @@ function CategoryCard({
         onPress={onPress}
         contentStyle={styles.chipPad}
       >
-        <IconStamp size={46} seed={9} style={styles.chipStamp}>
-          {icon}
-        </IconStamp>
+        {bareIcon ? (
+          <View style={styles.chipStamp}>{icon}</View>
+        ) : (
+          <IconStamp size={46} seed={9} style={styles.chipStamp}>
+            {icon}
+          </IconStamp>
+        )}
       <Text style={[styles.chipName, { color: colors.ink, fontFamily: SERIF_BOLD }]} numberOfLines={1}>
         {cat.label}
       </Text>
@@ -650,7 +656,8 @@ export default function DiscoveriesScreen() {
             {aromaStats.map((cat, i) => (
               <CategoryCard
                 key={cat.key}
-                icon={<AromaIcon step={Number(cat.key)} size={26} color={colors.gold} />}
+                icon={isLowpoly ? <AromaIcon step={Number(cat.key)} size={26} color={colors.gold} /> : <PaperTile source={aromaTileSource(Number(cat.key))} size={34} />}
+                bareIcon={!isLowpoly}
                 cat={cat}
                 name1={name1}
                 name2={name2}
@@ -658,7 +665,7 @@ export default function DiscoveriesScreen() {
                 colors={colors}
                 seed={CARD_SEEDS[i % CARD_SEEDS.length]}
                 onPress={() =>
-                  openCategory(cat.label, <AromaIcon step={Number(cat.key)} size={30} color={colors.tint} />, cat)
+                  openCategory(cat.label, isLowpoly ? <AromaIcon step={Number(cat.key)} size={30} color={colors.tint} /> : <PaperTile source={aromaTileSource(Number(cat.key))} size={40} />, cat)
                 }
               />
             ))}
@@ -677,7 +684,8 @@ export default function DiscoveriesScreen() {
             {processingStats.map((cat, i) => (
               <CategoryCard
                 key={cat.key}
-                icon={<ProcessingIcon method={cat.key} size={26} color={colors.gold} />}
+                icon={isLowpoly ? <ProcessingIcon method={cat.key} size={26} color={colors.gold} /> : <PaperTile source={processTileSource(cat.key)} size={34} />}
+                bareIcon={!isLowpoly}
                 cat={cat}
                 name1={name1}
                 name2={name2}
@@ -685,7 +693,7 @@ export default function DiscoveriesScreen() {
                 colors={colors}
                 seed={CARD_SEEDS[(i + 3) % CARD_SEEDS.length]}
                 onPress={() =>
-                  openCategory(cat.label, <ProcessingIcon method={cat.key} size={30} color={colors.tint} />, cat)
+                  openCategory(cat.label, isLowpoly ? <ProcessingIcon method={cat.key} size={30} color={colors.tint} /> : <PaperTile source={processTileSource(cat.key)} size={40} />, cat)
                 }
               />
             ))}

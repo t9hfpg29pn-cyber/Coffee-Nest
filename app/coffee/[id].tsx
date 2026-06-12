@@ -15,6 +15,7 @@ import {
 } from "react-native";
 import Svg, { Path, Circle, Line, Rect, G, Polygon as SvgPolygon } from "react-native-svg";
 import { AromaIcon, ProcessingIcon, RoastIcon, OriginPinIcon, GrinderIcon } from "@/components/CoffeeIcons";
+import { PaperTile, aromaTileSource, roastTileSource, processTileSource, grinderTileSource } from "@/components/PaperTiles";
 import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
@@ -274,8 +275,8 @@ function ScaleSlider({
                 flex: 1,
                 height: 56,
                 borderRadius: 12,
-                backgroundColor: active ? color : surfaceColor,
-                borderWidth: 1.5,
+                backgroundColor: active ? (aromaIcons ? color + "22" : color) : surfaceColor,
+                borderWidth: active ? 2 : 1.5,
                 borderColor: active ? color : borderColor,
                 justifyContent: "center",
                 alignItems: "center",
@@ -284,7 +285,7 @@ function ScaleSlider({
               })}
             >
               {aromaIcons ? (
-                <AromaIcon step={step} size={26} color={active ? "#fff" : textColor} />
+                <PaperTile source={aromaTileSource(step)} size={42} style={{ opacity: active ? 1 : 0.92 }} />
               ) : (
                 <Text style={{ color: active ? "#fff" : textColor, fontFamily: active ? "Inter_700Bold" : "Inter_500Medium", fontSize: 16 }}>
                   {step}
@@ -588,14 +589,18 @@ function ProcessingPicker({
                 flexDirection: "row", alignItems: "center", gap: 7,
                 paddingHorizontal: 14, paddingVertical: 10,
                 borderRadius: isLowpoly ? 4 : 12,
-                backgroundColor: active ? color : surfaceColor,
-                borderWidth: 1.5, borderColor: active ? color : borderColor,
+                backgroundColor: active ? (isLowpoly ? color : color + "22") : surfaceColor,
+                borderWidth: active ? 2 : 1.5, borderColor: active ? color : borderColor,
                 opacity: pressed ? 0.8 : 1,
                 transform: [{ scale: pressed ? 0.97 : 1 }],
               })}
             >
-              <ProcessingIcon method={v} size={20} color={iconColor} />
-              <Text style={{ color: iconColor, fontFamily: active ? "Inter_700Bold" : "Inter_500Medium", fontSize: 14 }}>
+              {isLowpoly ? (
+                <ProcessingIcon method={v} size={20} color={iconColor} />
+              ) : (
+                <PaperTile source={processTileSource(v)} size={24} style={{ opacity: active ? 1 : 0.92 }} />
+              )}
+              <Text style={{ color: isLowpoly ? iconColor : textColor, fontFamily: active ? "Inter_700Bold" : "Inter_500Medium", fontSize: 14 }}>
                 {label}
               </Text>
             </Pressable>
@@ -654,13 +659,13 @@ function RoastLevelPicker({
               onPress={() => { Haptics.selectionAsync(); onChange(active ? "" : v); }}
               style={({ pressed }) => ({
                 flex: 1, height: 52, borderRadius: 12,
-                backgroundColor: active ? color : surfaceColor,
-                borderWidth: 1.5, borderColor: active ? color : borderColor,
+                backgroundColor: active ? color + "22" : surfaceColor,
+                borderWidth: active ? 2 : 1.5, borderColor: active ? color : borderColor,
                 justifyContent: "center", alignItems: "center",
                 opacity: pressed ? 0.8 : 1, transform: [{ scale: pressed ? 0.95 : 1 }],
               })}
             >
-              <RoastIcon level={v} size={24} color={iconColor} />
+              <PaperTile source={roastTileSource(v)} size={38} style={{ opacity: active ? 1 : 0.92 }} />
             </Pressable>
           );
         })}
@@ -717,17 +722,21 @@ function GrinderPicker({
                 paddingHorizontal: 14,
                 paddingVertical: 10,
                 borderRadius: 12,
-                backgroundColor: active ? color : surfaceColor,
-                borderWidth: 1.5,
+                backgroundColor: active ? (isLowpoly ? color : color + "22") : surfaceColor,
+                borderWidth: active ? 2 : 1.5,
                 borderColor: active ? color : borderColor,
                 opacity: pressed ? 0.8 : 1,
                 transform: [{ scale: pressed ? 0.97 : 1 }],
               })}
             >
-              <GrinderIcon design={g.design} size={22} color={active ? "#fff" : textColor} />
+              {isLowpoly ? (
+                <GrinderIcon design={g.design} size={22} color={active ? "#fff" : textColor} />
+              ) : (
+                <PaperTile source={grinderTileSource(g.design)} size={26} style={{ opacity: active ? 1 : 0.92 }} />
+              )}
               <Text
                 style={{
-                  color: active ? "#fff" : textColor,
+                  color: isLowpoly ? (active ? "#fff" : textColor) : textColor,
                   fontFamily: active ? "Inter_700Bold" : "Inter_500Medium",
                   fontSize: 15,
                 }}

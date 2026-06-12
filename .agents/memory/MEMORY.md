@@ -2,3 +2,4 @@
 - [Grinder data model](grinder-model.md) — grinders are `{name,design}[]` but relations key off grinder NAME string; use `grinders[0].name`, normalize on import.
 - [Hase/Dodo separation](hase-dodo-separation.md) — never average the two raters except getSharedFavoriteCoffee(); gate all user2 data+UI by user2active.
 - [Paper Layers material language](material-language.md) — classic theme = dark espresso "table" + cream/espresso torn TornSheets (TornPaper.tsx, PaperSurface is gone); texture-on-cards reads as cards & gets rejected; nav is Stack-only; some CoffeeIcons need a required scale prop.
+- [Paper PNG icon tiles](material-language.md) — fixed brown-on-cream stamps (can't tint) from extract_icons.py→assets/textures/icons/; classic-only via PaperTiles.tsx, lowpoly keeps SVGs; state=gold ring+tint not ink; never nest tile in IconStamp.

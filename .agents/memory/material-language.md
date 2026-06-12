@@ -133,6 +133,31 @@ and wants "hochwertige Karteikarte" calm premium quality, validated on this ONE 
 rolling out. **How to apply:** this is the reference card to propagate to other lists later;
 do NOT expand scope to other screens until the user approves this one.
 
+## Paper PNG icon tiles (extracted from the user's labelled icon sheets)
+The user's design-system sheets also contain hand-drawn ICON tiles (Aroma×5, Röstgrad×5,
+Aufbereitung×6, Mahlgrad×5, grinders, nav×9, actions×7). These are cut into individual transparent
+PNGs (silhouette alpha, baked shadow kept) in `assets/textures/icons/` by `scripts/extract_icons.py`
+(`python3 scripts/extract_icons.py save`; NAME_MAPS define index→name order). `components/PaperTiles.tsx`
+renders them (`PaperTile` = `<Image resizeMode="contain">`) with source-helper maps keyed off the
+domain values (aroma step 1-5, roast level light…dark with an ordinal shift so app "dark"→sheet
+"very dark", processing method, grinder design).
+**The tiles are FIXED brown-on-cream stamps — they CANNOT be tinted.** So:
+- They are used ONLY in the `classic` theme; `lowpoly` keeps the tintable SVGs from `CoffeeIcons.tsx`.
+  EVERY integration site gates on `isLowpoly`/`design==="lowpoly"` and renders the SVG path first.
+- Active/selected state is conveyed by a GOLD RING (borderWidth 2 + `color+"22"` bg tint), NEVER by
+  changing the icon's ink color (you can't).
+- **Do NOT nest a `PaperTile` inside an `IconStamp`** (stamp-on-stamp reads as two paper layers and
+  gets rejected) — render the tile bare (e.g. discoveries `CategoryCard` takes a `bareIcon` prop).
+- Wired in classic: coffee detail pickers (aroma/processing/roast/grinder), discoveries category
+  emblems (aroma+processing), settings grinder selector chips. `grind×5`, `nav×9`, `action×7` tiles
+  are extracted as a complete asset library but intentionally UNUSED (no natural UI slot; grind is
+  free-text). The 5 background crops (`assets/textures/bg_*.png`) are extracted but deliberately NOT
+  wired — the app already has the working torn-paper bg system; rewiring would break it.
+**Why:** same recurring rule — the template is an asset library to CUT FROM, not to recreate; and the
+classic theme is paper-material while lowpoly is tintable-vector, so a fixed-ink paper tile only fits
+classic. **How to apply:** new paper-tile slots must gate on theme, signal state via ring+tint, and
+render the tile bare (no IconStamp wrapper).
+
 ## Roastery card prints on the REAL PAPER-02 asset (not solid fill)
 The user demanded the home roastery card use the actual "PAPER-02 – Wide Paper Sheet (Sektionen)"
 element from the design-system template as a real image asset, NOT a CSS/SVG/color approximation.
