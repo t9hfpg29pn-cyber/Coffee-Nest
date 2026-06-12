@@ -13,25 +13,79 @@ import {
   Modal,
   ScrollView,
 } from "react-native";
-import Svg, { Path, Circle, Line, Rect, G, Polygon as SvgPolygon } from "react-native-svg";
-import { AromaIcon, ProcessingIcon, RoastIcon, OriginPinIcon, GrinderIcon } from "@/components/CoffeeIcons";
-import { PaperTile, aromaTileSource, roastTileSource, processTileSource, grinderTileSource } from "@/components/PaperTiles";
+import { OriginPinIcon } from "@/components/CoffeeIcons";
+import {
+  PaperTile,
+  aromaTileSource,
+  roastTileSource,
+  processTileSource,
+  grinderTileSource,
+} from "@/components/PaperTiles";
 import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { getCoffeeById, updateCoffee, deleteCoffee, getGrinders, Coffee, GrindSetting, CoffeeOrigin, Grinder } from "@/lib/storage";
+import { getCoffeeById, updateCoffee, deleteCoffee, getGrinders, Coffee, Grinder } from "@/lib/storage";
 import { useUserNames } from "@/context/UserNamesContext";
-import { useThemeColors, useCardExtras, useTheme } from "@/context/ThemeContext";
-import { PolyBackground, PolyActionButton } from "@/components/PolyBackground";
-import { TornDefs, TornSheet, TornBox, Grain, Hairline } from "@/components/TornPaper";
+import { PaperCard, COLORS, FONTS, ui } from "@/theme/paper-native";
 
-const SERIF_BLACK = "Fraunces_700Bold";
-const SERIF_BOLD = "Fraunces_600SemiBold";
-const SERIF_MED = "Inter_400Regular";
-
-const SECTION_SEEDS = [2, 5, 8, 12, 15, 7, 9];
+// ─── Frameless tile picker — selection shown by scale + opacity + gold underline ──
+function TileOption({
+  source,
+  label,
+  active,
+  onPress,
+  width,
+  tileSize = 52,
+  fontSize = 12,
+}: {
+  source: any;
+  label: string;
+  active: boolean;
+  onPress: () => void;
+  width: number | string;
+  tileSize?: number;
+  fontSize?: number;
+}) {
+  return (
+    <Pressable
+      onPress={() => { Haptics.selectionAsync(); onPress(); }}
+      accessibilityRole="button"
+      accessibilityState={{ selected: active }}
+      style={({ pressed }) => ({ alignItems: "center", width: width as any, opacity: pressed ? 0.8 : 1 })}
+    >
+      <PaperTile
+        source={source}
+        size={tileSize}
+        style={{ transform: [{ scale: active ? 1.0 : 0.84 }], opacity: active ? 1 : 0.4 }}
+      />
+      <View
+        style={{
+          height: 3,
+          width: active ? 18 : 0,
+          borderRadius: 2,
+          backgroundColor: COLORS.accent300,
+          marginTop: 6,
+        }}
+      />
+      {label ? (
+        <Text
+          numberOfLines={2}
+          style={{
+            marginTop: 3,
+            fontSize,
+            textAlign: "center",
+            fontFamily: active ? "Inter_600SemiBold" : "Inter_500Medium",
+            color: active ? COLORS.accent400 : COLORS.coffee600,
+          }}
+        >
+          {label}
+        </Text>
+      ) : null}
+    </Pressable>
+  );
+}
 
 function RatingSlider({
   label,
@@ -41,10 +95,6 @@ function RatingSlider({
   onChange,
   minLabel,
   maxLabel,
-  color,
-  textColor,
-  borderColor,
-  surfaceColor,
 }: {
   label: string;
   value: number | null;
@@ -53,120 +103,46 @@ function RatingSlider({
   onChange: (v: number | null) => void;
   minLabel?: string;
   maxLabel?: string;
-  color: string;
-  textColor: string;
-  borderColor: string;
-  surfaceColor: string;
 }) {
   const steps = Array.from({ length: max - min + 1 }, (_, i) => min + i);
-  const { design } = useTheme();
-  const isLowpoly = design === "lowpoly";
 
   return (
     <View style={{ gap: 10 }}>
       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-        <Text style={{ color: textColor, fontFamily: "Inter_600SemiBold", fontSize: 15 }}>{label}</Text>
+        <Text style={{ color: COLORS.coffee800, fontFamily: "Inter_600SemiBold", fontSize: 15 }}>{label}</Text>
         <View style={{ flexDirection: "row", alignItems: "baseline", gap: 2 }}>
           {value !== null ? (
             <>
-              <Text style={{ color: color, fontFamily: "Inter_700Bold", fontSize: 26 }}>{value}</Text>
-              <Text style={{ color: textColor, fontFamily: "Inter_400Regular", fontSize: 13, opacity: 0.6 }}>
-                /{max}
-              </Text>
+              <Text style={{ color: COLORS.accent400, fontFamily: "Inter_700Bold", fontSize: 26 }}>{value}</Text>
+              <Text style={{ color: COLORS.coffee600, fontFamily: "Inter_400Regular", fontSize: 13 }}>/{max}</Text>
             </>
           ) : (
-            <Text style={{ color: textColor, fontFamily: "Inter_400Regular", fontSize: 20, opacity: 0.35 }}>–</Text>
+            <Text style={{ color: COLORS.coffee600, fontFamily: "Inter_400Regular", fontSize: 20, opacity: 0.5 }}>–</Text>
           )}
         </View>
       </View>
-      <View style={{ flexDirection: "row", gap: isLowpoly ? 5 : 6 }}>
+      <View style={{ flexDirection: "row", gap: 5 }}>
         {steps.map((step) => {
           const filled = value !== null && step <= value;
-          if (isLowpoly) {
-            return (
-              <Pressable
-                key={step}
-                onPress={() => { Haptics.selectionAsync(); onChange(step === value ? null : step); }}
-                style={({ pressed }) => ({
-                  flex: 1,
-                  height: 36,
-                  justifyContent: "center",
-                  alignItems: "center",
-                  transform: [{ scale: pressed ? 0.90 : 1 }],
-                })}
-              >
-                <Svg
-                  width="100%"
-                  height="36"
-                  viewBox="0 0 26 36"
-                  preserveAspectRatio="none"
-                  style={StyleSheet.absoluteFill}
-                >
-                  <SvgPolygon
-                    points="5,0 21,0 26,5 26,31 21,36 5,36 0,31 0,5"
-                    fill={filled ? color : surfaceColor}
-                  />
-                  {filled && (
-                    <SvgPolygon
-                      points="5,0 21,0 26,5 13,20 0,5"
-                      fill="rgba(255,255,255,0.12)"
-                    />
-                  )}
-                </Svg>
-                <Text
-                  style={{
-                    color: filled ? "#1a0800" : textColor,
-                    fontFamily: filled ? "Inter_700Bold" : "Inter_500Medium",
-                    fontSize: max > 5 ? 10 : 13,
-                    position: "relative",
-                  }}
-                >
-                  {step}
-                </Text>
-              </Pressable>
-            );
-          }
           return (
             <Pressable
               key={step}
-              onPress={() => {
-                Haptics.selectionAsync();
-                onChange(step === value ? null : step);
-              }}
-              style={({ pressed }) => ({
-                flex: 1,
-                height: 36,
-                borderRadius: 8,
-                backgroundColor: filled ? color : surfaceColor,
-                borderWidth: 1,
-                borderColor: filled ? color : borderColor,
-                justifyContent: "center",
-                alignItems: "center",
-                opacity: pressed ? 0.8 : 1,
-                transform: [{ scale: pressed ? 0.95 : 1 }],
-              })}
+              onPress={() => { Haptics.selectionAsync(); onChange(step === value ? null : step); }}
+              style={({ pressed }) => [
+                ui.rate,
+                filled && ui.rateActive,
+                { flex: 1, minWidth: 0, opacity: pressed ? 0.8 : 1, transform: [{ scale: pressed ? 0.95 : 1 }] },
+              ]}
             >
-              <Text
-                style={{
-                  color: filled ? "#fff" : textColor,
-                  fontFamily: "Inter_600SemiBold",
-                  fontSize: max > 5 ? 11 : 13,
-                }}
-              >
-                {step}
-              </Text>
+              <Text style={[ui.rateText, filled && ui.rateTextActive, { fontSize: max > 5 ? 12 : 14 }]}>{step}</Text>
             </Pressable>
           );
         })}
       </View>
       {(minLabel || maxLabel) && (
         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-          <Text style={{ color: textColor, fontFamily: "Inter_400Regular", fontSize: 11, opacity: 0.6 }}>
-            {minLabel}
-          </Text>
-          <Text style={{ color: textColor, fontFamily: "Inter_400Regular", fontSize: 11, opacity: 0.6 }}>
-            {maxLabel}
-          </Text>
+          <Text style={{ color: COLORS.coffee600, fontFamily: "Inter_400Regular", fontSize: 11 }}>{minLabel}</Text>
+          <Text style={{ color: COLORS.coffee600, fontFamily: "Inter_400Regular", fontSize: 11 }}>{maxLabel}</Text>
         </View>
       )}
     </View>
@@ -175,154 +151,23 @@ function RatingSlider({
 
 const AROMA_LABELS = ["sehr kräftig", "kräftig", "ausgewogen", "fruchtig", "sehr fruchtig"];
 
-function ScaleSlider({
-  label,
-  sublabel,
-  value,
-  onChange,
-  minLabel,
-  maxLabel,
-  color,
-  textColor,
-  borderColor,
-  surfaceColor,
-  aromaIcons,
-}: {
-  label: string;
-  sublabel?: string;
-  value: number;
-  onChange: (v: number) => void;
-  minLabel?: string;
-  maxLabel?: string;
-  color: string;
-  textColor: string;
-  borderColor: string;
-  surfaceColor: string;
-  aromaIcons?: boolean;
-}) {
+function AromaPicker({ value, onChange }: { value: number; onChange: (v: number) => void }) {
   const steps = [1, 2, 3, 4, 5];
-  const { design } = useTheme();
-  const isLowpoly = design === "lowpoly";
-
   return (
-    <View style={{ gap: 10 }}>
-      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-        <Text style={{ color: textColor, fontFamily: "Inter_600SemiBold", fontSize: 15 }}>
-          {label}
-          {sublabel ? (
-            <Text style={{ color: textColor, fontFamily: "Inter_400Regular", fontSize: 13, opacity: 0.55 }}>
-              {" " + sublabel}
-            </Text>
-          ) : null}
-        </Text>
-        {aromaIcons && value >= 1 && value <= 5 ? (
-          <Text style={{ color: textColor, fontFamily: "Inter_400Regular", fontSize: 12, opacity: 0.55 }}>
-            {AROMA_LABELS[value - 1]}
-          </Text>
-        ) : null}
-      </View>
-      <View style={{ flexDirection: "row", gap: 8 }}>
-        {steps.map((step) => {
-          const active = step === value;
-          if (isLowpoly) {
-            return (
-              <Pressable
-                key={step}
-                onPress={() => { Haptics.selectionAsync(); onChange(step); }}
-                style={({ pressed }) => ({
-                  flex: 1,
-                  height: 56,
-                  justifyContent: "center",
-                  alignItems: "center",
-                  transform: [{ scale: pressed ? 0.92 : 1 }],
-                })}
-              >
-                <Svg
-                  width="100%"
-                  height="56"
-                  viewBox="0 0 60 56"
-                  preserveAspectRatio="none"
-                  style={StyleSheet.absoluteFill}
-                >
-                  <SvgPolygon
-                    points="9,0 51,0 60,9 60,47 51,56 9,56 0,47 0,9"
-                    fill={active ? color : surfaceColor}
-                  />
-                  {active && (
-                    <SvgPolygon
-                      points="9,0 51,0 60,9 30,32 0,9"
-                      fill="rgba(255,255,255,0.11)"
-                    />
-                  )}
-                </Svg>
-                <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, justifyContent: "center", alignItems: "center" }}>
-                  {aromaIcons ? (
-                    <AromaIcon step={step} size={26} color={active ? "#1a0800" : textColor} />
-                  ) : (
-                    <Text style={{ color: active ? "#1a0800" : textColor, fontFamily: active ? "Inter_700Bold" : "Inter_500Medium", fontSize: 16 }}>
-                      {step}
-                    </Text>
-                  )}
-                </View>
-              </Pressable>
-            );
-          }
-          return (
-            <Pressable
-              key={step}
-              onPress={() => { Haptics.selectionAsync(); onChange(step); }}
-              style={({ pressed }) => ({
-                flex: 1,
-                height: 56,
-                borderRadius: 12,
-                backgroundColor: active ? (aromaIcons ? color + "22" : color) : surfaceColor,
-                borderWidth: active ? 2 : 1.5,
-                borderColor: active ? color : borderColor,
-                justifyContent: "center",
-                alignItems: "center",
-                opacity: pressed ? 0.8 : 1,
-                transform: [{ scale: pressed ? 0.95 : 1 }],
-              })}
-            >
-              {aromaIcons ? (
-                <PaperTile source={aromaTileSource(step)} size={42} style={{ opacity: active ? 1 : 0.92 }} />
-              ) : (
-                <Text style={{ color: active ? "#fff" : textColor, fontFamily: active ? "Inter_700Bold" : "Inter_500Medium", fontSize: 16 }}>
-                  {step}
-                </Text>
-              )}
-            </Pressable>
-          );
-        })}
-      </View>
-      {(minLabel || maxLabel) && (
-        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-          <Text style={{ color: textColor, fontFamily: "Inter_400Regular", fontSize: 11, opacity: 0.6 }}>
-            {minLabel}
-          </Text>
-          <Text style={{ color: textColor, fontFamily: "Inter_400Regular", fontSize: 11, opacity: 0.6 }}>
-            {maxLabel}
-          </Text>
-        </View>
-      )}
+    <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+      {steps.map((step) => (
+        <TileOption
+          key={step}
+          source={aromaTileSource(step)}
+          label={AROMA_LABELS[step - 1]}
+          active={step === value}
+          onPress={() => onChange(step)}
+          width="18%"
+          tileSize={52}
+          fontSize={11}
+        />
+      ))}
     </View>
-  );
-}
-
-function SectionHeader({ title, color }: { title: string; color: string }) {
-  return (
-    <Text
-      style={{
-        color,
-        fontFamily: "Inter_600SemiBold",
-        fontSize: 10,
-        letterSpacing: 2.6,
-        textTransform: "uppercase",
-        marginBottom: 4,
-      }}
-    >
-      {title}
-    </Text>
   );
 }
 
@@ -372,33 +217,30 @@ function makeOriginKey() {
 }
 
 function CountryPickerModal({
-  visible, onSelect, onClose, colors, design,
+  visible, onSelect, onClose,
 }: {
   visible: boolean;
   onSelect: (c: string) => void;
   onClose: () => void;
-  colors: ReturnType<typeof useThemeColors>;
-  design: string;
 }) {
-  const isLowpoly = design === "lowpoly";
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "flex-end" }}>
         <View style={{
-          backgroundColor: colors.surface,
-          borderTopLeftRadius: isLowpoly ? 4 : 20,
-          borderTopRightRadius: isLowpoly ? 4 : 20,
+          backgroundColor: COLORS.paperLight,
+          borderTopLeftRadius: 22,
+          borderTopRightRadius: 22,
           maxHeight: "70%",
         }}>
           <View style={{
             flexDirection: "row", justifyContent: "space-between", alignItems: "center",
-            padding: 16, borderBottomWidth: 1, borderBottomColor: colors.border,
+            padding: 16, borderBottomWidth: 1, borderBottomColor: COLORS.divider,
           }}>
-            <Text style={{ color: colors.text, fontFamily: "Inter_600SemiBold", fontSize: 16 }}>
+            <Text style={{ color: COLORS.coffee800, fontFamily: "Inter_600SemiBold", fontSize: 16 }}>
               Land auswählen
             </Text>
             <Pressable onPress={onClose} style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}>
-              <Ionicons name="close" size={22} color={colors.textSecondary} />
+              <Ionicons name="close" size={22} color={COLORS.coffee600} />
             </Pressable>
           </View>
           <ScrollView bounces={false}>
@@ -408,11 +250,11 @@ function CountryPickerModal({
                 onPress={() => { Haptics.selectionAsync(); onSelect(c); onClose(); }}
                 style={({ pressed }) => ({
                   paddingHorizontal: 20, paddingVertical: 14,
-                  borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border,
-                  backgroundColor: pressed ? colors.surfaceElevated : "transparent",
+                  borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: COLORS.divider,
+                  backgroundColor: pressed ? COLORS.paperDim : "transparent",
                 })}
               >
-                <Text style={{ color: colors.text, fontFamily: "Inter_500Medium", fontSize: 16 }}>{c}</Text>
+                <Text style={{ color: COLORS.coffee800, fontFamily: "Inter_500Medium", fontSize: 16 }}>{c}</Text>
               </Pressable>
             ))}
           </ScrollView>
@@ -423,7 +265,7 @@ function CountryPickerModal({
 }
 
 function OriginEditor({
-  origins, onAdd, onUpdate, onRemove, openPickerKey, onOpenPicker, onClosePicker, colors, design,
+  origins, onAdd, onUpdate, onRemove, openPickerKey, onOpenPicker, onClosePicker,
 }: {
   origins: OriginDraft[];
   onAdd: () => void;
@@ -432,14 +274,13 @@ function OriginEditor({
   openPickerKey: string | null;
   onOpenPicker: (key: string) => void;
   onClosePicker: () => void;
-  colors: ReturnType<typeof useThemeColors>;
-  design: string;
 }) {
-  const isLowpoly = design === "lowpoly";
-  const br = isLowpoly ? 4 : 10;
+  const br = 10;
 
   const multiple = origins.length > 1;
   const [expandedRegions, setExpandedRegions] = useState<Set<string>>(new Set());
+
+  const fieldBorder = "rgba(74,38,22,0.28)";
 
   return (
     <View style={{ gap: 12 }}>
@@ -451,17 +292,17 @@ function OriginEditor({
         <View key={o.key} style={{ gap: 10 }}>
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 8, flex: 1 }}>
-              <OriginPinIcon size={20} color={colors.tint} />
+              <OriginPinIcon size={20} color={COLORS.accent400} />
               <Text
                 numberOfLines={1}
-                style={{ color: headerName ? colors.text : colors.textSecondary, fontFamily: "Inter_600SemiBold", fontSize: 15, flex: 1 }}
+                style={{ color: headerName ? COLORS.coffee800 : COLORS.coffee600, fontFamily: "Inter_600SemiBold", fontSize: 15, flex: 1 }}
               >
                 {headerName || "Herkunft wählen"}
               </Text>
             </View>
             <Pressable onPress={() => { Haptics.selectionAsync(); onRemove(o.key); }}
               style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1, paddingLeft: 8 })}>
-              <Ionicons name="close-circle" size={20} color={colors.textSecondary} />
+              <Ionicons name="close-circle" size={20} color={COLORS.coffee600} />
             </Pressable>
           </View>
 
@@ -469,31 +310,29 @@ function OriginEditor({
             onPress={() => { Haptics.selectionAsync(); onOpenPicker(o.key); }}
             style={({ pressed }) => ({
               flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-              backgroundColor: colors.surfaceElevated,
-              borderWidth: 1.5, borderColor: colors.border, borderRadius: br,
+              backgroundColor: COLORS.paperLight,
+              borderWidth: 1, borderColor: fieldBorder, borderRadius: br,
               paddingHorizontal: 14, paddingVertical: 12,
               opacity: pressed ? 0.8 : 1,
             })}
           >
-            <Text style={{ color: o.country ? colors.text : colors.textSecondary, fontFamily: "Inter_500Medium", fontSize: 15 }}>
+            <Text style={{ color: o.country ? COLORS.coffee800 : COLORS.coffee600, fontFamily: "Inter_500Medium", fontSize: 15 }}>
               {o.country || "Land auswählen"}
             </Text>
-            <Ionicons name="chevron-down" size={16} color={colors.textSecondary} />
+            <Ionicons name="chevron-down" size={16} color={COLORS.coffee600} />
           </Pressable>
 
           <CountryPickerModal
             visible={openPickerKey === o.key}
             onSelect={(c) => { onUpdate(o.key, "country", c); if (c !== "Sonstiges") onUpdate(o.key, "customCountry", ""); }}
             onClose={onClosePicker}
-            colors={colors}
-            design={design}
           />
 
           {o.country === "Sonstiges" && (
             <TextInput
-              style={{ borderWidth: 1.5, borderColor: colors.border, borderRadius: br, paddingHorizontal: 14, paddingVertical: 10, color: colors.text, fontFamily: "Inter_500Medium", fontSize: 15, backgroundColor: colors.surfaceElevated }}
+              style={[ui.input, { borderRadius: br }]}
               placeholder="Land eingeben"
-              placeholderTextColor={colors.textSecondary}
+              placeholderTextColor={COLORS.coffee600}
               value={o.customCountry}
               onChangeText={(v) => onUpdate(o.key, "customCountry", v)}
             />
@@ -501,13 +340,13 @@ function OriginEditor({
 
           {(o.region.trim() !== "" || expandedRegions.has(o.key)) ? (
             <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-              <Text style={{ color: colors.textSecondary, fontFamily: "Inter_500Medium", fontSize: 13, width: 56 }}>
+              <Text style={{ color: COLORS.coffee600, fontFamily: "Inter_500Medium", fontSize: 13, width: 56 }}>
                 Region
               </Text>
               <TextInput
-                style={{ flex: 1, borderWidth: 1.5, borderColor: colors.border, borderRadius: br, paddingHorizontal: 12, paddingVertical: 8, color: colors.text, fontFamily: "Inter_400Regular", fontSize: 14, backgroundColor: colors.surface }}
+                style={[ui.input, { flex: 1, borderRadius: br, paddingVertical: 9, fontSize: 14 }]}
                 placeholder="z. B. Yirgacheffe (optional)"
-                placeholderTextColor={colors.textSecondary}
+                placeholderTextColor={COLORS.coffee600}
                 value={o.region}
                 onChangeText={(v) => onUpdate(o.key, "region", v)}
               />
@@ -523,8 +362,8 @@ function OriginEditor({
                 paddingVertical: 4, opacity: pressed ? 0.6 : 1,
               })}
             >
-              <Ionicons name="add" size={16} color={colors.tint} />
-              <Text style={{ color: colors.tint, fontFamily: "Inter_600SemiBold", fontSize: 13 }}>
+              <Ionicons name="add" size={16} color={COLORS.accent400} />
+              <Text style={{ color: COLORS.accent400, fontFamily: "Inter_600SemiBold", fontSize: 13 }}>
                 Region ergänzen
               </Text>
             </Pressable>
@@ -533,15 +372,15 @@ function OriginEditor({
           {multiple && (
             <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
               <TextInput
-                style={{ flex: 1, borderWidth: 1.5, borderColor: colors.border, borderRadius: br, paddingHorizontal: 14, paddingVertical: 10, color: colors.text, fontFamily: "Inter_400Regular", fontSize: 15, backgroundColor: colors.surface }}
+                style={[ui.input, { flex: 1, borderRadius: br }]}
                 placeholder="Anteil"
-                placeholderTextColor={colors.textSecondary}
+                placeholderTextColor={COLORS.coffee600}
                 value={o.percentageText}
                 onChangeText={(v) => onUpdate(o.key, "percentageText", v.replace(/[^0-9]/g, ""))}
                 keyboardType="number-pad"
                 maxLength={3}
               />
-              <Text style={{ color: colors.textSecondary, fontFamily: "Inter_600SemiBold", fontSize: 15 }}>%</Text>
+              <Text style={{ color: COLORS.coffee600, fontFamily: "Inter_600SemiBold", fontSize: 15 }}>%</Text>
             </View>
           )}
         </View>
@@ -552,14 +391,14 @@ function OriginEditor({
         onPress={() => { Haptics.selectionAsync(); onAdd(); }}
         style={({ pressed }) => ({
           flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6,
-          paddingVertical: 12, borderRadius: isLowpoly ? 4 : 10,
-          borderWidth: 1.5, borderColor: colors.tint,
+          paddingVertical: 12, borderRadius: 10,
+          borderWidth: 1.5, borderColor: COLORS.accent300,
           borderStyle: "dashed" as const,
           opacity: pressed ? 0.7 : 1,
         })}
       >
-        <Ionicons name="add" size={18} color={colors.tint} />
-        <Text style={{ color: colors.tint, fontFamily: "Inter_600SemiBold", fontSize: 14 }}>
+        <Ionicons name="add" size={18} color={COLORS.accent400} />
+        <Text style={{ color: COLORS.accent400, fontFamily: "Inter_600SemiBold", fontSize: 14 }}>
           Herkunft hinzufügen
         </Text>
       </Pressable>
@@ -568,108 +407,47 @@ function OriginEditor({
 }
 
 function ProcessingPicker({
-  value, onChange, color, textColor, borderColor, surfaceColor,
+  value, onChange,
 }: {
   value: string; onChange: (v: string) => void;
-  color: string; textColor: string; borderColor: string; surfaceColor: string;
 }) {
-  const { design } = useTheme();
-  const isLowpoly = design === "lowpoly";
   return (
-    <View style={{ gap: 10 }}>
-      <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
-        {PROCESSING_METHODS.map(({ value: v, label }) => {
-          const active = value === v;
-          const iconColor = active ? (isLowpoly ? "#1a0800" : "#fff") : textColor;
-          return (
-            <Pressable
-              key={v}
-              onPress={() => { Haptics.selectionAsync(); onChange(active ? "" : v); }}
-              style={({ pressed }) => ({
-                flexDirection: "row", alignItems: "center", gap: 7,
-                paddingHorizontal: 14, paddingVertical: 10,
-                borderRadius: isLowpoly ? 4 : 12,
-                backgroundColor: active ? (isLowpoly ? color : color + "22") : surfaceColor,
-                borderWidth: active ? 2 : 1.5, borderColor: active ? color : borderColor,
-                opacity: pressed ? 0.8 : 1,
-                transform: [{ scale: pressed ? 0.97 : 1 }],
-              })}
-            >
-              {isLowpoly ? (
-                <ProcessingIcon method={v} size={20} color={iconColor} />
-              ) : (
-                <PaperTile source={processTileSource(v)} size={24} style={{ opacity: active ? 1 : 0.92 }} />
-              )}
-              <Text style={{ color: isLowpoly ? iconColor : textColor, fontFamily: active ? "Inter_700Bold" : "Inter_500Medium", fontSize: 14 }}>
-                {label}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
+    <View style={{ flexDirection: "row", flexWrap: "wrap", rowGap: 18 }}>
+      {PROCESSING_METHODS.map(({ value: v, label }) => (
+        <TileOption
+          key={v}
+          source={processTileSource(v)}
+          label={label}
+          active={value === v}
+          onPress={() => onChange(value === v ? "" : v)}
+          width="33.33%"
+          tileSize={52}
+          fontSize={12}
+        />
+      ))}
     </View>
   );
 }
 
 function RoastLevelPicker({
-  value, onChange, color, textColor, borderColor, surfaceColor,
+  value, onChange,
 }: {
   value: string; onChange: (v: string) => void;
-  color: string; textColor: string; borderColor: string; surfaceColor: string;
 }) {
-  const { design } = useTheme();
-  const isLowpoly = design === "lowpoly";
   return (
-    <View style={{ gap: 10 }}>
-      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-        <Text style={{ color: textColor, fontFamily: "Inter_600SemiBold", fontSize: 15 }}>
-          Röstgrad
-        </Text>
-        {!!value && (
-          <Text style={{ color: textColor, fontFamily: "Inter_400Regular", fontSize: 12, opacity: 0.55 }}>
-            {ROAST_LEVEL_LABELS[value]}
-          </Text>
-        )}
-      </View>
-      <View style={{ flexDirection: "row", gap: isLowpoly ? 5 : 8 }}>
-        {ROAST_LEVELS.map(({ value: v, label }) => {
-          const active = value === v;
-          const iconColor = active ? (isLowpoly ? "#1a0800" : "#fff") : textColor;
-          if (isLowpoly) {
-            return (
-              <Pressable
-                key={v}
-                onPress={() => { Haptics.selectionAsync(); onChange(active ? "" : v); }}
-                style={({ pressed }) => ({
-                  flex: 1, height: 52, justifyContent: "center", alignItems: "center",
-                  transform: [{ scale: pressed ? 0.92 : 1 }],
-                })}
-              >
-                <Svg width="100%" height="52" viewBox="0 0 60 52" preserveAspectRatio="none" style={StyleSheet.absoluteFill}>
-                  <SvgPolygon points="9,0 51,0 60,9 60,43 51,52 9,52 0,43 0,9" fill={active ? color : surfaceColor} />
-                  {active && <SvgPolygon points="9,0 51,0 60,9 30,30 0,9" fill="rgba(255,255,255,0.11)" />}
-                </Svg>
-                <RoastIcon level={v} size={24} color={iconColor} />
-              </Pressable>
-            );
-          }
-          return (
-            <Pressable
-              key={v}
-              onPress={() => { Haptics.selectionAsync(); onChange(active ? "" : v); }}
-              style={({ pressed }) => ({
-                flex: 1, height: 52, borderRadius: 12,
-                backgroundColor: active ? color + "22" : surfaceColor,
-                borderWidth: active ? 2 : 1.5, borderColor: active ? color : borderColor,
-                justifyContent: "center", alignItems: "center",
-                opacity: pressed ? 0.8 : 1, transform: [{ scale: pressed ? 0.95 : 1 }],
-              })}
-            >
-              <PaperTile source={roastTileSource(v)} size={38} style={{ opacity: active ? 1 : 0.92 }} />
-            </Pressable>
-          );
-        })}
-      </View>
+    <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+      {ROAST_LEVELS.map(({ value: v, label }) => (
+        <TileOption
+          key={v}
+          source={roastTileSource(v)}
+          label={label}
+          active={value === v}
+          onPress={() => onChange(value === v ? "" : v)}
+          width="18%"
+          tileSize={52}
+          fontSize={11}
+        />
+      ))}
     </View>
   );
 }
@@ -683,83 +461,42 @@ function GrinderPicker({
   onToggle,
   onLevelChange,
   onBlurLevel,
-  color,
-  textColor,
-  borderColor,
-  surfaceColor,
 }: {
   grinders: Grinder[];
   grindSettings: GrindSettingDraft[];
   onToggle: (grinder: string) => void;
   onLevelChange: (grinder: string, v: string) => void;
   onBlurLevel: (grinder: string) => void;
-  color: string;
-  textColor: string;
-  borderColor: string;
-  surfaceColor: string;
 }) {
-  const { design } = useTheme();
-  const isLowpoly = design === "lowpoly";
   return (
-    <View style={{ gap: 10 }}>
-      <Text style={{ color: textColor, fontFamily: "Inter_600SemiBold", fontSize: 15 }}>
-        Kaffeemühle
-      </Text>
-      <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
-        {grinders.map((g) => {
-          const active = grindSettings.some((s) => s.grinder === g.name);
-          return (
-            <Pressable
-              key={g.name}
-              onPress={() => {
-                Haptics.selectionAsync();
-                onToggle(g.name);
-              }}
-              style={({ pressed }) => ({
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 8,
-                paddingHorizontal: 14,
-                paddingVertical: 10,
-                borderRadius: 12,
-                backgroundColor: active ? (isLowpoly ? color : color + "22") : surfaceColor,
-                borderWidth: active ? 2 : 1.5,
-                borderColor: active ? color : borderColor,
-                opacity: pressed ? 0.8 : 1,
-                transform: [{ scale: pressed ? 0.97 : 1 }],
-              })}
-            >
-              {isLowpoly ? (
-                <GrinderIcon design={g.design} size={22} color={active ? "#fff" : textColor} />
-              ) : (
-                <PaperTile source={grinderTileSource(g.design)} size={26} style={{ opacity: active ? 1 : 0.92 }} />
-              )}
-              <Text
-                style={{
-                  color: isLowpoly ? (active ? "#fff" : textColor) : textColor,
-                  fontFamily: active ? "Inter_700Bold" : "Inter_500Medium",
-                  fontSize: 15,
-                }}
-              >
-                {g.name}
-              </Text>
-            </Pressable>
-          );
-        })}
+    <View style={{ gap: 18 }}>
+      <View style={{ flexDirection: "row", flexWrap: "wrap", rowGap: 14 }}>
+        {grinders.map((g) => (
+          <TileOption
+            key={g.name}
+            source={grinderTileSource(g.design)}
+            label={g.name}
+            active={grindSettings.some((s) => s.grinder === g.name)}
+            onPress={() => onToggle(g.name)}
+            width="25%"
+            tileSize={52}
+            fontSize={12}
+          />
+        ))}
         {grinders.length === 0 && (
-          <Text style={{ color: textColor, fontFamily: "Inter_400Regular", fontSize: 14, opacity: 0.5 }}>
+          <Text style={{ color: COLORS.coffee600, fontFamily: "Inter_400Regular", fontSize: 14 }}>
             Keine Mühlen konfiguriert
           </Text>
         )}
       </View>
 
       {grindSettings.length > 0 && (
-        <View style={{ gap: 8 }}>
+        <View style={{ gap: 10 }}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-            <Text style={{ color: textColor, fontFamily: "Inter_600SemiBold", fontSize: 15 }}>
+            <Text style={{ color: COLORS.coffee800, fontFamily: "Inter_600SemiBold", fontSize: 14 }}>
               Mahlgrad
             </Text>
-            <Text style={{ color: textColor, fontFamily: "Inter_400Regular", fontSize: 12, opacity: 0.55 }}>
+            <Text style={{ color: COLORS.coffee600, fontFamily: "Inter_400Regular", fontSize: 12 }}>
               0 – 50
             </Text>
           </View>
@@ -768,28 +505,28 @@ function GrinderPicker({
               <View key={grinder} style={{ gap: 4, minWidth: 72, flex: 1, maxWidth: 140 }}>
                 <Text
                   numberOfLines={1}
-                  style={{ color: textColor, fontFamily: "Inter_500Medium", fontSize: 11, opacity: 0.6, textAlign: "center" }}
+                  style={{ color: COLORS.coffee600, fontFamily: "Inter_500Medium", fontSize: 11, textAlign: "center" }}
                 >
                   {grinder}
                 </Text>
                 <View
                   style={{
-                    borderWidth: 1.5,
-                    borderColor,
-                    borderRadius: isLowpoly ? 4 : 10,
-                    backgroundColor: surfaceColor,
+                    borderWidth: 1,
+                    borderColor: "rgba(74,38,22,0.28)",
+                    borderRadius: 10,
+                    backgroundColor: COLORS.paperLight,
                     paddingHorizontal: 12,
                     paddingVertical: 8,
                   }}
                 >
                   <TextInput
-                    style={{ color: textColor, fontFamily: "Inter_600SemiBold", fontSize: 18, textAlign: "center" }}
+                    style={{ color: COLORS.coffee800, fontFamily: "Inter_600SemiBold", fontSize: 18, textAlign: "center" }}
                     value={levelText}
                     onChangeText={(v) => onLevelChange(grinder, v.replace(/[^0-9.,]/g, ""))}
                     onBlur={() => onBlurLevel(grinder)}
                     keyboardType="decimal-pad"
                     placeholder="0"
-                    placeholderTextColor={textColor + "44"}
+                    placeholderTextColor={COLORS.coffee600}
                     selectTextOnFocus
                   />
                 </View>
@@ -802,12 +539,11 @@ function GrinderPicker({
   );
 }
 
+const CARD_SHAPES: Array<1 | 2 | 3> = [1, 2, 3];
+
 export default function CoffeeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
-  const colors = useThemeColors();
-  const cardExtras = useCardExtras();
-  const { design } = useTheme();
 
   const { name1, name2, user2active } = useUserNames();
   const [coffee, setCoffee] = useState<Coffee | null>(null);
@@ -976,56 +712,48 @@ export default function CoffeeDetailScreen() {
     );
   };
 
+  const handleBack = () => {
+    if (hasChanges) {
+      Alert.alert("Änderungen verwerfen?", "Du hast ungespeicherte Änderungen.", [
+        { text: "Weiter bearbeiten", style: "cancel" },
+        { text: "Verwerfen", style: "destructive", onPress: () => router.back() },
+      ]);
+    } else {
+      router.back();
+    }
+  };
+
   const topPad = Platform.OS === "web" ? 67 : insets.top;
-  const bottomPad = Platform.OS === "web" ? 0 : insets.bottom;
+  const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
 
   if (loading) {
     return (
-      <View style={[styles.container, { backgroundColor: colors.background, justifyContent: "center", alignItems: "center" }]}>
-        <ActivityIndicator color={colors.tint} />
+      <View style={[ui.appBg, { justifyContent: "center", alignItems: "center" }]}>
+        <ActivityIndicator color={COLORS.accent300} />
       </View>
     );
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <PolyBackground />
-      <TornDefs />
-      <Grain />
-      <TornSheet
-        tone="cream"
-        variant="tall"
-        seed={6}
-        rotate={0.4}
-        peek={false}
-        style={styles.masthead}
-        contentStyle={[styles.mastheadPad, { paddingTop: topPad + 14 }]}
-      >
-        <View style={styles.mastheadTop}>
+    <View style={ui.appBg}>
+      {/* ---------- Header: direkt auf ui.appBg, kein Papier ---------- */}
+      <View style={[styles.header, { paddingTop: topPad + 8 }]}>
+        <View style={styles.headerTop}>
           <Pressable
-            onPress={() => {
-              if (hasChanges) {
-                Alert.alert("Änderungen verwerfen?", "Du hast ungespeicherte Änderungen.", [
-                  { text: "Weiter bearbeiten", style: "cancel" },
-                  { text: "Verwerfen", style: "destructive", onPress: () => router.back() },
-                ]);
-              } else {
-                router.back();
-              }
-            }}
+            onPress={handleBack}
             hitSlop={8}
             style={({ pressed }) => [styles.backButton, { opacity: pressed ? 0.6 : 1 }]}
           >
-            <Ionicons name="chevron-back" size={26} color={colors.ink} />
+            <Ionicons name="chevron-back" size={26} color={COLORS.coffee800} />
           </Pressable>
-          <View style={styles.mastheadActions}>
+          <View style={styles.headerActions}>
             <Pressable
               onPress={handleDelete}
               disabled={saving}
               hitSlop={8}
               style={({ pressed }) => ({ opacity: pressed ? 0.6 : saving ? 0.4 : 1 })}
             >
-              <Ionicons name="trash-outline" size={22} color="#E05252" />
+              <Ionicons name="trash-outline" size={22} color={COLORS.danger} />
             </Pressable>
             <Pressable
               onPress={handleSave}
@@ -1033,38 +761,36 @@ export default function CoffeeDetailScreen() {
               hitSlop={8}
               style={({ pressed }) => ({ opacity: pressed ? 0.85 : saving ? 0.6 : 1 })}
             >
-              <TornBox color={colors.gold} seed={4} style={styles.saveBox}>
+              <PaperCard variant="chip" shape={2} shadow={0} style={styles.saveChip} contentStyle={styles.saveChipPad}>
                 {saving ? (
-                  <ActivityIndicator size="small" color={colors.espresso} />
+                  <ActivityIndicator size="small" color={COLORS.coffee800} />
                 ) : (
-                  <Ionicons name="checkmark" size={24} color={colors.espresso} />
+                  <Ionicons name="checkmark" size={24} color={COLORS.coffee800} />
                 )}
-              </TornBox>
+              </PaperCard>
             </Pressable>
           </View>
         </View>
-        <Text style={[styles.kicker, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
-          KAFFEE
-        </Text>
+        <Text style={ui.eyebrow}>KAFFEE</Text>
         <TextInput
-          style={[styles.nameTitle, { color: colors.ink, fontFamily: SERIF_BLACK }]}
+          style={styles.nameTitle}
           value={name}
           onChangeText={(v) => { setName(v); markChanged(); }}
           placeholder="Kaffeename"
-          placeholderTextColor={colors.inkFaint}
+          placeholderTextColor={COLORS.coffee600}
           multiline
         />
-      </TornSheet>
+      </View>
 
       <KeyboardAwareScrollViewCompat
-        contentContainerStyle={{ paddingHorizontal: 22, paddingTop: 28, paddingBottom: bottomPad + 100, gap: 28 }}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 12, paddingBottom: bottomPad + 100, gap: 16 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         bottomOffset={24}
       >
-
-        <TornSheet tone="espresso" seed={3} rotate={-0.8} contentStyle={styles.noteSection}>
-          <SectionHeader title="BEWERTUNGEN" color={colors.inkFaint} />
+        {/* ── BEWERTUNGEN ──────────────────────────────────────────────── */}
+        <PaperCard variant="light" shape={CARD_SHAPES[0]} shadow={1} contentStyle={styles.cardPad}>
+          <Text style={ui.eyebrow}>BEWERTUNGEN</Text>
           <View style={{ gap: 22, marginTop: 14 }}>
             <RatingSlider
               label={`${name1} Rating`}
@@ -1074,14 +800,10 @@ export default function CoffeeDetailScreen() {
               onChange={(v) => { setHaseRating(v); markChanged(); }}
               minLabel="schlecht"
               maxLabel="grossartig"
-              color={colors.gold}
-              textColor={colors.ink}
-              borderColor={colors.kraft}
-              surfaceColor={colors.paperBg2}
             />
             {user2active && (
               <>
-                <Hairline />
+                <View style={ui.divider} />
                 <RatingSlider
                   label={`${name2} Rating`}
                   value={dodoRating}
@@ -1090,52 +812,49 @@ export default function CoffeeDetailScreen() {
                   onChange={(v) => { setDodoRating(v); markChanged(); }}
                   minLabel="schlecht"
                   maxLabel="grossartig"
-                  color={colors.gold}
-                  textColor={colors.ink}
-                  borderColor={colors.kraft}
-                  surfaceColor={colors.paperBg2}
                 />
               </>
             )}
           </View>
-        </TornSheet>
+        </PaperCard>
 
-        <TornSheet tone="cream" seed={11} rotate={0.6} contentStyle={styles.section}>
-          <SectionHeader title="EIGENSCHAFTEN" color={colors.inkFaint} />
-          <View style={{ gap: 26, marginTop: 12 }}>
+        {/* ── MAHLGRAD ─────────────────────────────────────────────────── */}
+        <PaperCard variant="light" shape={CARD_SHAPES[1]} shadow={1} contentStyle={styles.cardPad}>
+          <Text style={ui.eyebrow}>MAHLGRAD</Text>
+          <View style={{ marginTop: 14 }}>
             <GrinderPicker
               grinders={grinders}
               grindSettings={grindSettings}
               onToggle={toggleGrinder}
               onLevelChange={updateGrindLevel}
               onBlurLevel={normalizeGrindLevel}
-              color={colors.gold}
-              textColor={colors.ink}
-              borderColor={colors.kraft}
-              surfaceColor={colors.paperBg2}
             />
-            <ScaleSlider
-              label="Aroma"
+          </View>
+        </PaperCard>
+
+        {/* ── AROMA ────────────────────────────────────────────────────── */}
+        <PaperCard variant="light" shape={CARD_SHAPES[2]} shadow={1} contentStyle={styles.cardPad}>
+          <Text style={ui.eyebrow}>AROMA</Text>
+          <View style={{ marginTop: 16 }}>
+            <AromaPicker
               value={aroma}
               onChange={(v) => { setAroma(v); markChanged(); if (v === 1) triggerToasty(); }}
-              color={colors.gold}
-              textColor={colors.ink}
-              borderColor={colors.kraft}
-              surfaceColor={colors.paperBg2}
-              aromaIcons
             />
+          </View>
+        </PaperCard>
+
+        {/* ── RÖSTGRAD ─────────────────────────────────────────────────── */}
+        <PaperCard variant="light" shape={CARD_SHAPES[0]} shadow={1} contentStyle={styles.cardPad}>
+          <Text style={ui.eyebrow}>RÖSTGRAD</Text>
+          <View style={{ marginTop: 16 }}>
             <RoastLevelPicker
               value={roastLevel}
               onChange={(v) => { setRoastLevel(v); markChanged(); }}
-              color={colors.gold}
-              textColor={colors.ink}
-              borderColor={colors.kraft}
-              surfaceColor={colors.paperBg2}
             />
           </View>
-        </TornSheet>
+        </PaperCard>
 
-        {/* ── HERKUNFT ──────────────────────────────────────────────────── */}
+        {/* ── HERKUNFT ─────────────────────────────────────────────────── */}
         {(() => {
           const originNameOf = (o: OriginDraft) =>
             (o.country === "Sonstiges" ? o.customCountry.trim() : o.country).trim();
@@ -1143,95 +862,79 @@ export default function CoffeeDetailScreen() {
           const hasOrigin = filledOrigins.length > 0;
           const showEditor = originEditing || !hasOrigin;
           return (
-        <TornSheet tone="cream" seed={8} rotate={-0.7} contentStyle={styles.section}>
-          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-            <SectionHeader title="HERKUNFT" color={colors.inkFaint} />
-            {hasOrigin && (
-              <Pressable
-                onPress={() => { Haptics.selectionAsync(); setOriginEditing((e) => !e); }}
-                hitSlop={10}
-                accessibilityRole="button"
-                accessibilityLabel={showEditor ? "Herkunft kompakt anzeigen" : "Herkunft bearbeiten"}
-                style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1, padding: 4 })}
-              >
-                <Ionicons name={showEditor ? "checkmark" : "pencil"} size={18} color={colors.tint} />
-              </Pressable>
-            )}
-          </View>
-          {showEditor ? (
-            <View style={{ marginTop: 8 }}>
-              <OriginEditor
-                origins={origins}
-                onAdd={() => {
-                  setOrigins((prev) => [...prev, { key: makeOriginKey(), country: "", customCountry: "", region: "", percentageText: "" }]);
-                  setOriginEditing(true);
-                  markChanged();
-                }}
-                onUpdate={(key, field, value) => {
-                  setOrigins((prev) => prev.map((o) => o.key === key ? { ...o, [field]: value } : o));
-                  setOriginEditing(true);
-                  markChanged();
-                }}
-                onRemove={(key) => {
-                  setOrigins((prev) => prev.filter((o) => o.key !== key));
-                  markChanged();
-                }}
-                openPickerKey={originPickerKey}
-                onOpenPicker={(key) => setOriginPickerKey(key)}
-                onClosePicker={() => setOriginPickerKey(null)}
-                colors={colors}
-                design={design}
-              />
-            </View>
-          ) : (
-            <Text style={{ color: colors.text, fontFamily: "Inter_500Medium", fontSize: 15, lineHeight: 24, marginTop: 8 }}>
-              {filledOrigins
-                .map((o) => {
-                  const pct = o.percentageText || (filledOrigins.length === 1 ? "100" : "");
-                  return originNameOf(o) + (pct ? ` ${pct}%` : "");
-                })
-                .join("   |   ")}
-            </Text>
-          )}
-        </TornSheet>
+            <PaperCard variant="light" shape={CARD_SHAPES[1]} shadow={1} contentStyle={styles.cardPad}>
+              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                <Text style={ui.eyebrow}>HERKUNFT</Text>
+                {hasOrigin && (
+                  <Pressable
+                    onPress={() => { Haptics.selectionAsync(); setOriginEditing((e) => !e); }}
+                    hitSlop={10}
+                    accessibilityRole="button"
+                    accessibilityLabel={showEditor ? "Herkunft kompakt anzeigen" : "Herkunft bearbeiten"}
+                    style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1, padding: 4 })}
+                  >
+                    <Ionicons name={showEditor ? "checkmark" : "pencil"} size={18} color={COLORS.accent400} />
+                  </Pressable>
+                )}
+              </View>
+              {showEditor ? (
+                <View style={{ marginTop: 10 }}>
+                  <OriginEditor
+                    origins={origins}
+                    onAdd={() => {
+                      setOrigins((prev) => [...prev, { key: makeOriginKey(), country: "", customCountry: "", region: "", percentageText: "" }]);
+                      setOriginEditing(true);
+                      markChanged();
+                    }}
+                    onUpdate={(key, field, value) => {
+                      setOrigins((prev) => prev.map((o) => o.key === key ? { ...o, [field]: value } : o));
+                      setOriginEditing(true);
+                      markChanged();
+                    }}
+                    onRemove={(key) => {
+                      setOrigins((prev) => prev.filter((o) => o.key !== key));
+                      markChanged();
+                    }}
+                    openPickerKey={originPickerKey}
+                    onOpenPicker={(key) => setOriginPickerKey(key)}
+                    onClosePicker={() => setOriginPickerKey(null)}
+                  />
+                </View>
+              ) : (
+                <Text style={{ color: COLORS.coffee800, fontFamily: "Inter_500Medium", fontSize: 15, lineHeight: 24, marginTop: 10 }}>
+                  {filledOrigins
+                    .map((o) => {
+                      const pct = o.percentageText || (filledOrigins.length === 1 ? "100" : "");
+                      return originNameOf(o) + (pct ? ` ${pct}%` : "");
+                    })
+                    .join("   |   ")}
+                </Text>
+              )}
+            </PaperCard>
           );
         })()}
 
-        {/* ── AUFBEREITUNG ──────────────────────────────────────────────── */}
-        <TornSheet tone="cream" seed={13} rotate={0.7} contentStyle={styles.section}>
-          <SectionHeader title="AUFBEREITUNG" color={colors.inkFaint} />
-          <View style={{ marginTop: 12 }}>
+        {/* ── AUFBEREITUNG ─────────────────────────────────────────────── */}
+        <PaperCard variant="light" shape={CARD_SHAPES[2]} shadow={1} contentStyle={styles.cardPad}>
+          <Text style={ui.eyebrow}>AUFBEREITUNG</Text>
+          <View style={{ marginTop: 16 }}>
             <ProcessingPicker
               value={processingMethod}
               onChange={(v) => { setProcessingMethod(v); markChanged(); }}
-              color={colors.gold}
-              textColor={colors.ink}
-              borderColor={colors.kraft}
-              surfaceColor={colors.paperBg2}
             />
           </View>
-        </TornSheet>
+        </PaperCard>
 
-        <TornSheet tone="cream" seed={15} rotate={-0.6} contentStyle={styles.section}>
-          <SectionHeader title="NOTIZEN" color={colors.inkFaint} />
-          <View style={{ gap: 18, marginTop: 12 }}>
+        {/* ── NOTIZEN ──────────────────────────────────────────────────── */}
+        <PaperCard variant="light" shape={CARD_SHAPES[0]} shadow={1} contentStyle={styles.cardPad}>
+          <Text style={ui.eyebrow}>NOTIZEN</Text>
+          <View style={{ gap: 18, marginTop: 14 }}>
             <View style={{ gap: 8 }}>
-              <Text style={[styles.fieldLabel, { color: colors.inkSoft, fontFamily: "Inter_500Medium" }]}>
-                Aroma Beschreibung
-              </Text>
+              <Text style={ui.label}>Aroma Beschreibung</Text>
               <TextInput
-                style={[
-                  styles.textArea,
-                  {
-                    backgroundColor: colors.paperBg2,
-                    borderColor: colors.kraft,
-                    color: colors.ink,
-                    fontFamily: "Inter_400Regular",
-                    borderRadius: cardExtras.cardRadius,
-                  },
-                ]}
+                style={[ui.input, styles.textArea]}
                 placeholder="z.B. Karamell, dunkle Schokolade, Nüsse..."
-                placeholderTextColor={colors.inkFaint}
+                placeholderTextColor={COLORS.coffee600}
                 multiline
                 numberOfLines={3}
                 value={aromaDescription}
@@ -1239,22 +942,11 @@ export default function CoffeeDetailScreen() {
               />
             </View>
             <View style={{ gap: 8 }}>
-              <Text style={[styles.fieldLabel, { color: colors.inkSoft, fontFamily: "Inter_500Medium" }]}>
-                Sonstiges
-              </Text>
+              <Text style={ui.label}>Sonstiges</Text>
               <TextInput
-                style={[
-                  styles.textArea,
-                  {
-                    backgroundColor: colors.paperBg2,
-                    borderColor: colors.kraft,
-                    color: colors.ink,
-                    fontFamily: "Inter_400Regular",
-                    borderRadius: cardExtras.cardRadius,
-                  },
-                ]}
+                style={[ui.input, styles.textArea]}
                 placeholder="Weitere Notizen, Zubereitungshinweise..."
-                placeholderTextColor={colors.inkFaint}
+                placeholderTextColor={COLORS.coffee600}
                 multiline
                 numberOfLines={3}
                 value={notes}
@@ -1262,47 +954,43 @@ export default function CoffeeDetailScreen() {
               />
             </View>
           </View>
-        </TornSheet>
+        </PaperCard>
 
-        <TornSheet tone="cream" seed={9} rotate={0.8} contentStyle={styles.section}>
-          <SectionHeader title="PREIS" color={colors.inkFaint} />
-          <View style={{ gap: 8, marginTop: 12 }}>
-            <Text style={[styles.fieldLabel, { color: colors.inkSoft, fontFamily: "Inter_500Medium" }]}>
-              Preis je Kilogramm
-            </Text>
-            <View style={[styles.priceInputRow, { borderColor: colors.kraft, backgroundColor: colors.paperBg2, borderRadius: cardExtras.cardRadius }]}>
+        {/* ── PREIS ────────────────────────────────────────────────────── */}
+        <PaperCard variant="light" shape={CARD_SHAPES[1]} shadow={1} contentStyle={styles.cardPad}>
+          <Text style={ui.eyebrow}>PREIS</Text>
+          <View style={{ gap: 8, marginTop: 14 }}>
+            <Text style={ui.label}>Preis je Kilogramm</Text>
+            <View style={styles.priceInputRow}>
               <TextInput
-                style={[styles.priceInput, { color: colors.ink, fontFamily: "Inter_400Regular" }]}
+                style={styles.priceInput}
                 placeholder="z.B. 24,90"
-                placeholderTextColor={colors.inkFaint}
+                placeholderTextColor={COLORS.coffee600}
                 keyboardType="decimal-pad"
                 value={pricePerKg}
                 onChangeText={(v) => { setPricePerKg(v); markChanged(); }}
               />
-              <Text style={[styles.priceSuffix, { color: colors.inkSoft, fontFamily: "Inter_600SemiBold" }]}>
-                €/kg
-              </Text>
+              <Text style={styles.priceSuffix}>€/kg</Text>
             </View>
           </View>
-        </TornSheet>
+        </PaperCard>
 
-        <PolyActionButton
+        <Pressable
           onPress={handleSave}
           disabled={saving}
-          color={colors.tint}
-          style={styles.saveButton}
+          style={({ pressed }) => [
+            ui.btnPrimary,
+            styles.saveButton,
+            saving && ui.btnDisabled,
+            { opacity: pressed && !saving ? 0.9 : 1 },
+          ]}
         >
           {saving ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={COLORS.paperLight} />
           ) : (
-            <>
-              <Ionicons name="checkmark-circle" size={20} color="#fff" />
-              <Text style={[styles.saveButtonText, { fontFamily: "Inter_600SemiBold" }]}>
-                Speichern
-              </Text>
-            </>
+            <Text style={ui.btnPrimaryText}>Speichern</Text>
           )}
-        </PolyActionButton>
+        </Pressable>
       </KeyboardAwareScrollViewCompat>
 
       {/* Easter egg: Toasty! popup on sehr kräftig aroma */}
@@ -1332,21 +1020,17 @@ export default function CoffeeDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  masthead: {
-    marginTop: -48,
+  header: {
+    paddingHorizontal: 20,
+    paddingBottom: 14,
   },
-  mastheadPad: {
-    paddingHorizontal: 24,
-    paddingBottom: 24,
-  },
-  mastheadTop: {
+  headerTop: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 16,
+    marginBottom: 14,
   },
-  mastheadActions: {
+  headerActions: {
     flexDirection: "row",
     alignItems: "center",
     gap: 18,
@@ -1358,69 +1042,55 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginLeft: -6,
   },
-  saveBox: {
+  saveChip: {
     width: 46,
     height: 46,
+  },
+  saveChipPad: {
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
-  },
-  kicker: {
-    fontSize: 11,
-    letterSpacing: 3,
-    marginBottom: 6,
-  },
-  nameTitle: {
-    fontSize: 34,
-    lineHeight: 40,
     padding: 0,
   },
-  section: {
-    paddingHorizontal: 22,
-    paddingVertical: 22,
+  nameTitle: {
+    fontFamily: FONTS.display,
+    fontSize: 30,
+    lineHeight: 36,
+    color: COLORS.coffee800,
+    padding: 0,
+    marginTop: 6,
   },
-  noteSection: {
-    paddingHorizontal: 22,
-    paddingVertical: 24,
-  },
-  fieldLabel: {
-    fontSize: 12,
-    letterSpacing: 0.3,
+  cardPad: {
+    padding: 20,
   },
   textArea: {
-    borderWidth: 1,
-    borderRadius: 12,
-    padding: 12,
-    fontSize: 15,
     minHeight: 80,
     textAlignVertical: "top",
+    paddingTop: 12,
   },
   priceInputRow: {
     flexDirection: "row",
     alignItems: "center",
+    backgroundColor: COLORS.paperLight,
     borderWidth: 1,
+    borderColor: "rgba(74,38,22,0.28)",
     borderRadius: 12,
-    paddingHorizontal: 14,
+    paddingHorizontal: 15,
     height: 50,
   },
   priceInput: {
     flex: 1,
     fontSize: 16,
+    color: COLORS.coffee800,
+    fontFamily: "Inter_400Regular",
   },
   priceSuffix: {
     fontSize: 15,
     marginLeft: 8,
+    color: COLORS.coffee600,
+    fontFamily: "Inter_600SemiBold",
   },
   saveButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    padding: 18,
-    borderRadius: 16,
     marginTop: 4,
-  },
-  saveButtonText: {
-    color: "#fff",
-    fontSize: 17,
   },
 });

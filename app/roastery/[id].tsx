@@ -16,6 +16,7 @@ import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useLocalSearchParams, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { ChevronRight } from "lucide-react-native";
 import Svg, { Path } from "react-native-svg";
 import * as Haptics from "expo-haptics";
 import {
@@ -29,14 +30,11 @@ import {
   Coffee,
 } from "@/lib/storage";
 import { useUserNames } from "@/context/UserNamesContext";
-import { PolyBackground, PolyActionButton } from "@/components/PolyBackground";
-import { TornDefs, TornSheet, TornBox, Grain } from "@/components/TornPaper";
-import { CupIcon } from "@/components/CoffeeIcons";
-import { useThemeColors, useCardExtras } from "@/context/ThemeContext";
+import { PaperCard, COLORS, FONTS, ui } from "@/theme/paper-native";
+import { PaperTile, navTileSource } from "@/components/PaperTiles";
 
-const SERIF_BLACK = "Fraunces_700Bold";
-const SERIF_BOLD = "Fraunces_600SemiBold";
-const SERIF_MED = "Inter_400Regular";
+const STROKE = 1.75;
+const LIST_SHAPES: Array<1 | 2 | 3> = [1, 2, 3];
 
 function CoffeeBeanIcon({ size = 18, color }: { size?: number; color: string }) {
   const h = Math.round(size * 1.2);
@@ -144,29 +142,9 @@ function formatPrice(raw: string): string {
   return num.toFixed(2).replace(".", ",");
 }
 
-function RatingDots({ value, max, colors }: { value: number; max: number; colors: ReturnType<typeof useThemeColors> }) {
-  return (
-    <View style={{ flexDirection: "row", gap: 3 }}>
-      {Array.from({ length: max }).map((_, i) => (
-        <View
-          key={i}
-          style={{
-            width: 6,
-            height: 6,
-            borderRadius: 3,
-            backgroundColor: i < value ? colors.tint : colors.border,
-          }}
-        />
-      ))}
-    </View>
-  );
-}
-
 export default function RoasteryScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
-  const colors = useThemeColors();
-  const cardExtras = useCardExtras();
   const [showConfetti, setShowConfetti] = useState(false);
 
   const { name1, name2, user2active } = useUserNames();
@@ -288,455 +266,334 @@ export default function RoasteryScreen() {
   };
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
-  const bottomPad = Platform.OS === "web" ? 0 : insets.bottom;
+  const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
+
+  const renderScore = (item: Coffee) => {
+    return (
+      <View style={styles.scoreRow}>
+        <Text style={styles.scoreText}>
+          {name1} {item.haseRating !== null ? item.haseRating : "–"}
+        </Text>
+        {user2active && (
+          <>
+            <Text style={styles.scoreDot}>·</Text>
+            <Text style={styles.scoreText}>
+              {name2} {item.dodoRating !== null ? item.dodoRating : "–"}
+            </Text>
+          </>
+        )}
+      </View>
+    );
+  };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <PolyBackground />
-      <TornDefs />
-      <Grain />
-
+    <View style={ui.appBg}>
       <ScrollView
-        contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 0, paddingBottom: bottomPad + 48, flexGrow: 1 }}
+        contentContainerStyle={{
+          paddingHorizontal: 20,
+          paddingTop: topPad + 8,
+          paddingBottom: bottomPad + 48,
+          flexGrow: 1,
+        }}
         showsVerticalScrollIndicator={false}
       >
-        {/* The page itself IS the paper surface — ONE large cream sheet that
-            carries the masthead and the coffee list. */}
-        <TornSheet
-          tone="cream"
-          variant="main"
-          seed={6}
-          peek={false}
-          flat
-          contentStyle={[styles.pagePad, { paddingTop: topPad + 20 }]}
-        >
-          <View style={styles.headerRow}>
-            <Pressable
-              onPress={() => router.back()}
-              style={({ pressed }) => [styles.backButton, { opacity: pressed ? 0.6 : 1 }]}
-            >
-              <Ionicons name="chevron-back" size={26} color={colors.ink} />
-            </Pressable>
-            <Pressable
-              onPress={openEditRoastery}
-              style={({ pressed }) => [styles.headerCenter, { opacity: pressed ? 0.7 : 1 }]}
-            >
-              <Text style={[styles.kicker, { color: colors.inkFaint, fontFamily: "Inter_600SemiBold" }]}>
-                RÖSTEREI
+        {/* ---------- Seiten-Header: direkt auf ui.appBg, kein Papier ---------- */}
+        <View style={styles.headerRow}>
+          <Pressable
+            onPress={() => router.back()}
+            style={({ pressed }) => [styles.backButton, { opacity: pressed ? 0.6 : 1 }]}
+          >
+            <Ionicons name="chevron-back" size={26} color={COLORS.coffee800} />
+          </Pressable>
+          <Pressable
+            onPress={openEditRoastery}
+            style={({ pressed }) => [styles.headerCenter, { opacity: pressed ? 0.7 : 1 }]}
+          >
+            <Text style={ui.eyebrow}>RÖSTEREI</Text>
+            <View style={styles.titleRow}>
+              <Text style={styles.title} numberOfLines={2}>
+                {roasteryName}
               </Text>
-              <View style={styles.titleRow}>
-                <Text
-                  style={[styles.title, { color: colors.ink, fontFamily: SERIF_BLACK }]}
-                  numberOfLines={2}
-                >
-                  {roasteryName}
-                </Text>
-                <Ionicons name="pencil-outline" size={16} color={colors.inkFaint} style={{ marginTop: 6 }} />
-              </View>
-            </Pressable>
-            <Pressable
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                setShowModal(true);
-              }}
-              style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
-            >
-              <TornBox color={colors.gold} seed={4} style={styles.addButton}>
-                <Ionicons name="add" size={26} color={colors.espresso} />
-              </TornBox>
-            </Pressable>
-          </View>
-
-          <View style={[styles.headerRule, { backgroundColor: colors.hair }]} />
-
-          {loading ? (
-            <View style={styles.centerState}>
-              <View style={[styles.skeletonCard, { backgroundColor: colors.surface }]} />
-              <View style={[styles.skeletonCard, { backgroundColor: colors.surface, opacity: 0.6 }]} />
+              <Ionicons name="pencil-outline" size={16} color={COLORS.coffee600} style={{ marginTop: 8 }} />
             </View>
-          ) : coffees.length === 0 ? (
-            <View style={styles.centerState}>
-              <Ionicons name="leaf-outline" size={52} color={colors.inkFaint} />
-              <Text style={[styles.emptyTitle, { color: colors.ink, fontFamily: SERIF_BOLD }]}>
-                Noch keine Kaffees
-              </Text>
-              <Text style={[styles.emptySubtitle, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}>
-                Tippe auf + um einen Kaffee hinzuzufügen
-              </Text>
-            </View>
-          ) : (
-            <View style={styles.listBlock}>
-            {coffees.map((item, index) => (
-              <View key={item.id}>
-                {index > 0 ? <View style={[styles.rowDivider, { backgroundColor: colors.hair }]} /> : null}
-                <Pressable
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    router.push({ pathname: "/coffee/[id]", params: { id: item.id } });
-                  }}
-                  onLongPress={() => handleDelete(item)}
-                  style={({ pressed }) => [styles.coffeeRow, { opacity: pressed ? 0.55 : 1 }]}
-                >
-                  <View style={styles.rowIcon}>
-                    <CupIcon size={26} color={colors.gold} />
-                  </View>
-                  <View style={styles.coffeeContent}>
-                    <Text style={[styles.coffeeName, { color: colors.ink, fontFamily: SERIF_BOLD }]} numberOfLines={2}>
-                      {item.name}
-                    </Text>
-                    {item.aromaDescription ? (
-                      <Text
-                        numberOfLines={1}
-                        ellipsizeMode="tail"
-                        style={[styles.coffeeMeta, { color: colors.inkSoft, fontFamily: "Inter_400Regular" }]}
-                      >
-                        {item.aromaDescription}
-                      </Text>
-                    ) : item.pricePerKg ? (
-                      <Text style={[styles.coffeeMeta, { color: colors.inkSoft, fontFamily: "Inter_500Medium" }]}>
-                        {formatPrice(item.pricePerKg)} €/kg
-                      </Text>
-                    ) : null}
-                    <View style={styles.scoreRow}>
-                      <View style={styles.scorePair}>
-                        <Text style={[styles.scoreName, { color: colors.inkSoft, fontFamily: "Inter_500Medium" }]}>
-                          {name1}
-                        </Text>
-                        {item.haseRating !== null ? (
-                          <Text style={[styles.scoreValue, { color: colors.gold, fontFamily: "Inter_700Bold" }]}>
-                            {item.haseRating}
-                          </Text>
-                        ) : (
-                          <Text style={[styles.scoreValue, { color: colors.inkFaint, fontFamily: "Inter_700Bold", opacity: 0.5 }]}>
-                            –
-                          </Text>
-                        )}
-                      </View>
-                      {user2active && (
-                        <View style={styles.scorePair}>
-                          <Text style={[styles.scoreName, { color: colors.inkSoft, fontFamily: "Inter_500Medium" }]}>
-                            {name2}
-                          </Text>
-                          {item.dodoRating !== null ? (
-                            <Text style={[styles.scoreValue, { color: colors.gold, fontFamily: "Inter_700Bold" }]}>
-                              {item.dodoRating}
-                            </Text>
-                          ) : (
-                            <Text style={[styles.scoreValue, { color: colors.inkFaint, fontFamily: "Inter_700Bold", opacity: 0.5 }]}>
-                              –
-                            </Text>
-                          )}
-                        </View>
-                      )}
-                    </View>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color={colors.inkFaint} style={{ marginTop: 4 }} />
-                </Pressable>
-              </View>
+          </Pressable>
+          <Pressable
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              setShowModal(true);
+            }}
+            style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
+          >
+            <PaperCard variant="chip" shape={2} shadow={0} style={styles.addOuter} contentStyle={styles.addPad}>
+              <Ionicons name="add" size={24} color={COLORS.coffee800} />
+            </PaperCard>
+          </Pressable>
+        </View>
+
+        {loading ? (
+          <View style={styles.skeletonBlock}>
+            {[0, 1, 2].map((i) => (
+              <PaperCard
+                key={i}
+                variant="light"
+                shape={LIST_SHAPES[i % LIST_SHAPES.length]}
+                shadow={1}
+                style={[styles.skeletonCard, { opacity: 1 - i * 0.3 }]}
+                contentStyle={styles.skeletonPad}
+              />
             ))}
-            </View>
-          )}
-        </TornSheet>
+          </View>
+        ) : coffees.length === 0 ? (
+          <View style={styles.centerState}>
+            <PaperTile source={navTileSource("coffee")} size={64} />
+            <Text style={styles.emptyTitle}>Noch keine Kaffees</Text>
+            <Text style={styles.emptySubtitle}>
+              Tippe auf + um einen Kaffee hinzuzufügen
+            </Text>
+          </View>
+        ) : (
+          <View style={styles.listBlock}>
+            {coffees.map((item, i) => (
+              <Pressable
+                key={item.id}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  router.push({ pathname: "/coffee/[id]", params: { id: item.id } });
+                }}
+                onLongPress={() => handleDelete(item)}
+                style={({ pressed }) => ({ opacity: pressed ? 0.9 : 1 })}
+              >
+                <PaperCard
+                  variant="light"
+                  shape={LIST_SHAPES[i % LIST_SHAPES.length]}
+                  shadow={1}
+                  contentStyle={styles.listPad}
+                >
+                  <View style={styles.listRow}>
+                    <PaperTile source={navTileSource("coffee")} size={52} />
+                    <View style={styles.listText}>
+                      <Text style={styles.cardName} numberOfLines={2}>
+                        {item.name}
+                      </Text>
+                      {item.aromaDescription ? (
+                        <Text style={styles.cardMeta} numberOfLines={1} ellipsizeMode="tail">
+                          {item.aromaDescription}
+                        </Text>
+                      ) : item.pricePerKg ? (
+                        <Text style={styles.cardMeta} numberOfLines={1}>
+                          {formatPrice(item.pricePerKg)} €/kg
+                        </Text>
+                      ) : null}
+                      {renderScore(item)}
+                    </View>
+                    <ChevronRight size={20} color={COLORS.accent300} strokeWidth={STROKE} />
+                  </View>
+                </PaperCard>
+              </Pressable>
+            ))}
+          </View>
+        )}
       </ScrollView>
 
-      {/* Modal: Neuer Kaffee */}
+      {/* ---------- Neuer Kaffee ---------- */}
       <Modal visible={showModal} animationType="slide" transparent presentationStyle="overFullScreen">
         <KeyboardAvoidingView behavior="padding" style={{ flex: 1, justifyContent: "flex-end" }}>
-          <Pressable style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)" }} onPress={() => setShowModal(false)} />
-          <View style={[styles.modalSheet, { backgroundColor: colors.surfaceElevated, paddingBottom: bottomPad + 20 }]}>
-            <View style={styles.modalHandle} />
-            <Text style={[styles.modalTitle, { color: colors.ink, fontFamily: SERIF_BOLD }]}>
-              Neuer Kaffee
-            </Text>
-            <Text style={[styles.inputLabel, { color: colors.inkSoft, fontFamily: "Inter_500Medium" }]}>
-              Name *
-            </Text>
+          <Pressable style={styles.modalScrim} onPress={() => setShowModal(false)} />
+          <View style={[ui.sheet, { paddingBottom: bottomPad + 24 }]}>
+            <View style={ui.sheetHandle} />
+            <Text style={styles.modalTitle}>Neuer Kaffee</Text>
+
+            <Text style={ui.label}>Name *</Text>
             <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: colors.surface,
-                  borderColor: colors.border,
-                  color: colors.text,
-                  fontFamily: "Inter_400Regular",
-                  borderRadius: cardExtras.cardRadius,
-                },
-              ]}
+              style={[ui.input, styles.inputSpacing]}
               placeholder="z.B. Ethiopia Yirgacheffe"
-              placeholderTextColor={colors.textSecondary}
+              placeholderTextColor={COLORS.coffee600}
               value={newName}
               onChangeText={setNewName}
               autoFocus
               returnKeyType="done"
               onSubmitEditing={handleAdd}
             />
-            <PolyActionButton
+
+            <Pressable
               onPress={handleAdd}
               disabled={!newName.trim()}
-              color={newName.trim() ? colors.tint : colors.border}
-              style={styles.saveButton}
+              style={({ pressed }) => [
+                ui.btnPrimary,
+                styles.saveButton,
+                !newName.trim() && ui.btnDisabled,
+                { opacity: pressed && newName.trim() ? 0.9 : 1 },
+              ]}
             >
-              <Text style={[styles.saveButtonText, { fontFamily: "Inter_600SemiBold" }]}>
-                Hinzufügen
-              </Text>
-            </PolyActionButton>
+              <Text style={ui.btnPrimaryText}>Hinzufügen</Text>
+            </Pressable>
           </View>
         </KeyboardAvoidingView>
       </Modal>
 
-      {/* Modal: Rösterei bearbeiten */}
+      {/* ---------- Rösterei bearbeiten ---------- */}
       <Modal visible={showEditRoastery} animationType="slide" transparent presentationStyle="overFullScreen">
         <KeyboardAvoidingView behavior="padding" style={{ flex: 1, justifyContent: "flex-end" }}>
-          <Pressable
-            style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)" }}
-            onPress={() => setShowEditRoastery(false)}
-          />
-          <View style={[styles.modalSheet, { backgroundColor: colors.surfaceElevated, paddingBottom: bottomPad + 20 }]}>
-            <View style={styles.modalHandle} />
-            <Text style={[styles.modalTitle, { color: colors.ink, fontFamily: SERIF_BOLD }]}>
-              Rösterei bearbeiten
-            </Text>
-            <Text style={[styles.inputLabel, { color: colors.inkSoft, fontFamily: "Inter_500Medium" }]}>
-              Name *
-            </Text>
+          <Pressable style={styles.modalScrim} onPress={() => setShowEditRoastery(false)} />
+          <View style={[ui.sheet, { paddingBottom: bottomPad + 24 }]}>
+            <View style={ui.sheetHandle} />
+            <Text style={styles.modalTitle}>Rösterei bearbeiten</Text>
+
+            <Text style={ui.label}>Name *</Text>
             <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: colors.surface,
-                  borderColor: colors.border,
-                  color: colors.text,
-                  fontFamily: "Inter_400Regular",
-                  borderRadius: cardExtras.cardRadius,
-                },
-              ]}
+              style={[ui.input, styles.inputSpacing]}
               placeholder="Name der Rösterei"
-              placeholderTextColor={colors.textSecondary}
+              placeholderTextColor={COLORS.coffee600}
               value={editName}
               onChangeText={setEditName}
               autoFocus
               returnKeyType="next"
             />
-            <Text style={[styles.inputLabel, { color: colors.inkSoft, fontFamily: "Inter_500Medium" }]}>
-              Ort
-            </Text>
+
+            <Text style={ui.label}>Ort</Text>
             <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: colors.surface,
-                  borderColor: colors.border,
-                  color: colors.text,
-                  fontFamily: "Inter_400Regular",
-                  borderRadius: cardExtras.cardRadius,
-                },
-              ]}
+              style={[ui.input, styles.inputSpacing]}
               placeholder="z.B. Berlin"
-              placeholderTextColor={colors.textSecondary}
+              placeholderTextColor={COLORS.coffee600}
               value={editLocation}
               onChangeText={setEditLocation}
               returnKeyType="done"
               onSubmitEditing={handleSaveRoastery}
             />
-            <PolyActionButton
+
+            <Pressable
               onPress={handleSaveRoastery}
               disabled={!editName.trim()}
-              color={editName.trim() ? colors.tint : colors.border}
-              style={styles.saveButton}
+              style={({ pressed }) => [
+                ui.btnPrimary,
+                styles.saveButton,
+                !editName.trim() && ui.btnDisabled,
+                { opacity: pressed && editName.trim() ? 0.9 : 1 },
+              ]}
             >
-              <Text style={[styles.saveButtonText, { fontFamily: "Inter_600SemiBold" }]}>
-                Speichern
-              </Text>
-            </PolyActionButton>
-            <PolyActionButton
+              <Text style={ui.btnPrimaryText}>Speichern</Text>
+            </Pressable>
+
+            <Pressable
               onPress={handleDeleteRoastery}
-              color="transparent"
-              style={{ ...styles.deleteButton, borderColor: "#E05252" } as any}
+              style={({ pressed }) => [styles.deleteButton, { opacity: pressed ? 0.8 : 1 }]}
             >
-              <Ionicons name="trash-outline" size={16} color="#E05252" />
-              <Text style={[styles.deleteButtonText, { fontFamily: "Inter_500Medium" }]}>
-                Rösterei löschen
-              </Text>
-            </PolyActionButton>
+              <Ionicons name="trash-outline" size={16} color={COLORS.danger} />
+              <Text style={styles.deleteButtonText}>Rösterei löschen</Text>
+            </Pressable>
           </View>
         </KeyboardAvoidingView>
       </Modal>
 
-      <CoffeeBeanConfetti active={showConfetti} color={colors.tint} />
+      <CoffeeBeanConfetti active={showConfetti} color={COLORS.accent300} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  pagePad: {
-    paddingHorizontal: 20,
-    paddingBottom: 10,
-  },
-  headerRule: {
-    height: StyleSheet.hairlineWidth,
-    marginTop: 22,
-  },
-  listBlock: {
-    marginTop: 18,
-  },
   headerRow: {
     flexDirection: "row",
     alignItems: "flex-start",
     gap: 8,
+    marginBottom: 22,
   },
   backButton: {
-    width: 36,
+    width: 32,
     height: 36,
     justifyContent: "center",
-    alignItems: "center",
+    alignItems: "flex-start",
     marginTop: 6,
+    marginLeft: -6,
   },
-  headerCenter: { flex: 1 },
-  kicker: {
-    fontSize: 11,
-    letterSpacing: 3,
-    marginBottom: 4,
-    textTransform: "uppercase",
-  },
+  headerCenter: { flex: 1, minWidth: 0 },
   titleRow: {
     flexDirection: "row",
     alignItems: "flex-start",
     gap: 8,
+    marginTop: 6,
   },
   title: {
     flexShrink: 1,
-    fontSize: 34,
-    lineHeight: 40,
+    fontFamily: FONTS.display,
+    fontSize: 30,
+    lineHeight: 36,
+    color: COLORS.coffee800,
   },
-  addButton: {
-    width: 48,
-    height: 48,
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 6,
+  addOuter: { width: 44, height: 44, marginTop: 4 },
+  addPad: { flex: 1, alignItems: "center", justifyContent: "center", padding: 0 },
+
+  listBlock: { marginTop: 4, gap: 14 },
+  listPad: { padding: 20 },
+  listRow: { flexDirection: "row", alignItems: "center", gap: 16 },
+  listText: { flex: 1, minWidth: 0 },
+  cardName: {
+    fontFamily: FONTS.display,
+    fontSize: 19,
+    lineHeight: 23,
+    color: COLORS.coffee800,
   },
+  cardMeta: {
+    fontFamily: "Inter_400Regular",
+    fontSize: 13,
+    color: COLORS.coffee600,
+    marginTop: 3,
+  },
+  scoreRow: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 6 },
+  scoreText: {
+    fontFamily: "Inter_500Medium",
+    fontSize: 12.5,
+    color: COLORS.accent400,
+  },
+  scoreDot: { fontSize: 12.5, color: COLORS.dividerSoft },
+
   centerState: {
-    justifyContent: "center",
     alignItems: "center",
+    justifyContent: "center",
+    paddingTop: 80,
     gap: 12,
-    paddingHorizontal: 24,
-    paddingVertical: 72,
   },
   emptyTitle: {
-    fontSize: 24,
-    textAlign: "center",
-    marginTop: 8,
-  },
-  emptySubtitle: {
-    fontSize: 14,
-    textAlign: "center",
-    lineHeight: 20,
-  },
-  skeletonCard: {
-    width: "86%",
-    height: 96,
-    borderRadius: 16,
-    opacity: 0.5,
-  },
-  // Kaffees — plain rows on the page, separated by hairline dividers
-  rowDivider: {
-    height: 1,
-    marginLeft: 44,
-  },
-  coffeeRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    paddingVertical: 18,
-    gap: 14,
-  },
-  rowIcon: {
-    width: 30,
-    alignItems: "center",
-    marginTop: 2,
-  },
-  coffeeContent: {
-    flex: 1,
-  },
-  coffeeName: {
-    fontSize: 22,
-    lineHeight: 27,
-  },
-  coffeeMeta: {
-    fontSize: 13,
+    fontFamily: FONTS.display,
+    fontSize: 20,
+    color: COLORS.coffee800,
     marginTop: 4,
   },
-  scoreRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 20,
-    marginTop: 10,
+  emptySubtitle: {
+    fontFamily: "Inter_400Regular",
+    fontSize: 14,
+    color: COLORS.coffee600,
+    textAlign: "center",
+    maxWidth: 260,
   },
-  scorePair: {
-    flexDirection: "row",
-    alignItems: "baseline",
-    gap: 6,
-  },
-  scoreName: {
-    fontSize: 13,
-  },
-  scoreValue: {
-    fontSize: 18,
-  },
-  modalSheet: {
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 24,
-    paddingTop: 12,
-    gap: 4,
-  },
-  modalHandle: {
-    width: 36,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: "#D0C4B0",
-    alignSelf: "center",
-    marginBottom: 16,
-  },
+
+  skeletonBlock: { marginTop: 4 },
+  skeletonCard: { height: 84, marginBottom: 14 },
+  skeletonPad: { flex: 1, padding: 0 },
+
+  modalScrim: { flex: 1, backgroundColor: COLORS.coffee900, opacity: 0.45 },
   modalTitle: {
+    fontFamily: FONTS.display,
     fontSize: 22,
-    marginBottom: 16,
+    color: COLORS.coffee800,
+    marginBottom: 18,
   },
-  inputLabel: {
-    fontSize: 12,
-    letterSpacing: 0.5,
-    marginTop: 8,
-    marginBottom: 6,
-  },
-  input: {
-    borderWidth: 1,
-    borderRadius: 12,
-    padding: 14,
-    fontSize: 16,
-    marginBottom: 4,
-  },
-  saveButton: {
-    marginTop: 16,
-    padding: 16,
-    borderRadius: 14,
-    alignItems: "center",
-  },
-  saveButtonText: {
-    color: "#fff",
-    fontSize: 16,
-  },
+  inputSpacing: { marginBottom: 16 },
+  saveButton: { marginTop: 6 },
+
   deleteButton: {
-    marginTop: 10,
-    padding: 14,
+    marginTop: 12,
+    paddingVertical: 14,
     borderRadius: 14,
     borderWidth: 1.5,
+    borderColor: COLORS.danger,
     alignItems: "center",
     flexDirection: "row",
     justifyContent: "center",
     gap: 8,
   },
   deleteButtonText: {
-    color: "#E05252",
+    fontFamily: "Inter_600SemiBold",
     fontSize: 15,
+    color: COLORS.danger,
   },
 });

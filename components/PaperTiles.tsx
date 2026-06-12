@@ -46,11 +46,27 @@ const GRINDER: Record<string, any> = {
   commandante: require("@/assets/textures/icons/grinder_commandante.png"),
 };
 
+// Navigation / content icons — same hand-crafted paper tiles (cream tile +
+// brown glyph + baked shadow). Used full-surface as their own button/holder;
+// never wrap these in another tile, card or border.
+const NAV: Record<string, any> = {
+  roastery: require("@/assets/textures/icons/nav_roastery.png"),
+  coffee: require("@/assets/textures/icons/nav_coffee.png"),
+  worldmap: require("@/assets/textures/icons/nav_worldmap.png"),
+  compass: require("@/assets/textures/icons/nav_compass.png"),
+  discoveries: require("@/assets/textures/icons/nav_discoveries.png"),
+  favorite: require("@/assets/textures/icons/nav_favorite.png"),
+  profile: require("@/assets/textures/icons/nav_profile.png"),
+  search: require("@/assets/textures/icons/nav_search.png"),
+  settings: require("@/assets/textures/icons/nav_settings.png"),
+};
+
 export const aromaTileSource = (step: number) => AROMA[step];
 export const roastTileSource = (level: string) => ROAST[level];
 export const processTileSource = (method: string) => PROCESS[method];
 export const grindTileSource = (step: number) => GRIND[step];
 export const grinderTileSource = (design: string) => GRINDER[design] ?? GRINDER.commandante;
+export const navTileSource = (name: string) => NAV[name];
 
 export function PaperTile({
   source,

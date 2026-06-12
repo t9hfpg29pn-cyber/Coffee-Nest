@@ -43,11 +43,9 @@ export function useTheme() {
 }
 
 export function useThemeColors() {
-  const { design } = useContext(ThemeContext);
-
-  if (design === "lowpoly") return Colors.lowpoly;
-  // "Klassisch" is the warm cream cut-paper look — always light, regardless of
-  // the system scheme, so it reads as the intended default everywhere.
+  // Single design only — the warm cream cut-paper look. The Lowpoly palette has
+  // been retired; this always returns the light palette regardless of the
+  // stored design value or the system scheme.
   return Colors.light;
 }
 
@@ -64,35 +62,7 @@ export function useCardExtras(): {
   topHighlight: string;
   cardRadius: number;
 } {
-  const { design } = useContext(ThemeContext);
   const colorScheme = useColorScheme();
-
-  if (design === "lowpoly") {
-    // Depth is carried by the paper layering itself; shadows stay barely-there.
-    return {
-      shadow: Platform.OS === "web"
-        ? ({ boxShadow: "0 1px 1px rgba(0,0,0,0.14)" } as ViewStyle)
-        : {
-          shadowColor: "#000000",
-          shadowOffset: { width: 0, height: 1 },
-          shadowOpacity: 0.12,
-          shadowRadius: 4,
-          elevation: 1,
-        },
-      elevatedShadow: Platform.OS === "web"
-        ? ({ boxShadow: "0 2px 3px rgba(0,0,0,0.16)" } as ViewStyle)
-        : {
-          shadowColor: "#000000",
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.16,
-          shadowRadius: 6,
-          elevation: 2,
-        },
-      topHighlight: "rgba(225,162,74,0.30)",
-      cardRadius: 10,
-    };
-  }
-
   const isDark = colorScheme === "dark";
   return {
     shadow: Platform.OS === "web"

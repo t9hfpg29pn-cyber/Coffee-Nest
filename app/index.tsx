@@ -17,9 +17,6 @@ import * as Haptics from "expo-haptics";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   Plus,
-  Coffee,
-  Factory,
-  Globe,
   ChevronRight,
   ChevronDown,
   ChevronUp,
@@ -40,6 +37,7 @@ import {
 } from "@/lib/storage";
 import { useUserNames } from "@/context/UserNamesContext";
 import { PaperCard, COLORS, FONTS, ui } from "@/theme/paper-native";
+import { PaperTile, navTileSource } from "@/components/PaperTiles";
 
 const STROKE = 1.75;
 const LIST_SHAPES: Array<1 | 2 | 3> = [1, 2, 3];
@@ -242,7 +240,7 @@ export default function RoasteriesScreen() {
           </View>
         ) : roasteries.length === 0 ? (
           <View style={styles.centerState}>
-            <Coffee size={52} color={COLORS.accent300} strokeWidth={STROKE} />
+            <PaperTile source={navTileSource("coffee")} size={64} />
             <Text style={styles.emptyTitle}>Noch keine Röstereien</Text>
             <Text style={styles.emptySubtitle}>
               Tippe auf + um deine erste Rösterei hinzuzufügen
@@ -250,7 +248,7 @@ export default function RoasteriesScreen() {
           </View>
         ) : filteredRoasteries.length === 0 ? (
           <View style={styles.centerState}>
-            <Globe size={52} color={COLORS.accent300} strokeWidth={STROKE} />
+            <PaperTile source={navTileSource("worldmap")} size={64} />
             <Text style={styles.emptyTitle}>Keine Röstereien in {selectedCity}</Text>
           </View>
         ) : (
@@ -316,9 +314,9 @@ export default function RoasteriesScreen() {
                 <Text style={[ui.eyebrow, styles.statsEyebrow]}>ENTDECKUNGEN</Text>
                 <View style={styles.statsRow}>
                   {[
-                    { v: discoveryStats?.coffeeCount ?? 0, l: "Kaffees", Icon: Coffee },
-                    { v: discoveryStats?.roasteryCount ?? 0, l: "Röstereien", Icon: Factory },
-                    { v: discoveryStats?.countryCount ?? 0, l: "Herkunftsländer", Icon: Globe },
+                    { v: discoveryStats?.coffeeCount ?? 0, l: "Kaffees", tile: "coffee" },
+                    { v: discoveryStats?.roasteryCount ?? 0, l: "Röstereien", tile: "roastery" },
+                    { v: discoveryStats?.countryCount ?? 0, l: "Herkunftsländer", tile: "worldmap" },
                   ].map((s, i) => (
                     <View
                       key={s.l}
@@ -327,7 +325,7 @@ export default function RoasteriesScreen() {
                         i > 0 && { borderLeftWidth: 1, borderLeftColor: COLORS.dividerSoft },
                       ]}
                     >
-                      <s.Icon size={22} color={COLORS.accent300} strokeWidth={STROKE} />
+                      <PaperTile source={navTileSource(s.tile)} size={32} />
                       <Text style={styles.statValue}>{s.v}</Text>
                       <Text style={styles.statLabel}>{s.l}</Text>
                     </View>
@@ -358,15 +356,7 @@ export default function RoasteriesScreen() {
                       contentStyle={styles.listPad}
                     >
                       <View style={styles.listRow}>
-                        <PaperCard
-                          variant="tile"
-                          shape={2}
-                          shadow={0}
-                          style={styles.tileOuter}
-                          contentStyle={styles.tilePad}
-                        >
-                          <Coffee size={24} color={COLORS.accent400} strokeWidth={STROKE} />
-                        </PaperCard>
+                        <PaperTile source={navTileSource("roastery")} size={52} />
                         <View style={styles.listText}>
                           <Text style={styles.cardName} numberOfLines={1}>
                             {item.name}
