@@ -75,10 +75,9 @@ name = "Start Frontend"
 author = "agent"
 mode = "sequential"
 
+[workflows.workflow.metadata]
+outputType = "console"
+
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npx expo start --tunnel"
-waitForPort = 8081
-
-[workflows.workflow.metadata]
-outputType = "webview"
+args = "npx expo start"

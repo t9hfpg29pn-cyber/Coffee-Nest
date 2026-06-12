@@ -5,6 +5,8 @@ description: How to confirm the Expo RN-Web app actually compiles when the app_p
 
 # Verifying Expo web builds in this repl
 
+**Agent screenshots of this Expo RN-Web app are unreliable by BOTH paths, independent of tunnel mode:** `app_preview` returns ERR_CONNECTION_REFUSED (it targets the standard webview port, not Expo's 8081), and an `external_url` screenshot of the public Replit domain renders an all-black frame (the SPA hasn't hydrated when the headless capture fires). Do NOT chase this with config changes — it is a capture quirk, not an app bug. Reliable visual check = the user's own preview pane (loads the public domain) + the build check below.
+
 The `app_preview` screenshot proxy is frequently unreachable here (PAGE_UNREACHABLE / ERR_CONNECTION_REFUSED). When it is, verify the build by requesting the bundle directly:
 
 `curl -s "http://localhost:8081/node_modules/expo-router/entry.bundle?platform=web&dev=true&transform.routerRoot=app" -o /tmp/b.js -w "HTTP %{http_code} size=%{size_download}\n"`
@@ -23,3 +25,5 @@ The `app_preview` screenshot proxy is frequently unreachable here (PAGE_UNREACHA
 ## Expo Go over 5G / foreign network = tunnel mode
 
 Phone "Could not connect to development server" on `:8081`: `.replit` maps localPort 8081→externalPort 80, and the LAN `exp://172.x:8081` URL is unreachable off-network. Fix = tunnel mode: set the `Start Frontend` workflow command to `npx expo start --tunnel` (via configureWorkflow; persists to `.replit`. Do NOT edit package.json's expo:dev script, do NOT run expo in a bare shell). `@expo/ngrok` is already installed. Success looks like `Tunnel connected. / Tunnel ready.` + a `exp://<slug>-anonymous-8081.exp.direct` URL in the log. watchman was installed but Metro still picked FallbackWatcher (binary not on the workflow's PATH), so the patch above — not watchman — is what actually fixes it.
+
+**Tunnel depends on ngrok's service and can hard-fail during an ngrok outage** — log shows `CommandError: TypeError: Cannot read properties of undefined (reading 'body')` + `Check the Ngrok status page for outages`. When that happens the whole dev server crashes (workflow FAILED) and the public domain returns 502. This is NOT an app bug and NOT the Metro watcher crash — it is external. **Fallback when ngrok is down or web preview is the priority:** switch the workflow to plain `npx expo start` (no `--tunnel`) → localhost:8081 AND the public Replit domain both return 200, so the web preview pane works. Tradeoff: Expo Go testing on a physical phone over cellular needs the tunnel, so only drop `--tunnel` when web preview matters more (or ngrok is down). It's a one-line workflow swap either way.
