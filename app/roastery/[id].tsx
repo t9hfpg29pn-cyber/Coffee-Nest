@@ -3,7 +3,7 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
+  FlatList,
   Pressable,
   TextInput,
   Modal,
@@ -29,11 +29,8 @@ import {
   Coffee,
 } from "@/lib/storage";
 import { useUserNames } from "@/context/UserNamesContext";
-import { PaperCard, COLORS, FONTS, ui } from "@/theme/paper-native";
-import { PaperTile, navTileSource } from "@/components/PaperTiles";
-
-const STROKE = 1.75;
-const LIST_SHAPES: Array<1 | 2 | 3> = [1, 2, 3];
+import { PolyBackground, PolyCornerCut, PolyActionButton } from "@/components/PolyBackground";
+import { useThemeColors, useCardExtras } from "@/context/ThemeContext";
 
 function CoffeeBeanIcon({ size = 18, color }: { size?: number; color: string }) {
   const h = Math.round(size * 1.2);
@@ -135,9 +132,35 @@ function showAlert(title: string, message: string, buttons?: { text: string; sty
   }
 }
 
+function formatPrice(raw: string): string {
+  const num = parseFloat(raw.replace(",", "."));
+  if (isNaN(num)) return raw;
+  return num.toFixed(2).replace(".", ",");
+}
+
+function RatingDots({ value, max, colors }: { value: number; max: number; colors: ReturnType<typeof useThemeColors> }) {
+  return (
+    <View style={{ flexDirection: "row", gap: 3 }}>
+      {Array.from({ length: max }).map((_, i) => (
+        <View
+          key={i}
+          style={{
+            width: 6,
+            height: 6,
+            borderRadius: 3,
+            backgroundColor: i < value ? colors.tint : colors.border,
+          }}
+        />
+      ))}
+    </View>
+  );
+}
+
 export default function RoasteryScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
+  const colors = useThemeColors();
+  const cardExtras = useCardExtras();
   const [showConfetti, setShowConfetti] = useState(false);
 
   const { name1, name2, user2active } = useUserNames();
@@ -259,337 +282,462 @@ export default function RoasteryScreen() {
   };
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
-  const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
-
-  const renderScore = (item: Coffee) => {
-    return (
-      <View style={styles.scoreRow}>
-        <Text style={styles.scoreText}>
-          {name1} {item.haseRating !== null ? item.haseRating : "–"}
-        </Text>
-        {user2active && (
-          <>
-            <Text style={styles.scoreDot}>·</Text>
-            <Text style={styles.scoreText}>
-              {name2} {item.dodoRating !== null ? item.dodoRating : "–"}
-            </Text>
-          </>
-        )}
-      </View>
-    );
-  };
+  const bottomPad = Platform.OS === "web" ? 0 : insets.bottom;
 
   return (
-    <View style={ui.appBg}>
-      <ScrollView
-        contentContainerStyle={{
-          paddingHorizontal: 20,
-          paddingTop: topPad + 8,
-          paddingBottom: bottomPad + 48,
-          flexGrow: 1,
-        }}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* ---------- Seiten-Header: direkt auf ui.appBg, kein Papier ---------- */}
-        <View style={styles.headerRow}>
-          <Pressable
-            onPress={() => router.back()}
-            style={({ pressed }) => [styles.backButton, { opacity: pressed ? 0.6 : 1 }]}
-          >
-            <Ionicons name="chevron-back" size={26} color={COLORS.coffee800} />
-          </Pressable>
-          <Pressable
-            onPress={openEditRoastery}
-            style={({ pressed }) => [styles.headerCenter, { opacity: pressed ? 0.7 : 1 }]}
-          >
-            <Text style={ui.eyebrow}>RÖSTEREI</Text>
-            <View style={styles.titleRow}>
-              <Text style={styles.title} numberOfLines={2}>
-                {roasteryName}
-              </Text>
-              <Ionicons name="pencil-outline" size={16} color={COLORS.coffee600} style={{ marginTop: 8 }} />
-            </View>
-          </Pressable>
-          <Pressable
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              setShowModal(true);
-            }}
-            style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
-          >
-            <PaperCard variant="chip" shape={2} shadow={0} style={styles.addOuter} contentStyle={styles.addPad}>
-              <Ionicons name="add" size={24} color={COLORS.coffee800} />
-            </PaperCard>
-          </Pressable>
-        </View>
-
-        {loading ? (
-          <View style={styles.skeletonBlock}>
-            {[0, 1, 2].map((i) => (
-              <PaperCard
-                key={i}
-                variant="light"
-                shape={LIST_SHAPES[i % LIST_SHAPES.length]}
-                shadow={1}
-                style={[styles.skeletonCard, { opacity: 1 - i * 0.3 }]}
-                contentStyle={styles.skeletonPad}
-              />
-            ))}
-          </View>
-        ) : coffees.length === 0 ? (
-          <View style={styles.centerState}>
-            <PaperTile source={navTileSource("coffee")} size={64} />
-            <Text style={styles.emptyTitle}>Noch keine Kaffees</Text>
-            <Text style={styles.emptySubtitle}>
-              Tippe auf + um einen Kaffee hinzuzufügen
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <PolyBackground />
+      <View style={[styles.header, { paddingTop: topPad + 12 }]}>
+        <Pressable
+          onPress={() => router.back()}
+          style={({ pressed }) => [styles.backButton, { opacity: pressed ? 0.6 : 1 }]}
+        >
+          <Ionicons name="chevron-back" size={26} color={colors.text} />
+        </Pressable>
+        <Pressable
+          onPress={openEditRoastery}
+          style={({ pressed }) => [styles.headerCenter, { opacity: pressed ? 0.7 : 1 }]}
+        >
+          <Text style={[styles.headerLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
+            RÖSTEREI
+          </Text>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+            <Text
+              style={[styles.headerTitle, { color: colors.text, fontFamily: "Inter_700Bold" }]}
+              numberOfLines={1}
+            >
+              {roasteryName}
             </Text>
+            <Ionicons name="pencil-outline" size={16} color={colors.textSecondary} style={{ marginBottom: 2 }} />
           </View>
-        ) : (
-          <View style={styles.listBlock}>
-            {coffees.map((item, i) => (
-              <Pressable
-                key={item.id}
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  router.push({ pathname: "/coffee/[id]", params: { id: item.id } });
-                }}
-                onLongPress={() => handleDelete(item)}
-                style={({ pressed }) => ({ opacity: pressed ? 0.9 : 1 })}
-              >
-                <PaperCard
-                  variant="light"
-                  shape={LIST_SHAPES[i % LIST_SHAPES.length]}
-                  shadow={2}
-                  contentStyle={styles.cardContent}
-                >
-                  <View style={styles.listRow}>
-                    <PaperTile source={navTileSource("coffee")} size={60} />
-                    <View style={styles.listText}>
-                      <Text style={styles.cardName} numberOfLines={1}>
-                        {item.name}
-                      </Text>
-                      {item.aromaDescription ? (
-                        <Text style={styles.cardMeta} numberOfLines={1} ellipsizeMode="tail">
-                          {item.aromaDescription}
-                        </Text>
-                      ) : null}
-                      {renderScore(item)}
-                    </View>
-                    <Ionicons
-                      name="chevron-forward"
-                      size={22}
-                      color={COLORS.accent300}
-                      style={styles.chevron}
-                    />
-                  </View>
-                </PaperCard>
-              </Pressable>
-            ))}
-          </View>
-        )}
-      </ScrollView>
+        </Pressable>
+        <Pressable
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            setShowModal(true);
+          }}
+          style={({ pressed }) => [
+            styles.addButton,
+            { backgroundColor: colors.tint, opacity: pressed ? 0.85 : 1 },
+          ]}
+        >
+          <Ionicons name="add" size={22} color="#fff" />
+        </Pressable>
+      </View>
 
-      {/* ---------- Neuer Kaffee ---------- */}
+      {loading ? (
+        <View style={styles.centerState}>
+          <View style={[styles.skeletonCard, { backgroundColor: colors.surface }]} />
+          <View style={[styles.skeletonCard, { backgroundColor: colors.surface, opacity: 0.6 }]} />
+        </View>
+      ) : coffees.length === 0 ? (
+        <View style={styles.centerState}>
+          <Ionicons name="leaf-outline" size={52} color={colors.textSecondary} />
+          <Text style={[styles.emptyTitle, { color: colors.text, fontFamily: "Inter_600SemiBold" }]}>
+            Noch keine Kaffees
+          </Text>
+          <Text style={[styles.emptySubtitle, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+            Tippe auf + um einen Kaffee hinzuzufügen
+          </Text>
+        </View>
+      ) : (
+        <FlatList
+          data={coffees}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={{ padding: 20, paddingBottom: bottomPad + 20 }}
+          ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+          renderItem={({ item }) => (
+            <Pressable
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                router.push({
+                  pathname: "/coffee/[id]",
+                  params: { id: item.id },
+                });
+              }}
+              onLongPress={() => handleDelete(item)}
+              style={({ pressed }) => [
+                styles.card,
+                cardExtras.shadow,
+                {
+                  backgroundColor: colors.surfaceElevated,
+                  borderColor: colors.border,
+                  borderTopColor: cardExtras.topHighlight,
+                  borderRadius: cardExtras.cardRadius,
+                  overflow: "hidden" as const,
+                  opacity: pressed ? 0.92 : 1,
+                  transform: [{ scale: pressed ? 0.985 : 1 }],
+                },
+              ]}
+            >
+              <View style={styles.cardTop}>
+                <View style={[styles.cardIcon, { backgroundColor: colors.tint + "20" }]}>
+                  <CoffeeBeanIcon size={18} color={colors.tint} />
+                </View>
+                <View style={styles.cardMain}>
+                  <Text style={[styles.cardTitle, { color: colors.text, fontFamily: "Inter_600SemiBold" }]}>
+                    {item.name}
+                  </Text>
+                  {item.aromaDescription ? (
+                    <Text
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
+                      style={[styles.cardAroma, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}
+                    >
+                      {item.aromaDescription}
+                    </Text>
+                  ) : item.pricePerKg ? (
+                    <Text style={[styles.cardPrice, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
+                      {formatPrice(item.pricePerKg)} €/kg
+                    </Text>
+                  ) : null}
+                </View>
+                <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
+              </View>
+              <View style={[styles.cardDivider, { backgroundColor: colors.border }]} />
+              <View style={styles.cardRatings}>
+                <View style={styles.ratingRow}>
+                  <Text style={[styles.ratingLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
+                    {name1}
+                  </Text>
+                  <View style={styles.ratingValue}>
+                    {item.haseRating !== null ? (
+                      <>
+                        <Text style={[styles.ratingNum, { color: colors.tint, fontFamily: "Inter_700Bold" }]}>
+                          {item.haseRating}
+                        </Text>
+                        <Text style={[styles.ratingMax, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                          /10
+                        </Text>
+                      </>
+                    ) : (
+                      <Text style={[styles.ratingNum, { color: colors.textSecondary, fontFamily: "Inter_400Regular", opacity: 0.4 }]}>–</Text>
+                    )}
+                  </View>
+                </View>
+                {user2active && (
+                  <>
+                    <View style={[styles.ratingDivider, { backgroundColor: colors.border }]} />
+                    <View style={styles.ratingRow}>
+                      <Text style={[styles.ratingLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
+                        {name2}
+                      </Text>
+                      <View style={styles.ratingValue}>
+                        {item.dodoRating !== null ? (
+                          <>
+                            <Text style={[styles.ratingNum, { color: colors.tint, fontFamily: "Inter_700Bold" }]}>
+                              {item.dodoRating}
+                            </Text>
+                            <Text style={[styles.ratingMax, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                              /10
+                            </Text>
+                          </>
+                        ) : (
+                          <Text style={[styles.ratingNum, { color: colors.textSecondary, fontFamily: "Inter_400Regular", opacity: 0.4 }]}>–</Text>
+                        )}
+                      </View>
+                    </View>
+                  </>
+                )}
+              </View>
+              <PolyCornerCut />
+            </Pressable>
+          )}
+        />
+      )}
+
+      {/* Modal: Neuer Kaffee */}
       <Modal visible={showModal} animationType="slide" transparent presentationStyle="overFullScreen">
         <KeyboardAvoidingView behavior="padding" style={{ flex: 1, justifyContent: "flex-end" }}>
-          <Pressable style={styles.modalScrim} onPress={() => setShowModal(false)} />
-          <View style={[ui.sheet, { paddingBottom: bottomPad + 24 }]}>
-            <View style={ui.sheetHandle} />
-            <Text style={styles.modalTitle}>Neuer Kaffee</Text>
-
-            <Text style={ui.label}>Name *</Text>
+          <Pressable style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)" }} onPress={() => setShowModal(false)} />
+          <View style={[styles.modalSheet, { backgroundColor: colors.surfaceElevated, paddingBottom: bottomPad + 20 }]}>
+            <View style={styles.modalHandle} />
+            <Text style={[styles.modalTitle, { color: colors.text, fontFamily: "Inter_700Bold" }]}>
+              Neuer Kaffee
+            </Text>
+            <Text style={[styles.inputLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
+              Name *
+            </Text>
             <TextInput
-              style={[ui.input, styles.inputSpacing]}
+              style={[
+                styles.input,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  color: colors.text,
+                  fontFamily: "Inter_400Regular",
+                  borderRadius: cardExtras.cardRadius,
+                },
+              ]}
               placeholder="z.B. Ethiopia Yirgacheffe"
-              placeholderTextColor={COLORS.coffee600}
+              placeholderTextColor={colors.textSecondary}
               value={newName}
               onChangeText={setNewName}
               autoFocus
               returnKeyType="done"
               onSubmitEditing={handleAdd}
             />
-
-            <Pressable
+            <PolyActionButton
               onPress={handleAdd}
               disabled={!newName.trim()}
-              style={({ pressed }) => [
-                ui.btnPrimary,
-                styles.saveButton,
-                !newName.trim() && ui.btnDisabled,
-                { opacity: pressed && newName.trim() ? 0.9 : 1 },
-              ]}
+              color={newName.trim() ? colors.tint : colors.border}
+              style={styles.saveButton}
             >
-              <Text style={ui.btnPrimaryText}>Hinzufügen</Text>
-            </Pressable>
+              <Text style={[styles.saveButtonText, { fontFamily: "Inter_600SemiBold" }]}>
+                Hinzufügen
+              </Text>
+            </PolyActionButton>
           </View>
         </KeyboardAvoidingView>
       </Modal>
 
-      {/* ---------- Rösterei bearbeiten ---------- */}
+      {/* Modal: Rösterei bearbeiten */}
       <Modal visible={showEditRoastery} animationType="slide" transparent presentationStyle="overFullScreen">
         <KeyboardAvoidingView behavior="padding" style={{ flex: 1, justifyContent: "flex-end" }}>
-          <Pressable style={styles.modalScrim} onPress={() => setShowEditRoastery(false)} />
-          <View style={[ui.sheet, { paddingBottom: bottomPad + 24 }]}>
-            <View style={ui.sheetHandle} />
-            <Text style={styles.modalTitle}>Rösterei bearbeiten</Text>
-
-            <Text style={ui.label}>Name *</Text>
+          <Pressable
+            style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)" }}
+            onPress={() => setShowEditRoastery(false)}
+          />
+          <View style={[styles.modalSheet, { backgroundColor: colors.surfaceElevated, paddingBottom: bottomPad + 20 }]}>
+            <View style={styles.modalHandle} />
+            <Text style={[styles.modalTitle, { color: colors.text, fontFamily: "Inter_700Bold" }]}>
+              Rösterei bearbeiten
+            </Text>
+            <Text style={[styles.inputLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
+              Name *
+            </Text>
             <TextInput
-              style={[ui.input, styles.inputSpacing]}
+              style={[
+                styles.input,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  color: colors.text,
+                  fontFamily: "Inter_400Regular",
+                  borderRadius: cardExtras.cardRadius,
+                },
+              ]}
               placeholder="Name der Rösterei"
-              placeholderTextColor={COLORS.coffee600}
+              placeholderTextColor={colors.textSecondary}
               value={editName}
               onChangeText={setEditName}
               autoFocus
               returnKeyType="next"
             />
-
-            <Text style={ui.label}>Ort</Text>
+            <Text style={[styles.inputLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
+              Ort
+            </Text>
             <TextInput
-              style={[ui.input, styles.inputSpacing]}
+              style={[
+                styles.input,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  color: colors.text,
+                  fontFamily: "Inter_400Regular",
+                  borderRadius: cardExtras.cardRadius,
+                },
+              ]}
               placeholder="z.B. Berlin"
-              placeholderTextColor={COLORS.coffee600}
+              placeholderTextColor={colors.textSecondary}
               value={editLocation}
               onChangeText={setEditLocation}
               returnKeyType="done"
               onSubmitEditing={handleSaveRoastery}
             />
-
-            <Pressable
+            <PolyActionButton
               onPress={handleSaveRoastery}
               disabled={!editName.trim()}
-              style={({ pressed }) => [
-                ui.btnPrimary,
-                styles.saveButton,
-                !editName.trim() && ui.btnDisabled,
-                { opacity: pressed && editName.trim() ? 0.9 : 1 },
-              ]}
+              color={editName.trim() ? colors.tint : colors.border}
+              style={styles.saveButton}
             >
-              <Text style={ui.btnPrimaryText}>Speichern</Text>
-            </Pressable>
-
-            <Pressable
+              <Text style={[styles.saveButtonText, { fontFamily: "Inter_600SemiBold" }]}>
+                Speichern
+              </Text>
+            </PolyActionButton>
+            <PolyActionButton
               onPress={handleDeleteRoastery}
-              style={({ pressed }) => [styles.deleteButton, { opacity: pressed ? 0.8 : 1 }]}
+              color="transparent"
+              style={{ ...styles.deleteButton, borderColor: "#E05252" } as any}
             >
-              <Ionicons name="trash-outline" size={16} color={COLORS.danger} />
-              <Text style={styles.deleteButtonText}>Rösterei löschen</Text>
-            </Pressable>
+              <Ionicons name="trash-outline" size={16} color="#E05252" />
+              <Text style={[styles.deleteButtonText, { fontFamily: "Inter_500Medium" }]}>
+                Rösterei löschen
+              </Text>
+            </PolyActionButton>
           </View>
         </KeyboardAvoidingView>
       </Modal>
 
-      <CoffeeBeanConfetti active={showConfetti} color={COLORS.accent300} />
+      <CoffeeBeanConfetti active={showConfetti} color={colors.tint} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  headerRow: {
+  container: { flex: 1 },
+  header: {
     flexDirection: "row",
-    alignItems: "flex-start",
+    alignItems: "flex-end",
+    paddingHorizontal: 16,
+    paddingBottom: 16,
     gap: 8,
-    marginBottom: 22,
   },
   backButton: {
-    width: 32,
+    width: 36,
     height: 36,
     justifyContent: "center",
-    alignItems: "flex-start",
-    marginTop: 6,
-    marginLeft: -6,
-  },
-  headerCenter: { flex: 1, minWidth: 0 },
-  titleRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 8,
-    marginTop: 6,
-  },
-  title: {
-    flexShrink: 1,
-    fontFamily: FONTS.display,
-    fontSize: 30,
-    lineHeight: 36,
-    color: COLORS.coffee800,
-  },
-  addOuter: { width: 44, height: 44, marginTop: 4 },
-  addPad: { flex: 1, alignItems: "center", justifyContent: "center", padding: 0 },
-
-  listBlock: { marginTop: 4, gap: 14 },
-  cardContent: { paddingVertical: 18, paddingHorizontal: 20 },
-  listRow: { flexDirection: "row", alignItems: "center", gap: 16 },
-  listText: { flex: 1, minWidth: 0 },
-  cardName: {
-    fontFamily: FONTS.displayBold,
-    fontSize: 22,
-    lineHeight: 27,
-    color: COLORS.coffee800,
-  },
-  cardMeta: {
-    fontFamily: FONTS.display,
-    fontSize: 15,
-    lineHeight: 19,
-    color: COLORS.coffee600,
-    marginTop: 3,
-  },
-  scoreRow: { flexDirection: "row", alignItems: "center", gap: 7, marginTop: 5 },
-  scoreText: {
-    fontFamily: FONTS.display,
-    fontSize: 15,
-    color: COLORS.accent300,
-  },
-  scoreDot: { fontSize: 15, color: COLORS.accent200 },
-  chevron: { marginLeft: 2 },
-
-  centerState: {
     alignItems: "center",
+    marginBottom: 2,
+  },
+  headerCenter: { flex: 1 },
+  headerLabel: {
+    fontSize: 11,
+    letterSpacing: 1.5,
+    marginBottom: 2,
+  },
+  headerTitle: {
+    fontSize: 28,
+    lineHeight: 34,
+  },
+  addButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     justifyContent: "center",
-    paddingTop: 80,
+    alignItems: "center",
+    marginBottom: 2,
+  },
+  centerState: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
     gap: 12,
+    paddingHorizontal: 40,
   },
   emptyTitle: {
-    fontFamily: FONTS.display,
     fontSize: 20,
-    color: COLORS.coffee800,
-    marginTop: 4,
+    textAlign: "center",
+    marginTop: 8,
   },
   emptySubtitle: {
-    fontFamily: "Inter_400Regular",
-    fontSize: 14,
-    color: COLORS.coffee600,
+    fontSize: 15,
     textAlign: "center",
-    maxWidth: 260,
+    lineHeight: 22,
   },
-
-  skeletonBlock: { marginTop: 4 },
-  skeletonCard: { height: 84, marginBottom: 14 },
-  skeletonPad: { flex: 1, padding: 0 },
-
-  modalScrim: { flex: 1, backgroundColor: COLORS.coffee900, opacity: 0.45 },
-  modalTitle: {
-    fontFamily: FONTS.display,
+  skeletonCard: {
+    width: "100%",
+    height: 100,
+    borderRadius: 16,
+    marginHorizontal: 20,
+    marginBottom: 12,
+  },
+  card: {
+    borderRadius: 16,
+    borderWidth: 1,
+    overflow: "hidden",
+  },
+  cardTop: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    gap: 12,
+  },
+  cardIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  cardMain: { flex: 1, gap: 2 },
+  cardTitle: { fontSize: 16 },
+  cardAroma: { fontSize: 12, opacity: 0.75 },
+  cardPrice: { fontSize: 13 },
+  cardDivider: { height: 1, marginHorizontal: 16 },
+  cardRatings: {
+    flexDirection: "row",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 0,
+  },
+  ratingRow: {
+    flex: 1,
+    alignItems: "center",
+    gap: 2,
+  },
+  ratingLabel: {
+    fontSize: 11,
+    letterSpacing: 0.5,
+  },
+  ratingValue: {
+    flexDirection: "row",
+    alignItems: "baseline",
+  },
+  ratingNum: {
     fontSize: 22,
-    color: COLORS.coffee800,
-    marginBottom: 18,
   },
-  inputSpacing: { marginBottom: 16 },
-  saveButton: { marginTop: 6 },
-
+  ratingMax: {
+    fontSize: 13,
+  },
+  ratingDivider: {
+    width: 1,
+    marginVertical: 4,
+  },
+  modalSheet: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    paddingTop: 12,
+    gap: 4,
+  },
+  modalHandle: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "#D0C4B0",
+    alignSelf: "center",
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontSize: 22,
+    marginBottom: 16,
+  },
+  inputLabel: {
+    fontSize: 12,
+    letterSpacing: 0.5,
+    marginTop: 8,
+    marginBottom: 6,
+  },
+  input: {
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 14,
+    fontSize: 16,
+    marginBottom: 4,
+  },
+  saveButton: {
+    marginTop: 16,
+    padding: 16,
+    borderRadius: 14,
+    alignItems: "center",
+  },
+  saveButtonText: {
+    color: "#fff",
+    fontSize: 16,
+  },
   deleteButton: {
-    marginTop: 12,
-    paddingVertical: 14,
+    marginTop: 10,
+    padding: 14,
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: COLORS.danger,
     alignItems: "center",
     flexDirection: "row",
     justifyContent: "center",
     gap: 8,
   },
   deleteButtonText: {
-    fontFamily: "Inter_600SemiBold",
+    color: "#E05252",
     fontSize: 15,
-    color: COLORS.danger,
   },
 });

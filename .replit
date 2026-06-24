@@ -3,7 +3,6 @@ modules = ["nodejs-22", "python-3.11"]
 
 [nix]
 channel = "stable-24_05"
-packages = ["freetype", "lcms2", "libimagequant", "libjpeg", "libtiff", "libwebp", "libxcrypt", "openjpeg", "tcl", "tk", "zlib"]
 
 [deployment]
 deploymentTarget = "static"
@@ -31,10 +30,6 @@ externalPort = 3003
 localPort = 9999
 externalPort = 3000
 
-[[ports]]
-localPort = 23636
-externalPort = 4200
-
 [env]
 PORT = "5000"
 
@@ -52,10 +47,6 @@ author = "agent"
 [[workflows.workflow.tasks]]
 task = "workflow.run"
 args = "Start App"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "Start Frontend"
 
 [[workflows.workflow]]
 name = "Start App"
@@ -75,9 +66,8 @@ name = "Start Frontend"
 author = "agent"
 mode = "sequential"
 
-[workflows.workflow.metadata]
-outputType = "console"
-
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "EXPO_PACKAGER_PROXY_URL=https://$REPLIT_DEV_DOMAIN REACT_NATIVE_PACKAGER_HOSTNAME=$REPLIT_DEV_DOMAIN npx expo start --port 8081"
+args = "npm run expo:dev"
+waitForPort = 8081
+ensurePreviewReachable = "/status"

@@ -1,8 +1,4 @@
 - [Verifying Expo web builds](expo-web-verify.md) — screenshot proxy often down; curl the expo-router entry.bundle to confirm a clean 200 build; browser-console errors can be stale.
 - [Grinder data model](grinder-model.md) — grinders are `{name,design}[]` but relations key off grinder NAME string; use `grinders[0].name`, normalize on import.
 - [Hase/Dodo separation](hase-dodo-separation.md) — never average the two raters except getSharedFavoriteCoffee(); gate all user2 data+UI by user2active.
-- [Paper-native material language](material-language.md) — ONE design now (theme/paper-native.tsx PaperCard, app/index.tsx canonical); lowpoly/torn-paper retired except app/discoveries.tsx; nav is Stack-only.
-- [Frameless PNG icon tiles](material-language.md) — PaperTiles.tsx tiles are the bare button (NO border/box/IconStamp wrapper); can't tint → select via scale+opacity+gold underline+label, never a ring.
-- [RN Web paper-sheet stretch](rnweb-paper-sheet-stretch.md) — absoluteFill <Image stretch> renders large PNGs at intrinsic size on web (bleeds over siblings); use CSS background-size:100% 100% (StretchSheet) + Asset.fromModule().uri.
-- [List-item card design](card-template-processing.md) — list cards = PaperCard "light" ROW (PaperTile icon + name/meta + gold Hase·Dodo + chevron); user REJECTED stretched template-PNG-as-card (TemplateCard + card_*.png now deleted).
-- [Expo Go connect on Replit](expo-go-replit-connect.md) — device "Could not connect" = Expo advertises <domain>:8081 but 8081→external 80; set EXPO_PACKAGER_PROXY_URL=https://$REPLIT_DEV_DOMAIN in Start Frontend cmd.
+- [Material language](material-language.md) — card depth/shadow/radius is centralized in useCardExtras(); tune material there, never via per-screen layout edits; keep palette intact.

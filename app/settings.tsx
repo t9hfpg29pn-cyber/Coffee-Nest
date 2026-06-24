@@ -19,9 +19,10 @@ import * as Sharing from "expo-sharing";
 import * as DocumentPicker from "expo-document-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useUserNames } from "@/context/UserNamesContext";
+import { PolyBackground, PolyActionButton } from "@/components/PolyBackground";
 import { getRoasteries, getAllCoffees, getGrinders, saveGrinders, normalizeGrinders, DEFAULT_GRINDERS, Grinder, GrinderDesign } from "@/lib/storage";
-import { PaperCard, COLORS, FONTS, ui } from "@/theme/paper-native";
-import { PaperTile, grinderTileSource } from "@/components/PaperTiles";
+import { useTheme, useThemeColors, useCardExtras, DesignMode } from "@/context/ThemeContext";
+import { CupIcon, GemIcon, GrinderIcon } from "@/components/CoffeeIcons";
 
 function showAlert(title: string, message: string, buttons?: { text: string; style?: string; onPress?: () => void }[]) {
   if (Platform.OS === "web") {
@@ -42,6 +43,9 @@ function showAlert(title: string, message: string, buttons?: { text: string; sty
 
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
+  const colors = useThemeColors();
+  const { design, setDesign } = useTheme();
+  const cardExtras = useCardExtras();
 
   const { name1, name2, user2active, setName1, setName2, removeUser2 } = useUserNames();
   const [draft1, setDraft1] = useState(name1);
@@ -56,7 +60,7 @@ export default function SettingsScreen() {
   const [newGrinderDesign, setNewGrinderDesign] = useState<GrinderDesign>("commandante");
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
-  const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
+  const bottomPad = Platform.OS === "web" ? 0 : insets.bottom;
 
   const isDirty = draft1.trim() !== name1 || (user2active && draft2.trim() !== name2);
 
@@ -242,264 +246,361 @@ export default function SettingsScreen() {
   };
 
   return (
-    <View style={ui.appBg}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <PolyBackground />
+      <View style={[styles.header, { paddingTop: topPad + 16 }]}>
+        <Pressable
+          onPress={() => router.back()}
+          style={({ pressed }) => [styles.backBtn, { opacity: pressed ? 0.6 : 1 }]}
+          hitSlop={12}
+        >
+          <Ionicons name="chevron-back" size={24} color={colors.text} />
+        </Pressable>
+        <Text style={[styles.headerTitle, { color: colors.text, fontFamily: "Inter_700Bold" }]}>
+          Einstellungen
+        </Text>
+        <Pressable
+          onPress={isDirty ? handleSave : undefined}
+          style={({ pressed }) => [
+            styles.saveBtn,
+            {
+              borderRadius: design === "lowpoly" ? 5 : 20,
+              opacity: isDirty ? (pressed ? 0.7 : 1) : 0.3,
+              backgroundColor: colors.tint,
+            },
+          ]}
+          disabled={!isDirty}
+        >
+          <Text style={[styles.saveBtnText, { fontFamily: "Inter_600SemiBold" }]}>
+            Speichern
+          </Text>
+        </Pressable>
+      </View>
+
       <ScrollView
-        contentContainerStyle={{
-          paddingHorizontal: 20,
-          paddingTop: topPad + 8,
-          paddingBottom: bottomPad + 48,
-          flexGrow: 1,
-        }}
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingBottom: bottomPad + 20 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* ---------- Seiten-Header: direkt auf ui.appBg, kein Papier ---------- */}
-        <View style={styles.headerRow}>
-          <Pressable
-            onPress={() => router.back()}
-            hitSlop={12}
-            style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
-          >
-            <Ionicons name="chevron-back" size={26} color={COLORS.coffee800} />
-          </Pressable>
-          <View style={styles.headerLeft}>
-            <Text style={ui.eyebrow}>COFFEE NEST</Text>
-            <Text style={styles.title}>Einstellungen</Text>
+        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight, borderRadius: cardExtras.cardRadius }]}>
+          <Text style={[styles.sectionLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
+            DESIGN
+          </Text>
+          <View style={styles.designRow}>
+            {(["classic", "lowpoly"] as DesignMode[]).map((mode) => {
+              const active = design === mode;
+              const label = mode === "classic" ? "Klassisch" : "Low-Poly";
+              return (
+                <Pressable
+                  key={mode}
+                  onPress={() => {
+                    Haptics.selectionAsync();
+                    setDesign(mode);
+                  }}
+                  style={({ pressed }) => [
+                    styles.designOption,
+                    {
+                      backgroundColor: active ? colors.tint : colors.surface,
+                      borderColor: active ? colors.tint : colors.border,
+                      opacity: pressed ? 0.8 : 1,
+                    },
+                  ]}
+                >
+                  {mode === "classic" ? (
+                    <CupIcon size={18} color={active ? "#fff" : colors.text} />
+                  ) : (
+                    <GemIcon size={18} color={active ? "#fff" : colors.text} />
+                  )}
+                  <Text
+                    style={[
+                      styles.designLabel,
+                      {
+                        color: active ? "#fff" : colors.text,
+                        fontFamily: active ? "Inter_700Bold" : "Inter_500Medium",
+                      },
+                    ]}
+                  >
+                    {label}
+                  </Text>
+                </Pressable>
+              );
+            })}
           </View>
-          <Pressable
-            onPress={isDirty ? handleSave : undefined}
-            disabled={!isDirty}
-            style={({ pressed }) => ({ opacity: isDirty ? (pressed ? 0.7 : 1) : 0.3 })}
-          >
-            <PaperCard variant="chip" shape={2} shadow={0} style={styles.saveChip} contentStyle={styles.iconBtnPad}>
-              <Ionicons name="checkmark" size={22} color={COLORS.coffee800} />
-            </PaperCard>
-          </Pressable>
+          <Text style={[styles.designHint, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+            {design === "lowpoly"
+              ? "Warm · geometrisch · facettiert"
+              : "Warm · klassisch · Kaffeefarben"}
+          </Text>
         </View>
 
-        {/* ---------- BENUTZER ---------- */}
-        <PaperCard variant="light" shape={1} shadow={1} style={styles.firstSection} contentStyle={styles.sectionPad}>
-          <Text style={ui.eyebrow}>BENUTZER</Text>
-          <View style={styles.sectionBody}>
-            <View style={styles.fieldRow}>
-              <View style={styles.avatar}>
-                <Text style={styles.avatarInitial}>{(draft1.trim()[0] ?? "?").toUpperCase()}</Text>
+        <Text style={[styles.hint, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+          Das Design wird sofort überall in der App angewendet.
+        </Text>
+
+        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight, borderRadius: cardExtras.cardRadius, marginTop: 16 }]}>
+          <Text style={[styles.sectionLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
+            BENUTZER
+          </Text>
+
+          <View style={[styles.fieldRow, { borderBottomColor: user2active || showAddUser2 ? colors.border : "transparent" }]}>
+            <View style={[styles.avatar, { backgroundColor: colors.tint + "22" }]}>
+              <Text style={[styles.avatarText, { color: colors.tint, fontFamily: "Inter_700Bold" }]}>
+                {(draft1.trim()[0] ?? "?").toUpperCase()}
+              </Text>
+            </View>
+            <View style={styles.fieldContent}>
+              <Text style={[styles.fieldHint, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                Person 1
+              </Text>
+              <TextInput
+                value={draft1}
+                onChangeText={setDraft1}
+                style={[styles.input, { color: colors.text, fontFamily: "Inter_500Medium", borderRadius: cardExtras.cardRadius }]}
+                placeholder="Hase"
+                placeholderTextColor={colors.textSecondary}
+                maxLength={20}
+                returnKeyType="next"
+                autoCorrect={false}
+              />
+            </View>
+          </View>
+
+          {user2active ? (
+            <View style={[styles.fieldRow, { borderBottomColor: "transparent" }]}>
+              <View style={[styles.avatar, { backgroundColor: colors.tint + "22" }]}>
+                <Text style={[styles.avatarText, { color: colors.tint, fontFamily: "Inter_700Bold" }]}>
+                  {(draft2.trim()[0] ?? "?").toUpperCase()}
+                </Text>
               </View>
               <View style={styles.fieldContent}>
-                <Text style={styles.fieldHint}>Person 1</Text>
+                <Text style={[styles.fieldHint, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                  Person 2
+                </Text>
                 <TextInput
-                  value={draft1}
-                  onChangeText={setDraft1}
-                  style={ui.input}
-                  placeholder="Hase"
-                  placeholderTextColor={COLORS.coffee600}
+                  value={draft2}
+                  onChangeText={setDraft2}
+                  style={[styles.input, { color: colors.text, fontFamily: "Inter_500Medium", borderRadius: cardExtras.cardRadius }]}
+                  placeholder="Dodo"
+                  placeholderTextColor={colors.textSecondary}
                   maxLength={20}
-                  returnKeyType="next"
+                  returnKeyType="done"
+                  onSubmitEditing={isDirty ? handleSave : undefined}
                   autoCorrect={false}
                 />
               </View>
+              <Pressable
+                onPress={handleRemoveUser2}
+                hitSlop={8}
+                style={{ padding: 6, marginLeft: 4 }}
+              >
+                <Ionicons name="trash-outline" size={18} color="#E05252" />
+              </Pressable>
             </View>
+          ) : showAddUser2 ? (
+            <View style={[styles.fieldRow, { borderBottomColor: "transparent" }]}>
+              <View style={[styles.avatar, { backgroundColor: colors.border }]}>
+                <Text style={[styles.avatarText, { color: colors.textSecondary, fontFamily: "Inter_700Bold" }]}>
+                  {(newUser2Draft.trim()[0] ?? "+").toUpperCase()}
+                </Text>
+              </View>
+              <View style={styles.fieldContent}>
+                <Text style={[styles.fieldHint, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                  Person 2
+                </Text>
+                <TextInput
+                  value={newUser2Draft}
+                  onChangeText={setNewUser2Draft}
+                  style={[styles.input, { color: colors.text, fontFamily: "Inter_500Medium", borderRadius: cardExtras.cardRadius }]}
+                  placeholder="Name eingeben"
+                  placeholderTextColor={colors.textSecondary}
+                  maxLength={20}
+                  returnKeyType="done"
+                  onSubmitEditing={handleAddUser2}
+                  autoFocus
+                  autoCorrect={false}
+                />
+              </View>
+              <Pressable onPress={handleAddUser2} hitSlop={8} style={{ padding: 6, marginLeft: 4 }}>
+                <Ionicons name="checkmark" size={20} color={colors.tint} />
+              </Pressable>
+              <Pressable onPress={() => { setShowAddUser2(false); setNewUser2Draft(""); }} hitSlop={8} style={{ padding: 6 }}>
+                <Ionicons name="close" size={18} color={colors.textSecondary} />
+              </Pressable>
+            </View>
+          ) : (
+            <Pressable
+              onPress={() => setShowAddUser2(true)}
+              style={({ pressed }) => [styles.addUserRow, { opacity: pressed ? 0.6 : 1 }]}
+            >
+              <View style={[styles.avatar, { backgroundColor: colors.border }]}>
+                <Ionicons name="add" size={18} color={colors.textSecondary} />
+              </View>
+              <Text style={[styles.addUserText, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                Person 2 hinzufügen
+              </Text>
+            </Pressable>
+          )}
+        </View>
 
-            {user2active ? (
-              <>
-                <View style={[ui.divider, styles.rowDivider]} />
-                <View style={styles.fieldRow}>
-                  <View style={styles.avatar}>
-                    <Text style={styles.avatarInitial}>{(draft2.trim()[0] ?? "?").toUpperCase()}</Text>
-                  </View>
-                  <View style={styles.fieldContent}>
-                    <Text style={styles.fieldHint}>Person 2</Text>
-                    <TextInput
-                      value={draft2}
-                      onChangeText={setDraft2}
-                      style={ui.input}
-                      placeholder="Dodo"
-                      placeholderTextColor={COLORS.coffee600}
-                      maxLength={20}
-                      returnKeyType="done"
-                      onSubmitEditing={isDirty ? handleSave : undefined}
-                      autoCorrect={false}
-                    />
-                  </View>
-                  <Pressable onPress={handleRemoveUser2} hitSlop={8} style={styles.iconBtn}>
-                    <Ionicons name="trash-outline" size={18} color={COLORS.danger} />
-                  </Pressable>
-                </View>
-              </>
-            ) : showAddUser2 ? (
-              <>
-                <View style={[ui.divider, styles.rowDivider]} />
-                <View style={styles.fieldRow}>
-                  <View style={styles.avatar}>
-                    <Text style={styles.avatarInitial}>{(newUser2Draft.trim()[0] ?? "+").toUpperCase()}</Text>
-                  </View>
-                  <View style={styles.fieldContent}>
-                    <Text style={styles.fieldHint}>Person 2</Text>
-                    <TextInput
-                      value={newUser2Draft}
-                      onChangeText={setNewUser2Draft}
-                      style={ui.input}
-                      placeholder="Name eingeben"
-                      placeholderTextColor={COLORS.coffee600}
-                      maxLength={20}
-                      returnKeyType="done"
-                      onSubmitEditing={handleAddUser2}
-                      autoFocus
-                      autoCorrect={false}
-                    />
-                  </View>
-                  <Pressable onPress={handleAddUser2} hitSlop={8} style={styles.iconBtn}>
-                    <Ionicons name="checkmark" size={20} color={COLORS.accent400} />
-                  </Pressable>
-                  <Pressable onPress={() => { setShowAddUser2(false); setNewUser2Draft(""); }} hitSlop={8} style={styles.iconBtn}>
-                    <Ionicons name="close" size={18} color={COLORS.coffee600} />
-                  </Pressable>
-                </View>
-              </>
-            ) : (
-              <>
-                <View style={[ui.divider, styles.rowDivider]} />
-                <Pressable
-                  onPress={() => setShowAddUser2(true)}
-                  style={({ pressed }) => [styles.addUserRow, { opacity: pressed ? 0.6 : 1 }]}
-                >
-                  <View style={styles.avatar}>
-                    <Ionicons name="add" size={22} color={COLORS.coffee800} />
-                  </View>
-                  <Text style={styles.addUserText}>Person 2 hinzufügen</Text>
-                </Pressable>
-              </>
-            )}
-          </View>
-        </PaperCard>
-
-        <Text style={styles.hint}>
+        <Text style={[styles.hint, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
           Die Namen werden überall in der App verwendet und lokal gespeichert.
         </Text>
 
-        {/* ---------- KAFFEEMÜHLEN ---------- */}
-        <PaperCard variant="light" shape={2} shadow={1} style={styles.section} contentStyle={styles.sectionPad}>
-          <Text style={ui.eyebrow}>KAFFEEMÜHLEN</Text>
-          <View style={styles.sectionBody}>
-            {grinders.map((g, idx) => (
-              <View key={g.name} style={[styles.grinderRow, idx > 0 && { marginTop: 12 }]}>
-                <PaperTile source={grinderTileSource(g.design)} size={42} />
-                <Text style={styles.grinderName} numberOfLines={1}>
-                  {g.name}
-                </Text>
+        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight, borderRadius: cardExtras.cardRadius, marginTop: 16 }]}>
+          <Text style={[styles.sectionLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
+            KAFFEEMÜHLEN
+          </Text>
+
+          {grinders.map((g, idx) => (
+            <View
+              key={g.name}
+              style={[
+                styles.grinderRow,
+                {
+                  borderBottomColor: colors.border,
+                  borderBottomWidth: idx < grinders.length - 1 ? 1 : 0,
+                },
+              ]}
+            >
+              <GrinderIcon design={g.design} size={22} color={colors.tint} />
+              <Text style={[styles.grinderName, { color: colors.text, fontFamily: "Inter_500Medium" }]}>
+                {g.name}
+              </Text>
+              <Pressable
+                onPress={() => handleRemoveGrinder(g.name)}
+                hitSlop={12}
+                style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
+              >
+                <Ionicons name="close-circle" size={20} color={colors.textSecondary} />
+              </Pressable>
+            </View>
+          ))}
+
+          {grinders.length < 3 && (
+            <View style={{ borderTopColor: colors.border, borderTopWidth: grinders.length > 0 ? 1 : 0, paddingTop: grinders.length > 0 ? 12 : 0, gap: 10 }}>
+              <View style={{ flexDirection: "row", gap: 8 }}>
+                {(["commandante", "niche"] as GrinderDesign[]).map((d) => {
+                  const active = newGrinderDesign === d;
+                  return (
+                    <Pressable
+                      key={d}
+                      onPress={() => { Haptics.selectionAsync(); setNewGrinderDesign(d); }}
+                      style={({ pressed }) => ({
+                        flex: 1,
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 6,
+                        paddingVertical: 8,
+                        borderRadius: design === "lowpoly" ? 5 : 10,
+                        backgroundColor: active ? colors.tint : colors.surface,
+                        borderWidth: 1.5,
+                        borderColor: active ? colors.tint : colors.border,
+                        opacity: pressed ? 0.8 : 1,
+                      })}
+                    >
+                      <GrinderIcon design={d} size={20} color={active ? "#fff" : colors.text} />
+                      <Text style={{ color: active ? "#fff" : colors.text, fontFamily: active ? "Inter_600SemiBold" : "Inter_500Medium", fontSize: 13 }}>
+                        {d === "niche" ? "Niche" : "Commandante"}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+              <View style={styles.addGrinderRow}>
+                <TextInput
+                  value={newGrinder}
+                  onChangeText={setNewGrinder}
+                  style={[styles.grinderInput, { color: colors.text, fontFamily: "Inter_400Regular" }]}
+                  placeholder="Neue Mühle..."
+                  placeholderTextColor={colors.textSecondary}
+                  maxLength={30}
+                  returnKeyType="done"
+                  onSubmitEditing={handleAddGrinder}
+                  autoCorrect={false}
+                />
                 <Pressable
-                  onPress={() => handleRemoveGrinder(g.name)}
-                  hitSlop={12}
-                  style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
+                  onPress={handleAddGrinder}
+                  disabled={!newGrinder.trim()}
+                  style={({ pressed }) => [
+                    styles.addGrinderBtn,
+                    {
+                      backgroundColor: colors.tint,
+                      opacity: newGrinder.trim() ? (pressed ? 0.7 : 1) : 0.3,
+                    },
+                  ]}
                 >
-                  <Ionicons name="close-circle" size={20} color={COLORS.coffee600} />
+                  <Ionicons name="add" size={18} color="#fff" />
                 </Pressable>
               </View>
-            ))}
+            </View>
+          )}
 
-            {grinders.length < 3 && (
-              <View style={{ marginTop: grinders.length > 0 ? 20 : 4, gap: 14 }}>
-                {/* FRAMELESS TILE PICKER — grinder design */}
-                <View style={styles.grinderPickerRow}>
-                  {(["commandante", "niche"] as GrinderDesign[]).map((d) => {
-                    const active = newGrinderDesign === d;
-                    return (
-                      <Pressable
-                        key={d}
-                        onPress={() => { Haptics.selectionAsync(); setNewGrinderDesign(d); }}
-                        style={({ pressed }) => ({ alignItems: "center", flex: 1, opacity: pressed ? 0.8 : 1 })}
-                        accessibilityRole="button"
-                        accessibilityState={{ selected: active }}
-                      >
-                        <PaperTile
-                          source={grinderTileSource(d)}
-                          size={56}
-                          style={{ transform: [{ scale: active ? 1.0 : 0.84 }], opacity: active ? 1 : 0.4 }}
-                        />
-                        <View style={{ height: 3, width: active ? 18 : 0, borderRadius: 2, backgroundColor: COLORS.accent300, marginTop: 6 }} />
-                        <Text
-                          style={{
-                            marginTop: 3,
-                            fontSize: 12,
-                            textAlign: "center",
-                            fontFamily: active ? "Inter_600SemiBold" : "Inter_500Medium",
-                            color: active ? COLORS.accent400 : COLORS.coffee600,
-                          }}
-                        >
-                          {d === "niche" ? "Niche" : "Commandante"}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-                <View style={styles.addGrinderRow}>
-                  <TextInput
-                    value={newGrinder}
-                    onChangeText={setNewGrinder}
-                    style={[ui.input, { flex: 1 }]}
-                    placeholder="Neue Mühle..."
-                    placeholderTextColor={COLORS.coffee600}
-                    maxLength={30}
-                    returnKeyType="done"
-                    onSubmitEditing={handleAddGrinder}
-                    autoCorrect={false}
-                  />
-                  <Pressable
-                    onPress={handleAddGrinder}
-                    disabled={!newGrinder.trim()}
-                    style={({ pressed }) => ({ opacity: newGrinder.trim() ? (pressed ? 0.7 : 1) : 0.3 })}
-                  >
-                    <PaperCard variant="chip" shape={2} shadow={0} style={styles.addGrinderBtn} contentStyle={styles.iconBtnPad}>
-                      <Ionicons name="add" size={22} color={COLORS.coffee800} />
-                    </PaperCard>
-                  </Pressable>
-                </View>
-              </View>
-            )}
+          {grinders.length === 3 && (
+            <Text style={[styles.grinderLimit, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+              Maximal 3 Mühlen möglich
+            </Text>
+          )}
+        </View>
 
-            {grinders.length === 3 && (
-              <Text style={styles.grinderLimit}>Maximal 3 Mühlen möglich</Text>
-            )}
-          </View>
-        </PaperCard>
+        <Text style={[styles.hint, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+          Wähle beim Kaffee die verwendete Mühle aus.
+        </Text>
 
-        <Text style={styles.hint}>Wähle beim Kaffee die verwendete Mühle aus.</Text>
+        <View style={[styles.section, cardExtras.shadow, { backgroundColor: colors.surfaceElevated, borderColor: colors.border, borderTopColor: cardExtras.topHighlight, borderRadius: cardExtras.cardRadius, marginTop: 16 }]}>
+          <Text style={[styles.sectionLabel, { color: colors.textSecondary, fontFamily: "Inter_500Medium" }]}>
+            DATENSICHERUNG
+          </Text>
 
-        {/* ---------- DATENSICHERUNG ---------- */}
-        <PaperCard variant="light" shape={3} shadow={1} style={styles.section} contentStyle={styles.sectionPad}>
-          <Text style={ui.eyebrow}>DATENSICHERUNG</Text>
-          <View style={styles.sectionBody}>
-            <Pressable
-              onPress={handleExport}
-              disabled={exporting}
-              style={({ pressed }) => [styles.dataRow, { opacity: pressed || exporting ? 0.6 : 1 }]}
-            >
-              <Ionicons name="arrow-up-circle-outline" size={26} color={COLORS.accent400} />
-              <View style={styles.dataContent}>
-                <Text style={styles.dataTitle}>Daten exportieren</Text>
-                <Text style={styles.dataSubtitle}>Röstereien, Kaffees und Mühlen als JSON speichern</Text>
-              </View>
-              <Ionicons name="chevron-forward" size={16} color={COLORS.coffee600} />
-            </Pressable>
+          <Pressable
+            onPress={handleExport}
+            disabled={exporting}
+            style={({ pressed }) => [
+              styles.dataRow,
+              { borderBottomColor: colors.border, opacity: pressed || exporting ? 0.6 : 1 },
+            ]}
+          >
+            <View style={[styles.dataIcon, { backgroundColor: colors.tint + "20" }]}>
+              <Ionicons name="arrow-up-circle-outline" size={22} color={colors.tint} />
+            </View>
+            <View style={styles.fieldContent}>
+              <Text style={[styles.dataTitle, { color: colors.text, fontFamily: "Inter_600SemiBold" }]}>
+                Daten exportieren
+              </Text>
+              <Text style={[styles.dataSubtitle, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                Röstereien, Kaffees und Mühlen als JSON speichern
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
+          </Pressable>
 
-            <View style={[ui.divider, styles.rowDivider]} />
+          <Pressable
+            onPress={handleImport}
+            disabled={importing}
+            style={({ pressed }) => [
+              styles.dataRow,
+              { borderBottomColor: "transparent", opacity: pressed || importing ? 0.6 : 1 },
+            ]}
+          >
+            <View style={[styles.dataIcon, { backgroundColor: "#E05252" + "20" }]}>
+              <Ionicons name="arrow-down-circle-outline" size={22} color="#E05252" />
+            </View>
+            <View style={styles.fieldContent}>
+              <Text style={[styles.dataTitle, { color: colors.text, fontFamily: "Inter_600SemiBold" }]}>
+                Daten importieren
+              </Text>
+              <Text style={[styles.dataSubtitle, { color: colors.textSecondary, fontFamily: "Inter_400Regular" }]}>
+                Backup laden – überschreibt alle vorhandenen Daten
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
+          </Pressable>
+        </View>
 
-            <Pressable
-              onPress={handleImport}
-              disabled={importing}
-              style={({ pressed }) => [styles.dataRow, { opacity: pressed || importing ? 0.6 : 1 }]}
-            >
-              <Ionicons name="arrow-down-circle-outline" size={26} color={COLORS.danger} />
-              <View style={styles.dataContent}>
-                <Text style={styles.dataTitle}>Daten importieren</Text>
-                <Text style={styles.dataSubtitle}>Backup laden – überschreibt alle vorhandenen Daten</Text>
-              </View>
-              <Ionicons name="chevron-forward" size={16} color={COLORS.coffee600} />
-            </Pressable>
-          </View>
-        </PaperCard>
-
-        <Text style={styles.hint}>Exportiere regelmäßig ein Backup um Datenverlust zu vermeiden.</Text>
+        <Text style={[styles.hint, { color: colors.textSecondary, fontFamily: "Inter_400Regular", marginTop: 8 }]}>
+          Exportiere regelmäßig ein Backup um Datenverlust zu vermeiden.
+        </Text>
 
         <View style={styles.iconContainer}>
           <Image
@@ -514,146 +615,175 @@ export default function SettingsScreen() {
 }
 
 const styles = StyleSheet.create({
-  headerRow: {
+  container: {
+    flex: 1,
+  },
+  header: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
-    marginBottom: 8,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    gap: 12,
   },
-  headerLeft: {
+  backBtn: {
+    marginRight: 4,
+  },
+  headerTitle: {
     flex: 1,
-    minWidth: 0,
+    fontSize: 22,
   },
-  title: {
-    fontFamily: FONTS.display,
-    fontSize: 30,
-    lineHeight: 36,
-    color: COLORS.coffee800,
-    marginTop: 4,
+  saveBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
   },
-  saveChip: {
-    width: 48,
-    height: 44,
-  },
-  iconBtnPad: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 0,
-  },
-  firstSection: {
-    marginTop: 22,
+  saveBtnText: {
+    color: "#fff",
+    fontSize: 14,
   },
   section: {
-    marginTop: 18,
+    marginHorizontal: 20,
+    borderRadius: 14,
+    borderWidth: 1,
+    overflow: "hidden",
+    marginBottom: 8,
   },
-  sectionPad: {
-    padding: 20,
-  },
-  sectionBody: {
-    marginTop: 14,
+  sectionLabel: {
+    fontSize: 11,
+    letterSpacing: 1.5,
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 10,
   },
   fieldRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 14,
-  },
-  avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: COLORS.accentTile,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  avatarInitial: {
-    fontFamily: FONTS.display,
-    fontSize: 18,
-    color: COLORS.coffee800,
-  },
-  fieldContent: {
-    flex: 1,
-    gap: 6,
-  },
-  fieldHint: {
-    fontSize: 11,
-    letterSpacing: 0.3,
-    color: COLORS.coffee600,
-    fontFamily: "Inter_400Regular",
-  },
-  rowDivider: {
-    marginVertical: 14,
-  },
-  iconBtn: {
-    padding: 6,
-  },
-  addUserRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
-  },
-  addUserText: {
-    flex: 1,
-    fontSize: 15,
-    color: COLORS.coffee700,
-    fontFamily: "Inter_500Medium",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    gap: 12,
   },
   grinderRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 13,
+    gap: 10,
   },
   grinderName: {
     flex: 1,
-    fontSize: 19,
-    color: COLORS.coffee800,
-    fontFamily: FONTS.display,
+    fontSize: 16,
   },
-  grinderPickerRow: {
+  addUserRow: {
     flexDirection: "row",
-    gap: 8,
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 12,
+  },
+  addUserText: {
+    flex: 1,
+    fontSize: 15,
+    opacity: 0.6,
   },
   addGrinderRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    gap: 10,
+  },
+  grinderInput: {
+    flex: 1,
+    fontSize: 15,
+    paddingVertical: 4,
   },
   addGrinderBtn: {
-    width: 48,
-    height: 48,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
   },
   grinderLimit: {
     fontSize: 12,
-    marginTop: 14,
-    color: COLORS.coffee600,
-    fontFamily: "Inter_400Regular",
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    paddingTop: 4,
   },
   dataRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    gap: 12,
   },
-  dataContent: {
-    flex: 1,
-    gap: 2,
+  dataIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
   },
   dataTitle: {
-    fontSize: 16,
-    color: COLORS.coffee800,
-    fontFamily: "Inter_600SemiBold",
+    fontSize: 15,
   },
   dataSubtitle: {
     fontSize: 12,
-    color: COLORS.coffee600,
-    fontFamily: "Inter_400Regular",
+    marginTop: 1,
+  },
+  avatar: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  avatarText: {
+    fontSize: 16,
+  },
+  fieldContent: {
+    flex: 1,
+    gap: 2,
+  },
+  fieldHint: {
+    fontSize: 11,
+  },
+  input: {
+    fontSize: 17,
+    paddingVertical: 0,
   },
   hint: {
     fontSize: 12,
+    marginHorizontal: 20,
     lineHeight: 18,
-    color: COLORS.coffee600,
-    fontFamily: "Inter_400Regular",
-    marginTop: 12,
-    paddingHorizontal: 6,
+    marginBottom: 8,
+  },
+  designRow: {
+    flexDirection: "row",
+    gap: 10,
+    paddingHorizontal: 16,
+    paddingBottom: 14,
+  },
+  designOption: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1.5,
+  },
+  designLabel: {
+    fontSize: 15,
+  },
+  designHint: {
+    fontSize: 11,
+    paddingHorizontal: 16,
+    paddingBottom: 14,
+    letterSpacing: 0.3,
   },
   iconContainer: {
     height: 200,

@@ -18,7 +18,7 @@ const ThemeContext = createContext<ThemeContextType>({
 });
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [design, setDesignState] = useState<DesignMode>("classic");
+  const [design, setDesignState] = useState<DesignMode>("lowpoly");
 
   useEffect(() => {
     AsyncStorage.getItem(DESIGN_KEY).then((raw) => {
@@ -43,10 +43,11 @@ export function useTheme() {
 }
 
 export function useThemeColors() {
-  // Single design only — the warm cream cut-paper look. The Lowpoly palette has
-  // been retired; this always returns the light palette regardless of the
-  // stored design value or the system scheme.
-  return Colors.light;
+  const { design } = useContext(ThemeContext);
+  const colorScheme = useColorScheme();
+
+  if (design === "lowpoly") return Colors.lowpoly;
+  return colorScheme === "dark" ? Colors.dark : Colors.light;
 }
 
 // Material language — surfaces read as soft, layered paper rather than floating
@@ -62,7 +63,34 @@ export function useCardExtras(): {
   topHighlight: string;
   cardRadius: number;
 } {
+  const { design } = useContext(ThemeContext);
   const colorScheme = useColorScheme();
+
+  if (design === "lowpoly") {
+    return {
+      shadow: Platform.OS === "web"
+        ? ({ boxShadow: "0 1px 2px rgba(0,0,0,0.20), 0 8px 20px rgba(0,0,0,0.26), inset 0 1px 0 rgba(255,255,255,0.05)" } as ViewStyle)
+        : {
+          shadowColor: "#000000",
+          shadowOffset: { width: 0, height: 3 },
+          shadowOpacity: 0.26,
+          shadowRadius: 14,
+          elevation: 5,
+        },
+      elevatedShadow: Platform.OS === "web"
+        ? ({ boxShadow: "0 2px 4px rgba(0,0,0,0.22), 0 14px 30px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.07)" } as ViewStyle)
+        : {
+          shadowColor: "#000000",
+          shadowOffset: { width: 0, height: 6 },
+          shadowOpacity: 0.30,
+          shadowRadius: 20,
+          elevation: 9,
+        },
+      topHighlight: "rgba(225,162,74,0.30)",
+      cardRadius: 10,
+    };
+  }
+
   const isDark = colorScheme === "dark";
   return {
     shadow: Platform.OS === "web"

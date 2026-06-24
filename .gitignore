@@ -39,8 +39,3 @@ yarn-error.*
 .vercel
 
 .env
-
-# python tooling (extraction script)
-.pythonlibs/
-__pycache__/
-*.pyc
